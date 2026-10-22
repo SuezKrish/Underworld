@@ -75,6 +75,6 @@ export function AccountControls({ returnTo = '/', beforeNavigate, state }: {
     return <div className='account-controls' aria-label='账号与登录'>
   {loading ? <span className='mini-help'>读取账号…</span> : account ? <><span className='account-name'><UserRound size={16}/>{account.displayName}</span><a className='quiet' href={chatGPTSignOutPath(returnTo)} target='_top' onClick={beforeNavigate}>退出登录</a></> : <SignInLink returnTo={returnTo} beforeNavigate={beforeNavigate}/>}
   {error && <span className='mini-help' role='status'>{error}</span>}
-  {!!profiles.length && <details className='local-accounts'><summary>本地测试账号</summary><div><p>两个浏览器分别选择不同玩家，卡组各自保存。</p>{profiles.map(p => <a className='secondary' key={p.key} href={`${chatGPTSignInPath(returnTo)}&local_profile=${encodeURIComponent(p.key)}`} target='_top' onClick={beforeNavigate}>登录为{p.name}</a>)}</div></details>}
+  {!!profiles.length && <details className='local-accounts'><summary>本地测试账号</summary><div><p>两个浏览器可分别选择不同玩家；测试账号 A、B 与 Seedy 共用卡组。</p>{profiles.map(p => <a className='secondary' key={p.key} href={`${chatGPTSignInPath(returnTo)}&local_profile=${encodeURIComponent(p.key)}`} target='_top' onClick={beforeNavigate}>登录为{p.name}</a>)}</div></details>}
  </div>;
 }

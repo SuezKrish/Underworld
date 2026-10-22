@@ -1,3 +1,4 @@
+import {compareCardOrder} from './card-order.mjs';
 import { printedSealedFace } from './sealed-face.mjs';
 import { splitCardRules } from './card-text-format.mjs';
 import { scoreValue } from './scoring.mjs';
@@ -43,7 +44,7 @@ export function knownInformation(s) {
         players: s.players.map((p, i) => ({ name: s.seats[i]?.name, markers: structuredClone(p.markers), honor: p.honor ?? 0, costPool: p.costPool ?? 0, score: (p.scoreCards ?? []).reduce((n, c) => n + scoreValue(c), 0), deckCount: p.deck.length, coreArea: s.coreAreas?.[i] ? card(s.coreAreas[i].id ?? `core-area:${i}`) : null, ...Object.fromEntries(zones.map(zone => [zone, list(p[zone])])) })),
         societies: (s.societies ?? []).map((c, i) => card(c, pick(s.societyStates?.[i], locationFields))).filter(Boolean), districts: list((s.districts ?? []).filter(Boolean)), worldDeckCount: s.worldDeck?.length ?? 0,
         sealed: Object.keys(s.locations ?? {}).filter(id => s.locations[id].zone === 'sealed').map(id => card(id)).filter(Boolean),
-        cards: [...known].map(id => card(s.cards[id] ?? [...s.societies ?? [], ...s.districts ?? [], ...s.players.flatMap(p => p.scoreCards ?? [])].find(c => c?.id === id))).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name, 'zh-CN') || a.id.localeCompare(b.id)),
+        cards: [...known].map(id => card(s.cards[id] ?? [...s.societies ?? [], ...s.districts ?? [], ...s.players.flatMap(p => p.scoreCards ?? [])].find(c => c?.id === id))).filter(Boolean).sort(compareCardOrder),
         stack: (s.flow?.stack ?? []).map(a => ({ id: a.id, kind: a.kind, controller: a.controller, cardId: known.has(a.cardId) ? a.cardId : undefined, sourceId: known.has(a.sourceId) ? a.sourceId : undefined, displayName: a.displayName, targets: (a.targets ?? []).map(t => pick(t, ['kind', 'cardId', 'district', 'player', 'entryId'])), abilityLabel: a.plan?.abilityLabel, card: card(a.cardId ?? a.sourceId) })),
     };
 }

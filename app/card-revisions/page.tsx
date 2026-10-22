@@ -1,4 +1,5 @@
 'use client';
+import {compareCardOrder} from '../../engine/card-order.mjs';
 import { ResponsiveNavigation } from '../mobile-ui';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Eye, Search } from 'lucide-react';
@@ -55,7 +56,7 @@ export default function CardRevisions() {
         });
         return () => { active = false; };
     }, []);
-    const all = useMemo(() => (data?.cards ?? []).map(c => ({ ...c, overview: revisionOverview(c) })).filter(c => c.overview.length), [data]), sets = [...new Set(all.flatMap(c => c.sets.map(s => s.name)))].sort(), kinds = [...new Set(all.flatMap(c => c.overview.flatMap(r => r.kinds)))].sort();
+    const all = useMemo(() => (data?.cards ?? []).map(c => ({ ...c, overview: revisionOverview(c) })).filter(c => c.overview.length).sort(compareCardOrder), [data]), sets = [...new Set(all.flatMap(c => c.sets.map(s => s.name)))].sort(), kinds = [...new Set(all.flatMap(c => c.overview.flatMap(r => r.kinds)))].sort();
     const filtered = useMemo(() => all.filter(c => (!expansion || c.sets.some(s => s.name === expansion)) && (!kind || c.overview.some(r => r.kinds.includes(kind))) && (!query.trim() || `${c.id} ${c.name}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))), [data, query, expansion, kind]);
     return <div className='app-shell'><header className='topbar'><a className='brand' href='/'><span className='brand-mark'><Eye size={23}/></span><div><strong>隐秘世界</strong><small>CARD REVISIONS</small></div></a><ResponsiveNavigation><BackgroundSettings /><a className='quiet' href='/cards'><ArrowLeft size={16}/>卡牌池</a><a className='quiet' href='/'>大厅</a></ResponsiveNavigation></header>
  <main className='catalog-main revision-main' aria-busy={!data && !error}><div className='catalog-heading'><div><span className='eyebrow'>{offline ? 'CARD REVISIONS' : '规则文本审查'}</span><h1>卡牌修订</h1><p>每张卡牌仅对比最初文本与最终文本。纯标点、加粗调整、补写遗漏结附条件及已撤回的措辞提案不列入。</p>{data && <p className='revision-count'>{!offline && <>已核对 {data.reviewedCards} 条资料 · </>}{all.length} 张牌</p>}</div></div>

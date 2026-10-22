@@ -1,3 +1,4 @@
+import {compareCardOrder} from '../../../engine/card-order.mjs';
 import { env } from 'cloudflare:workers';
 import { initialXml, currentCatalog as current } from '../../../lib/catalog-store';
 import { poolAdmin } from '../../../lib/pool-admin';
@@ -18,7 +19,7 @@ function payload(doc: any, policy: any, admin: boolean, play = false) {
     return { ...audit, auditAssumptions: manage ? audit.auditAssumptions : audit.auditAssumptions.slice(0, 4), cards: audit.cards.map((source: any) => {
             const card = manage ? source : profileCardVariant(source, policy.settings), environment = source.type === '秘社' ? environmentStatus(source) : null;
             return { ...card, ...splitCardRules(card.text), ...(manage ? { availability: cardAvailability(source, policy.settings), metadata: metadataFor(source) } : {}), constructionRuleSource: societySources.find(s => s.id === card.id), environmentAudit: environment ? { implemented: environment.implemented, reason: environment.reason } : undefined };
-        }), canManagePool: admin, metadataSummary: manage ? summary : { matchedCards: parsed.cards.length, uniqueCards: parsed.cards.filter((c: any) => c.unique === 1).length, subtitles: parsed.cards.filter((c: any) => c.subtitle).length, flavors: parsed.cards.filter((c: any) => c.flavorText).length }, ...(manage ? { poolManagement: { ...policy, sets: poolSetSummary(parseCatalog(doc.xml).cards, policy.settings) } } : {}), sets: parsed.sets, worldCardCount: parsed.cards.filter((c: any) => c.type === '地区').length, revision: doc.revision, poolRevision: policy.revision, updatedAt: doc.updated_at, removed: parsed.removed };
+        }).sort(compareCardOrder), canManagePool: admin, metadataSummary: manage ? summary : { matchedCards: parsed.cards.length, uniqueCards: parsed.cards.filter((c: any) => c.unique === 1).length, subtitles: parsed.cards.filter((c: any) => c.subtitle).length, flavors: parsed.cards.filter((c: any) => c.flavorText).length }, ...(manage ? { poolManagement: { ...policy, sets: poolSetSummary(parseCatalog(doc.xml).cards, policy.settings) } } : {}), sets: parsed.sets, worldCardCount: parsed.cards.filter((c: any) => c.type === '地区').length, revision: doc.revision, poolRevision: policy.revision, updatedAt: doc.updated_at, removed: parsed.removed };
 }
 function download(value: string, type: string, name: string) { return new Response(value, { headers: { 'Content-Type': type + '; charset=utf-8', 'Content-Disposition': `attachment; filename="${name}"`, 'Cache-Control': 'no-store' } }); }
 export async function GET(request: Request) {

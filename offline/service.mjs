@@ -7,7 +7,7 @@ import { validateDeck, normalizeDeck } from '../engine/decks.mjs';
 import { prepareMatchDeck, prepareCodeDeck } from '../engine/match-deck.mjs';
 import { BOT_PROFILES, getBotProfile } from '../engine/bot-deck.mjs';
 import { botOpeningFirstPlayer } from '../engine/opening-order.mjs';
-import { normalizeTriggerTiming } from '../engine/trigger-timing.mjs';
+import { DEFAULT_TRIGGER_TIMING } from '../engine/trigger-timing.mjs';
 import { createRoomState, joinSeat, command, viewFor } from '../engine/match.mjs';
 import { runBot } from '../engine/bot.mjs';
 import { serializeRoomState, deserializeRoomState } from '../engine/room-storage.mjs';
@@ -136,7 +136,7 @@ export class OfflineService {
             else
                 selection = prepareMatchDeck(profile.deck, this.ctx);
             const botSelection = prepareMatchDeck(profile.deck, this.ctx), token = crypto.randomUUID(), code = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(n => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[n % 32]).join('');
-            const cards = this.ctx.compiled, reserve = cards.filter(c => c.token), s = createRoomState(name, token, 'automation-play', cards, reserve, this.ctx.environment, normalizeTriggerTiming(body.triggerTiming));
+            const cards = this.ctx.compiled, reserve = cards.filter(c => c.token), s = createRoomState(name, token, 'automation-play', cards, reserve, this.ctx.environment, DEFAULT_TRIGGER_TIMING);
             s.cardNamePool = this.ctx.cards.map(c => ({ name: c.name, magicDomains: c.magic === '无' ? [] : [c.magic] }));
             s.characterNames = [...new Set(this.ctx.cards.filter(c => hasCardType(c, 'character')).map(c => c.name))];
             s.openingFirstPlayer = openingFirstPlayer;

@@ -1,3 +1,4 @@
+import {compareCardOrder} from './card-order.mjs';
 import { markReplayUndo } from './replay.mjs';
 import { placementOperations, placementEligible, placementOptions, validatePlacement, executePlacement } from './manual-placement.mjs';
 import { maskSealedFace, printedSealedFace } from './sealed-face.mjs';
@@ -40,7 +41,7 @@ export function manualView(s, p, targetOptions) { const r = s.manualRequest, v =
 export function flipCandidates(s, p) { return (s.players[p]?.play ?? []).filter(id => s.locations[id]?.zone === 'play' && controllerOf(s, id) === p && (s.locations[id].faceDown || hasCardType(s.cards[id], 'character')) && !s.locations[id].secretPlan).map(id => ({ ...identity(s, id), zone: 'play', district: s.locations[id].district })); }
 export function createManualEngine(ctx) {
     const { move, draw, log, openWindow, stateBased, event, flipCharacter, canFlipCharacter, startHidden } = ctx;
-    function inspect(s, r) { const pl = s.players[r.requester], deck = [...pl.deck], ids = r.zone === 'unordered-deck' ? deck.sort((a, b) => s.cards[a].name.localeCompare(s.cards[b].name, 'zh-CN') || a.localeCompare(b)) : r.zone === 'deck' ? deck : r.zone === 'top' ? deck.slice(0, r.count) : deck.slice(Math.max(0, deck.length - r.count)); s.privateInspections ??= {}; s.privateInspections[r.requester] = { id: r.id, zone: r.zone, ids }; }
+    function inspect(s, r) { const pl = s.players[r.requester], deck = [...pl.deck], ids = r.zone === 'unordered-deck' ? deck.sort((a, b) => compareCardOrder(s.cards[a], s.cards[b])) : r.zone === 'deck' ? deck : r.zone === 'top' ? deck.slice(0, r.count) : deck.slice(Math.max(0, deck.length - r.count)); s.privateInspections ??= {}; s.privateInspections[r.requester] = { id: r.id, zone: r.zone, ids }; }
     function execute(s, r, automatic = false) {
         const who = r.requester, pl = s.players[who];
         if ([...moveOperations, ...placementOperations].includes(r.operation))

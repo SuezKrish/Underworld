@@ -20,6 +20,10 @@ export function stackResponseInformation(a, card) {
     function visit(plan) {
         if (!plan || typeof plan !== 'object')
             return;
+        if (plan.operation === 'hidden-start')
+            out.hiddenContest = true;
+        if (plan.target?.includes('grave'))
+            out.graveyardUse = true;
         if (entryEffects.has(plan.effect) || entryOperations.has(plan.operation) || plan.kind === 'spawn-token')
             out.characterEntry = true;
         if (exits.has(plan.effect) || plan.operation === 'locked-execution')

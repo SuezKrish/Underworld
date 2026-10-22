@@ -4,7 +4,7 @@ import { getBotProfile } from '../../../engine/bot-deck.mjs';
 import { runBot } from '../../../engine/bot.mjs';
 import { hasCardType } from '../../../engine/card-types.mjs';
 import { env } from 'cloudflare:workers';
-import { normalizeTriggerTiming } from '../../../engine/trigger-timing.mjs';
+import { DEFAULT_TRIGGER_TIMING } from '../../../engine/trigger-timing.mjs';
 import { createRoomState, joinSeat, viewFor } from '../../../engine/match.mjs';
 import { playCatalog } from '../../../lib/play-catalog';
 import { matchDeckSelection } from '../../../lib/deck-store';
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         const reserveSources = [...allCards.filter((c: any) => /^TK/.test(c.id) && true)];
         const systemCompiled = profileCompiledCards(reserveSources, policy.settings);
         const reserve = reserveSources.map((c: any) => ({ catalogId: c.id, name: c.name, displayName: c.displayName, text: c.text, type: c.typeLine, printedCost: c.token ? 0 : Number(c.printedCost), faction: c.faction, magicDomains: c.magic === '无' ? [] : [c.magic], subtitle: c.subtitle, flavorText: c.flavorText, automated: !!cards.find((x: any) => x.catalogId === c.id), ...(compiled.find((x: any) => x.catalogId === c.id) ?? systemCompiled.find((x: any) => x.catalogId === c.id)) }));
-        const state: any = createRoomState(name, await hashToken(token), mode, cards, reserve, environment, normalizeTriggerTiming(body.triggerTiming));
+        const state: any = createRoomState(name, await hashToken(token), mode, cards, reserve, environment, DEFAULT_TRIGGER_TIMING);
         state.openingFirstPlayer = openingFirstPlayer;
         const initial = catalog.find((c: any) => c.id === 'MSJC09' && isInitialSociety(c)) ?? catalog.find(isInitialSociety);
         if (!initial)

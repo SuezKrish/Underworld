@@ -90,7 +90,7 @@ function Inspection({ room, busy, act }: {
     busy: boolean;
     act: (c: any) => Promise<void>;
 }) {
-    const a = room.inspection, [order, setOrder] = useState<string[]>(a.cards.map((c: any) => c.id)), sortable = ['top', 'bottom'].includes(a.zone), title = a.zone === 'top' ? '检视牌库顶' : a.zone === 'bottom' ? '检视牌库底' : a.ordered ? '检视牌库（有序）' : '检视牌库（按名称）';
+    const a = room.inspection, [order, setOrder] = useState<string[]>(a.cards.map((c: any) => c.id)), sortable = ['top', 'bottom'].includes(a.zone), title = a.zone === 'top' ? '检视牌库顶' : a.zone === 'bottom' ? '检视牌库底' : a.ordered ? '检视牌库（有序）' : '检视牌库（按扩展、编号）';
     const changing = busy || !!room.manualRequest || room.status !== 'playing' || room.flow.locked || room.effectChoice || room.ruleChoice || room.hidden || room.roundChoice || room.pendingChoiceCount;
     return <Modal title={title} label='检视自己的牌库' close={() => void act({ type: 'cancel-inspection' })}><p>{a.count}张</p>{sortable && <><OrderRows edge={a.zone === 'bottom' ? 'bottom' : 'top'} ids={order} cards={a.cards} setIds={setOrder}/><button className='primary' disabled={changing || order.length < 2} onClick={() => act({ type: 'manual-request', operation: 'reorder-inspection', inspectionId: a.id, cardIds: order })}>{room.manualWithoutConsent ? '保存顺序' : '申请保存顺序'}</button></>}<Cards cards={a.cards} ordered={a.ordered} busy={!!changing} consent={!room.manualWithoutConsent} take={c => void act({ type: 'manual-request', operation: 'to-hand', cardIds: [c.id] })} grave={c => void act({ type: 'manual-request', operation: 'to-graveyard', cardIds: [c.id] })}/>{room.manualRequest?.requester === room.seat && <p role='status'>申请已发送，等待对手同意。</p>}</Modal>;
 }

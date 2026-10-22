@@ -1,3 +1,4 @@
+import {pendingGraveyardUse} from './bot-graveyard-uses.mjs';
 import {upcomingContest} from './contest-timing.mjs';
 import { nightPatrolMoves, greenCarmenTactics, greenEmployeeSetup, greenEmployeeScore, greenEmployeeRevealHold, greenOpeningMulligan } from './green-black-tactics.mjs';
 import { blueBot, blueHandBonus, bluePlayBonus, blueDistrictBonus, blueAttachmentScore, blueBatAttachTargets, blueBatMobility, blueBloodSacrifice, bluePhoenixContest, blueMobilityRevealScore, blueRevealReserve, blueEngineRevealScore, blueBattleDiscards, blueBattleDistrictBonus, blueHeartPathPlayScore, blueMulligan, blueSecretDeployAllowed, blueHiddenDistrictBonus, blueBloodSearch } from './blue-dragon-bot-policy.mjs';
@@ -904,7 +905,8 @@ function tactical(v,mode='normal'){
                 continue;
             const rescue = spellSilverRescue(v, c, v.spellTargets?.[c.id] ?? [], policyHelpers);
             const urgentHand = imminentHandLoss(v, c), urgentProtection = (v.spellTargets?.[c.id] ?? []).some(o => actionEffectForecast(v, c, plan, [o.id], policyHelpers, { isCard: true }).urgent), urgentDefense = rescue.length > 0 || ['WM008', 'XQ04', 'JZ05'].includes(c.catalogId) && v.flow.stack.some(a => a.controller !== p && a.targetIds?.some(id => keyRole(lookup(v, id)) && lookup(v, id)?.controller === p)), urgentRefill = spells(v) && c.catalogId === 'XQ02' && standard && (mine(v).deckCount <= 6 || wheelDisruptionPending(v)), rescueWheel = spells(v) && c.catalogId === 'XG03' && standard && !wheelInHand(v) && !wheelInDeck(v) && mine(v).assets.some(a => a.catalogId === 'XQ02');
-            if ((standard || revealBudget > 0 || shieldBudget > 0) && required - tapCount > spare && !responses.responseIds.has(c.id) && !(c.catalogId === 'JC078' && shieldBudget) && !urgentHand && !urgentProtection && !urgentDefense && !urgentRefill && !rescueWheel)
+            const urgentGrave=spells(v)&&plan.effect==='grave-bottom-draw'&&(v.spellTargets?.[c.id]??[]).some(o=>pendingGraveyardUse(v,o.id)&&spellFuneralScore(v,c,lookup(v,o.id),policyHelpers)!==null);
+            if ((standard || revealBudget > 0 || shieldBudget > 0) && required - tapCount > spare && !responses.responseIds.has(c.id) && !(c.catalogId === 'JC078' && shieldBudget) && !urgentHand && !urgentProtection && !urgentDefense && !urgentRefill && !rescueWheel && !urgentGrave)
                 continue;
             const tapIds = sorted(taps, x => value(x), false).slice(0, tapCount).map(x => x.id), opts = v.spellTargets?.[c.id] ?? [], base = { type: 'play', cardId: c.id, tapIds };
             for (const action of rescue)

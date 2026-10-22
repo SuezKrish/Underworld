@@ -1,9 +1,11 @@
+import {headers} from 'next/headers';
+import {deckStorageOwner} from './deck-owner.mjs';
 import { env } from 'cloudflare:workers';
 import { getChatGPTUser } from '../app/chatgpt-auth';
 import { playCatalog } from './play-catalog';
 import { validateDeck } from '../engine/decks.mjs';
 import { prepareMatchDeck, prepareCodeDeck } from '../engine/match-deck.mjs';
-export async function deckOwner() { const user = await getChatGPTUser(); return user?.userId ?? null; }
+export async function deckOwner() { const user = await getChatGPTUser(); return deckStorageOwner(user?.userId, (await headers()).get('host')); }
 export async function deckContext() { const { doc, policy, cards, compiled } = await playCatalog(); return { cards, compiled, revision: doc.revision, poolRevision: policy.revision, implemented: new Set(compiled.map((c: any) => c.catalogId)) }; }
 export function deckPayload(row: any, ctx: any) { const validation = validateDeck(JSON.parse(row.document), ctx.cards, ctx.implemented); return { id: row.id, revision: row.revision, createdAt: row.created_at, updatedAt: row.updated_at, ...validation.deck, validation }; }
 export async function deckRow(id: string, owner: string) { return env.DB!.prepare('SELECT * FROM decks WHERE id=? AND owner_id=?').bind(id, owner).first<any>(); }

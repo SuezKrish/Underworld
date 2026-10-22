@@ -1,5 +1,4 @@
 'use client';
-import { readTriggerTimingPreference } from './trigger-timing-preference';
 import { ResponsiveNavigation, MobileBattleDock, MobilePanelHeading, DistrictNavigation, useMobileBattlePanel } from './mobile-ui';
 import { ReplayImport } from './match-replay';
 import { PlayerSocietySummary } from './society-summary';

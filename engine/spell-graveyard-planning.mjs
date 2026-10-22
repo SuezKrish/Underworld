@@ -1,3 +1,4 @@
+import {pendingGraveyardUse} from './bot-graveyard-uses.mjs';
 import { hasCardType } from './card-types.mjs';
 const ours = v => v.players[v.seat];
 const field = v => ours(v).play.filter(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed);
@@ -83,6 +84,8 @@ export function spellRelicRebuild(v, c, target) {
 }
 // Funeral is an unaligned ritual: it does not trigger Silver Key or receive
 // mind-spell discounts. It returns one actual grave card before its own draw.
+// Funeral is an unaligned ritual: it does not trigger Silver Key or receive
+// mind-spell discounts. It returns one actual grave card before its own draw.
 export function spellFuneralScore(v, source, target, h) {
     if (!enabled(v) || !target)
         return null;
@@ -91,7 +94,7 @@ export function spellFuneralScore(v, source, target, h) {
     if (graveOwner < 0)
         return null;
     const owner = target.owner ?? graveOwner, ourCard = owner === p;
-    const incoming = v.flow.stack.some(a => a.controller === q && a.targetIds?.includes(target.id));
+    const incoming = pendingGraveyardUse(v, target.id, q);
     // A hostile grave return does not refill our library before the mandatory draw.
     if (!ourCard && own.deckCount <= 0)
         return null;
@@ -130,7 +133,9 @@ export function spellFuneralScore(v, source, target, h) {
             return null;
     }
     else {
-        if (foe.deckCount <= 2 && !incoming)
+        // Keep the fast single-card answer for an announced graveyard use. A
+        // proactive general graveyard reset belongs to the deck's wheel plan.
+        if (!incoming)
             return null;
         const a = target.automation ?? {};
         if (a.graveHiddenWin)
@@ -140,9 +145,9 @@ export function spellFuneralScore(v, source, target, h) {
         utility += (a.zoneActions ?? []).filter(a => a.zone === 'graveyard').length * 10;
         if (hasCardType(target, 'character') && foe.play.some(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed && /墓地[^。\n]{0,80}(?:放置进场|打出|置于.*手|移回.*手)/.test(String(c.text ?? '').replaceAll('**', '').split('FAQ')[0])))
             utility += Math.min(25, h.value(target) * 1.5);
-        if (incoming)
-            utility += 55;
     }
+    if (incoming)
+        utility += 65 + Math.min(40, h.value(target) * 2);
     if (utility <= 0)
         return null;
     if (!incoming && utility < 50 && handRoom === 0 && !near)

@@ -1,5 +1,7 @@
+import {responseFilter} from './response-effect-semantics.mjs';
+import {hiddenContestReady} from './bot-graveyard-uses.mjs';
 import { hasCardType } from './card-types.mjs';
-import { activeRumor } from './bot-card-purpose.mjs';
+import { activeRumor,graveyardPurposeValue } from './bot-card-purpose.mjs';
 const mine = v => v.players[v.seat];
 const field = v => mine(v).play.filter(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed);
 const grave = v => [...mine(v).graveyard, ...mine(v).headquarters ?? []];
@@ -141,10 +143,7 @@ export function criminalNeedsRemoval(v) {
     return foes.some(c => (c.printedCost ?? 0) >= 4) && (foes.length <= 2 || foes.length > ours.length + 1);
 }
 export function criminalEngineWindow(v) {
-    if (v.hidden)
-        return true;
-    const m = mine(v), queued = new Set((v.flow?.stack ?? []).filter(a => a.controller === v.seat).map(a => a.cardId));
-    return [...m.hand, ...m.play].some(c => ['BQ082', 'CQ32'].includes(c.catalogId) && (c.faceDown || m.hand.some(x => x.id === c.id) || queued.has(c.id)) && canFund(v, c, Math.max(0, (c.faceDown ? v.revealCosts?.[c.id] ?? c.printedCost : c.printedCost ?? 0) - 1)));
+    return hiddenContestReady(v);
 }
 export function rumorGraveRecovery(v) {
     if (mine(v).hand.length > 3)
@@ -156,21 +155,15 @@ export function criminalGravePriority(v, c, context = {}) {
     if (v.bot?.id !== 'black-purple-criminals')
         return null;
     const cards = grave(v), unknown = (v.hardInfo?.ownDeck ?? []).filter(x => is(x, c.catalogId) && !Object.hasOwn(v.hardInfo.libraryKnown ?? {}, x.id)).sort((a, b) => a.id.localeCompare(b.id));
-    const rank = Math.max(0, unknown.findIndex(x => x.id === c.id)), count = cards.filter(x => is(x, c.catalogId)).length + rank, removal = criminalNeedsRemoval(v), engine = criminalEngineWindow(v);
+    const rank = Math.max(0, unknown.findIndex(x => x.id === c.id)), count = cards.filter(x => is(x, c.catalogId)).length + rank, removal = criminalNeedsRemoval(v), engine = context.gravePlan?.hiddenReady ?? criminalEngineWindow(v);
+    const revive = context.gravePlan?.uses.some(u => u.kind === 'enter' && u.weight >= 0.8 && u.source.id !== c.id && responseFilter(c, u.filter)) ?? engine;
     const payload = [...cards, ...mine(v).hand, ...(v.hardInfo?.ownDeck ?? []).filter(x => !Object.hasOwn(v.hardInfo.libraryKnown ?? {}, x.id))].some(x => ['WM060', 'BQ086'].includes(x.catalogId));
-    let n = is(c, 'WM060') ? count || live(v, 'WM060') ? 8 : engine ? removal ? 145 : 220 : 85 :
-        is(c, 'BQ086') ? count || live(v, 'BQ086') ? 8 : engine ? removal ? 225 : 150 : removal ? 100 : 65 :
-            is(c, 'CQ31') ? count < 3 ? (engine ? 200 - count * 3 : 20 - count) : 12 :
-                is(c, 'BQ087') && engine && !payload && !cards.some(x => hasCardType(x, 'character') && (x.printedCost ?? 0) >= 5) && !count ? 135 :
-                    activeRumor(v, c) ? (rumorGraveRecovery(v) ? 190 : 45) + rumorDemand(v) * 12 :
-                        hasCardType(c, 'character') ? 8 - Math.min(35, c.printedCost ?? 0) : -(c.printedCost ?? 0);
-    if (live(v, 'CQ26') && !engine) {
-        const deck = v.hardInfo?.ownDeck ?? [], segment = context.side === 'bottom' ? deck.slice(-(context.count ?? 1)) : deck.slice(0, context.count ?? 1), known = v.hardInfo?.libraryKnown ?? {};
-        const already = segment.some(x => Object.hasOwn(known, x.id) && hasCardType(x, 'character'));
-        const fuel = deck.filter(x => !Object.hasOwn(known, x.id) && hasCardType(x, 'character')).sort((a, b) => (a.catalogId === 'WM060' ? -2 : a.catalogId === 'BQ086' ? -1 : 0) - (b.catalogId === 'WM060' ? -2 : b.catalogId === 'BQ086' ? -1 : 0) || a.id.localeCompare(b.id))[0];
-        if (!already && c.id === fuel?.id)
-            n += 250;
-    }
+    const generic = () => context.cardValue ? graveyardPurposeValue(v, c, context.cardValue, context.gravePlan) : activeRumor(v, c) ? 125 : -(c.printedCost ?? 0);
+    let n = is(c, 'WM060') ? count || live(v, 'WM060') ? 8 : revive ? removal ? 145 : 220 : -30 :
+        is(c, 'BQ086') ? count || live(v, 'BQ086') ? 8 : revive ? removal ? 225 : 150 : -30 :
+            is(c, 'CQ31') ? count < 3 ? (engine ? 200 - count * 3 : -35 - count) : 12 :
+                is(c, 'BQ087') && revive && !payload && !cards.some(x => hasCardType(x, 'character') && (x.printedCost ?? 0) >= 5) && !count ? 135 :
+                    generic();
     return n;
 }
 export function criminalLibraryBonus(v, c, context) {

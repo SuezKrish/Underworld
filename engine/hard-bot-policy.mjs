@@ -1,3 +1,6 @@
+import {responseFilter} from './response-effect-semantics.mjs';
+import {rumorHosts} from './bot-rumor-planning.mjs';
+import {graveyardPlanning,hiddenContestReady} from './bot-graveyard-uses.mjs';
 import { announcedHiddenBonus } from './bot-hidden-information.mjs';
 import { identity } from './ownership.mjs';
 import { botCommands, botCardValue, botAssetValue } from './bot-policy.mjs';
@@ -27,14 +30,32 @@ export function hardLibraryWeights(s, context, view, cardValue = botCardValue, c
     const scoreView = compact ? (s, p, r, c) => view(s, p, r, c, { libraryScoreOnly: true }) : view;
     const v = hardBotView(s, scoreView, { observe: false }), p = s.bot.seat, own = v.players[p], opponent = v.players[1 - p], cards = v.hardInfo.ownDeck;
     const assetNeeded = context.kind === 'hand' && needsAssetMaterial(v, botAssetValue);
+    const gravePlan = context.kind === 'graveyard' ? graveyardPlanning(v, cards, cardValue, context, botAssetValue) : null;
+    if (gravePlan) {
+        gravePlan.rumorHosts = rumorHosts(v);
+        gravePlan.hiddenReady = hiddenContestReady(v);
+    }
+    const graveScores = gravePlan ? new Map(cards.map(c => [c.id, (criminalGravePriority(v, c, { ...context, gravePlan, cardValue }) ?? graveyardPurposeValue(v, c, cardValue, gravePlan)) - (gravePlan.loyaltyReserve.has(c.id) ? 180 : 0)])) : null;
+    // A once-per-batch loot needs at most one matching milled card. Prefer a
+    // useful rumor for that role, rather than boosting every expensive body.
+    if (gravePlan) {
+        const known = v.hardInfo.libraryKnown ?? {}, segment = context.side === 'bottom' ? cards.slice(-(context.count ?? 1)) : cards.slice(0, context.count ?? 1);
+        const watches = own.play.filter(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed).flatMap(c => c.automation?.watch ?? []).filter(w => w.event === 'grave-entry' && w.own && w.fromDeck && w.oncePerBatch);
+        for (const w of watches) {
+            const matches = c => responseFilter(c, w.filter);
+            if (segment.some(c => Object.hasOwn(known, c.id) && matches(c)))
+                continue;
+            const best = cards.filter(c => !Object.hasOwn(known, c.id) && matches(c)).sort((a, b) => graveScores.get(b.id) - graveScores.get(a.id) || a.id.localeCompare(b.id))[0];
+            if (best)
+                graveScores.set(best.id, graveScores.get(best.id) + (own.hand.length < 4 ? 28 : 10));
+        }
+    }
     return Object.fromEntries(cards.map(c => {
         let n = cardValue(v, c) + (context.matchingCost === c.printedCost ? 100 : 0);
         const same = own.hand.filter(x => x.catalogId === c.catalogId).length;
         n -= same * 4;
         if (context.kind === 'graveyard') {
-            n = criminalGravePriority(v, c, context) ?? graveyardPurposeValue(v, c, cardValue);
-            if (s.bot.id !== 'black-purple-criminals' && own.play.some(x => x.catalogId === 'CQ26' && !x.faceDown) && hasCardType(c, 'character'))
-                n += 150;
+            n = graveScores.get(c.id);
         }
         else {
             n += spellLibraryBonus(v, c) + redPurpleLibraryBonus(v, c, context) + lockingLibraryBonus(v, c, context) + criminalLibraryBonus(v, c, context) + greenLibraryBonus(v, c, context);

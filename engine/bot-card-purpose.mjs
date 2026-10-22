@@ -1,3 +1,4 @@
+import {rumorHosts} from './bot-rumor-planning.mjs';
 import { hasCardType } from './card-types.mjs';
 const mine = v => v.players[v.seat];
 const grave = v => [...mine(v).graveyard, ...mine(v).headquarters ?? []];
@@ -80,17 +81,18 @@ export function activeRumor(v, c) {
     const m = mine(v), hidden = (m.effectiveMarkers ?? m.markers)?.hidden > 0;
     return !!(c.keywords?.includes('传闻') || hidden && c.automation?.conditionalKeywords?.hidden?.includes('传闻'));
 }
-export function graveyardPurposeValue(v, c, handValue) {
+export function graveyardPurposeValue(v, c, handValue, planning) {
     const m = mine(v);
     if (activeRumor(v, c)) {
-        const host = v.players.some(p => p.play.some(x => !x.faceDown && hasCardType(x, 'character') && (x.controller === v.seat || !x.barrierNow)));
-        return (host ? 125 : 45) + Number(c.automation?.sealed?.effect === 'draw') * 20;
+        const host = (planning?.rumorHosts ?? rumorHosts(v))[0];
+        if (host?.score > 0)
+            return 125 + host.recovery * 55 - host.failureRisk * 30 + Number(c.automation?.sealed?.effect === 'draw') * 20;
     }
     if (c.automation?.graveHiddenWin)
-        return 105;
+        return planning?.hiddenReady ? 155 : 35;
     // Transfer to the graveyard is a loss of access unless an actual recovery
     // plan supplies a use there. Printed cost/death magic alone is not a payoff.
-    let value = -Math.max(0, handValue(v, c));
+    let value = (planning?.values.get(c.id) ?? 0) - Math.max(0, handValue(v, c));
     if (c.automation?.reincarnates || c.keywords?.includes('转生'))
         value -= 45;
     if (v.bot?.id === 'shoggoth-locking' && c.catalogId === 'BH59')
