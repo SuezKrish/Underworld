@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {OfflineService,offlineBots} from './service.mjs';
+const xml=readFileSync(new URL('../data/Card.xml',import.meta.url),'utf8');
+function storage(){const tables={rooms:new Map(),decks:new Map(),saves:new Map(),replays:new Map()};return {async get(n,id){return structuredClone(tables[n].get(id));},async list(n){return structuredClone([...tables[n].values()]);},async put(n,row){tables[n].set(row.id,structuredClone(row));},async delete(n,id){tables[n].delete(id);}};}
+for(const triggerTiming of [undefined,'event','stack'])test(`离线新建、保存和读取保留触发规则 ${triggerTiming??'默认'}`,async()=>{const store=storage(),api=new OfflineService(xml,store),res=await api.request('/api/rooms','POST',{name:'规则验证',opponentBot:offlineBots[0].id,triggerTiming}),{room,token}=await res.json();assert.equal(res.status,201);assert.equal(room.triggerTiming,triggerTiming??'event');const saved=await api.request('/api/offline-saves','POST',{code:room.code,revision:room.revision,name:'规则快照'},{Authorization:`Bearer ${token}`}),{save}=await saved.json();assert.equal(saved.status,201);const restored=await api.request('/api/offline-saves/'+save.id,'POST'),loaded=await restored.json();assert.equal(restored.status,201);assert.equal(loaded.room.triggerTiming,triggerTiming??'event');});
+test('非法触发规则不会创建离线房间',async()=>{const store=storage(),api=new OfflineService(xml,store),res=await api.request('/api/rooms','POST',{opponentBot:offlineBots[0].id,triggerTiming:'invalid'});assert.equal(res.status,400);assert.equal((await store.list('rooms')).length,0);});

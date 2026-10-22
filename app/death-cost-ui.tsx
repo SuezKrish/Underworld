@@ -1,3 +1,4 @@
+import {TriggerDraft} from './trigger-round-ui';
 import { AbilityContextSurface, EffectPreviewSurface } from './card-information';
 'use client';
 import { useState, useCallback } from 'react';
@@ -64,16 +65,9 @@ function InfluenceChoice({ a, room, busy, act }: {
     const [amounts, setAmounts] = useState<Record<string, number>>({}), total = Object.values(amounts).reduce((n, v) => n + v, 0), mine = a.controller === room.seat;
     return <section className='choice-panel'><h3>地区{a.districtNumber} · 势力{a.kind === 'influence-cancellation' ? '抵消' : '移除'}</h3><p>{a.sourceName}</p>{mine ? <><p>选择移除{a.count}个本方势力标志 · 已选{total}/{a.count}</p><div className='effect-options'>{a.options.map((o: any) => <label className='influence-choice-row' key={o.id}><span>{o.name} · {o.count}个</span><input aria-label={`${o.name}移除数量`} type='number' min={0} max={o.count} step={1} value={amounts[o.id] ?? 0} disabled={busy} onChange={e => { const n = Number(e.target.value); setAmounts({ ...amounts, [o.id]: Number.isSafeInteger(n) ? Math.max(0, Math.min(o.count, n)) : 0 }); }}/></label>)}</div><button className='primary' disabled={busy || total !== a.count} onClick={() => act({ type: 'influence-choice', choiceId: a.id, allocations: Object.entries(amounts).filter(([, amount]) => amount > 0).map(([id, amount]) => ({ id, amount })) })}>确认移除位置</button><p>双方完成选择后一起移除。</p></> : <p>{a.done ? '已确认。' : ''}等待{a.waitingPlayers.map((p: number) => room.seats[p].name).join('、')}选择移除位置。</p>}</section>;
 }
-function ImmediateTriggerCost({ a, room, busy, act }: {
-    a: any;
-    room: any;
-    busy: boolean;
-    act: (c: any) => void;
-}) {
-    const [draft, setDraft] = useState<any>(null), onDraft = useCallback((d: any) => setDraft(d), []), ability = a.ability;
-    if (ability && !ability.plan)
-        return <EnvironmentTriggerCost a={a} room={room} busy={busy} act={act}/>;
-    return <section className="choice-panel"><h3>{a.sourceName} · 触发费用</h3>{a.controller === room.seat ? <><p>触发时支付费用；已发动的能力在触发轮中排列入栈。</p><TargetAction room={room} card={[...room.players.flatMap((p: any) => p.play), ...(room.societies ?? [])].find((c: any) => c.id === ability.cardId) ?? { id: ability.cardId, name: a.sourceName }} plan={ability.plan} options={room.abilityTargets?.[ability.id] ?? a.targetOptions ?? []} trigger={ability} disabled={busy} act={() => { }} onDraft={onDraft}/><div className="reward-row"><button className="primary" disabled={busy || !draft?.valid} onClick={() => act({ ...draft.command, type: "trigger-cost-choice", choiceId: a.id, fire: true })}>{ability.plan.societySource ? '横置秘社并发动' : `支付${ability.plan.cost ?? 0}费用并发动`}</button>{!ability.mandatory && <button className="secondary" disabled={busy} onClick={() => act({ type: "trigger-cost-choice", choiceId: a.id, fire: false })}>不发动</button>}</div></> : <p>等待 {room.seats[a.controller].name} 选择。</p>}</section>;
+function ImmediateTriggerCost({a,room,busy,act}:{a:any,room:any,busy:boolean,act:(c:any)=>void}){
+ const [draft,setDraft]=useState<any>(null),update=useCallback((_id:string,d:any)=>setDraft(d),[]),ability=a.ability;
+ return <section className="choice-panel"><h3>{a.sourceName} · 触发确认</h3>{a.controller===room.seat?<><p>现在确认是否发动、费用和目标；触发轮只排列入栈顺序。</p><TriggerDraft a={{...ability,targetOptions:a.targetOptions}} room={room} busy={busy} update={update}/><div className="reward-row"><button className="primary" disabled={busy||!draft?.valid} onClick={()=>act({...draft.command,type:'trigger-cost-choice',choiceId:a.id,fire:true})}>确认费用和目标并发动</button>{!ability.mandatory&&<button className="secondary" disabled={busy} onClick={()=>act({type:'trigger-cost-choice',choiceId:a.id,fire:false})}>不发动</button>}</div></>:<p>等待 {room.seats[a.controller].name} 选择。</p>}</section>;
 }
 function EnvironmentTriggerCost({ a, room, busy, act }: {
     a: any;

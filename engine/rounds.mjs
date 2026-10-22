@@ -319,13 +319,7 @@ export function createRoundEngine(ctx) {
             ;
         return true;
     }
-    function offer(s, a) {
-        a.displayName ??= triggerDisplayName(s, a);
-        if (a.mandatory)
-            trigger(s, a);
-        else
-            s.triggerChoices.push(a);
-    }
+    function offer(s,a){a.displayName??=triggerDisplayName(s,a);ctx.offerTrigger(s,a);}
     function phaseTriggers(s, event) {
         const group = `round:${s.round}:${event}`;
         const roster = s.turn.phaseTriggerRoster ?? s.players.flatMap(p => p.play.map(id => ({ id, zoneVersion: s.locations[id].zoneVersion, faceDown: !!s.locations[id].faceDown })));
@@ -361,10 +355,7 @@ export function createRoundEngine(ctx) {
             beginMobility(s);
             return;
         }
-        if (pending === 'prepareTrigger')
-            ctx.environment?.().prepare(s);
-        if (pending)
-            phaseTriggers(s, pending);
+        (ctx.collectTriggers??((_s,run)=>run()))(s,()=>{if(pending==='prepareTrigger')ctx.environment?.().prepare(s);if(pending)phaseTriggers(s,pending);});
         stateBased(s);
         openWindow(s);
     }
@@ -465,25 +456,7 @@ export function createRoundEngine(ctx) {
         s.turn.mobilityQueue = [0, 1].map(p => s.players[p].play.filter(id => hasCardType(s.cards[id], 'character') && !s.locations[id].tapped && hasKeyword(s, id, '机动') && !abilitiesSuppressed(s, id)).map(id => { const l = s.locations[id]; return { id: uuid(), kind: 'auto-ability', cardId: id, controller: p, displayName: s.cards[id].name, event: 'mobility', group: `mobility:${s.round}:${p}`, mandatory: false, targets: [], plan: { target: 'other-district', effect: 'move-source', sourceId: id, sourceDistrict: l.district, sourceZoneVersion: l.zoneVersion, sourceSnapshot: { zone: 'play', zoneVersion: l.zoneVersion, faceDown: false, controller: p, district: l.district } } }; }));
         mobilityWindow(s, s.turn.firstPlayer);
     }
-    function mobilityWindow(s, p) {
-        const queue = s.turn.mobilityQueue?.[p] ?? [];
-        if (!queue.length) {
-            if (p === s.turn.firstPlayer) {
-                mobilityWindow(s, 1 - p);
-                return;
-            }
-            delete s.turn.mobilityQueue;
-            beforeContest(s, 0, kinds[0]);
-            return;
-        }
-        s.turn.district = null;
-        s.turn.kind = null;
-        s.turn.mobilityPlayer = p;
-        s.triggerChoices.push(...queue);
-        s.turn.mobilityQueue[p] = [];
-        window(s, 'contest', p === s.turn.firstPlayer ? 'mobility-first' : 'mobility-second');
-        log(s, `${s.seats[p].name}选择机动触发；先手机动完成后再处理后手。`);
-    }
+    function mobilityWindow(s,p){const queue=s.turn.mobilityQueue?.[p]??[];if(!queue.length){if(p===s.turn.firstPlayer){mobilityWindow(s,1-p);return;}delete s.turn.mobilityQueue;beforeContest(s,0,kinds[0]);return;}s.turn.district=null;s.turn.kind=null;s.turn.mobilityPlayer=p;(ctx.collectTriggers??((_s,run)=>run()))(s,()=>{for(const a of queue)ctx.offerTrigger(s,a);});s.turn.mobilityQueue[p]=[];window(s,'contest',p===s.turn.firstPlayer?'mobility-first':'mobility-second');log(s,`${s.seats[p].name}选择机动触发；先手机动完成后再处理后手。`);}
     function nextInfluenceSource(s) {
         const d = s.districts[s.turn.district], used = s.turn.extraInfluenceUsed ?? [];
         if (!d || s.turn.influenceDistrictCardId && s.turn.influenceDistrictCardId !== d.id)
@@ -575,7 +548,7 @@ export function createRoundEngine(ctx) {
             s.flow.locked = true;
             return;
         }
-        if (s.triggerChoices.length) {
+        if (s.triggerTiming !== 'stack' && s.triggerChoices.length) {
             s.turn.step = 'contest-triggers';
             s.flow.locked = true;
             return;

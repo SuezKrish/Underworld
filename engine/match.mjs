@@ -48,7 +48,7 @@ import { canTerminate } from './holy-deck-rules.mjs';
 import { entropyHiddenCard } from './entropy-effects.mjs';
 import { deathCharacterCostOptions, prepareDeathCharacterCost } from './death-deck-rules.mjs';
 import { beginEventGroup, endEventGroup } from './event-group.mjs';
-import { isCostChoice, runDeathCommand, deathAttachmentCosts, deathCostView, discardReplacementDecision } from './death-costs.mjs';
+import { isCostChoice, runDeathCommand, deathAttachmentCosts, deathCostView, discardReplacementDecision, triggerCostDecision } from './death-costs.mjs';
 import { uuid, randomValues } from './random.mjs';
 import { printedRulesCard, printedRulesBlank } from './printed-rules.mjs';
 import { fateSealedPermission, realityCard } from './reality-rules.mjs';
@@ -90,9 +90,11 @@ import { offerTriggerOrder, arrangeTriggers, triggerOrderView } from './trigger-
 import { currentTriggerRound, triggerRoundView, submitTriggerRound } from './trigger-round.mjs';
 import { triggerDisplayName } from './trigger-display.mjs';
 import { abilityDescription, abilityDescriptionView } from './ability-description.mjs';
-export const RULE_VERSION = '2026-10-13-trigger-rounds';
-export function createRoomState(nickname, hash, mode = 'round-play', automationCards = [], reserveTemplates = [], environmentCatalog = null) {
-    return { deckRequired: false, deckSelections: /** @type {any[]} */ ([null, null]), reserveTemplates, undoFrames: [], privateInspections: {}, manualRequest: null, mode, rulesVersion: RULE_VERSION, status: 'waiting', createdAt: Date.now(),
+import { deferTriggerCost } from './trigger-cost-queue.mjs';
+import { normalizeTriggerTiming, earlyTriggerTiming, lateTriggerTiming } from './trigger-timing.mjs';
+export const RULE_VERSION = '2026-10-22-trigger-timing';
+export function createRoomState(nickname, hash, mode = 'round-play', automationCards = [], reserveTemplates = [], environmentCatalog = null, triggerTiming = 'event') {
+    return { triggerTiming: normalizeTriggerTiming(triggerTiming), deckRequired: false, deckSelections: /** @type {any[]} */ ([null, null]), reserveTemplates, undoFrames: [], privateInspections: {}, manualRequest: null, mode, rulesVersion: RULE_VERSION, status: 'waiting', createdAt: Date.now(),
         seats: [{ name: nickname, hash, ready: false }, null], players: [], cards: {},
         playerPreferences: [{ skipAdditionalCoreReturn: true }, { skipAdditionalCoreReturn: true }], keeperQueue: [], ruleChoice: null, flow: newPriority(0), pendingTriggers: [], triggerChoices: [], hidden: null,
         battle: null, round: 1, logs: [], recentCommands: [], locations: {}, environmentCatalog, ...(mode === 'automation-play' ? { automationCards } : {}) };
@@ -283,7 +285,7 @@ function moveUnmasked(s, id, zone, extra = {}) {
     if (destination === 'blink') {
         const prepared = s.preparedCostDeaths?.[`${id}:${old.zoneVersion}`];
         if (!prepared) {
-            deathAttachmentCosts(s, id, old, eventGroup, { move, seal: sealingEngine.seal, pay, trigger, registerGroup, log });
+            deathAttachmentCosts(s, id, old, eventGroup, { move, seal: sealingEngine.seal, pay, trigger, registerGroup, log, ...(s.triggerTiming ? { defer: a => automationEngine.offerTrigger(s, a) } : {}) });
             s.deathsThisRound ??= [];
             s.deathsThisRound.push(id);
             cardEvent(s, id, 'death', old, eventGroup, { cause });
@@ -342,7 +344,7 @@ function moveUnmasked(s, id, zone, extra = {}) {
         return false;
     }
     if (dying && !s.preparedCostDeaths?.[`${id}:${old.zoneVersion}`] && hasCardType(s.cards[id], 'character'))
-        deathAttachmentCosts(s, id, old, eventGroup, { move, seal: sealingEngine.seal, pay, trigger, registerGroup, log });
+        deathAttachmentCosts(s, id, old, eventGroup, { move, seal: sealingEngine.seal, pay, trigger, registerGroup, log, ...(s.triggerTiming ? { defer: a => automationEngine.offerTrigger(s, a) } : {}) });
     if (['graveyard', 'headquarters'].includes(old?.zone) && zone === 'play' && hasAnyCardType(s.cards[id], ['character', 'attachment']) && graveyardLocked(s, undefined, s.cards[id].owner, old.zone)) {
         log(s, `镇魂曲禁止${s.cards[id].name}从墓地进场，牌留在墓地。`);
         return false;
@@ -426,7 +428,7 @@ function moveUnmasked(s, id, zone, extra = {}) {
         const wellClaimed = captureWithWell(s, id, wellRefs, `${id}:${s.locations[id].zoneVersion}:${eventGroup}`, { seal: sealingEngine.seal, log, immediateEntry: () => reincarnateAfterEntry(s, id, zone === 'headquarters' ? 'headquarters-entry' : 'grave-entry', eventGroup, { move, event: cardEvent, log }) });
         if (!wellClaimed && ['effect', 'discard', 'cost'].includes(cause) && ['hand', 'deck'].includes(old?.zone) && cardHasKeyword(s, id, '传闻')) {
             const a = rumorTrigger({ ...s.cards[id], rumor: true }, { cardId: id, from: old.zone, to: 'graveyard', cause: 'card-or-ability-effect', zoneVersion: s.locations[id].zoneVersion });
-            s.triggerChoices.push({ ...a, id: uuid(), displayName: s.cards[id].name, group: eventGroup, event: 'rumor', ...((s.activatingPrepaid ?? s.costTriggerParent) ? { triggerAfter: s.activatingPrepaid ?? s.costTriggerParent } : {}) });
+            offerTrigger(s, { ...a, id: uuid(), displayName: s.cards[id].name, group: eventGroup, event: 'rumor', ...((s.activatingPrepaid ?? s.costTriggerParent) ? { triggerAfter: s.activatingPrepaid ?? s.costTriggerParent } : {}) });
             log(s, '传闻牌先进入墓地，其拥有者可选择发动封印触发。');
         }
     }
@@ -509,32 +511,54 @@ function registerGroup(s, group) {
     if (!s.triggerGroupOrder.includes(group))
         s.triggerGroupOrder.push(group);
 }
-function trigger(s, a) {
-    a.abilityDescription ??= abilityDescription(s, a);
-    if (s.triggerBatchApplying || s.activatingPrepaid || s.costTriggerParent)
-        a.awaitTriggerRound = true;
-    if (s.activatingPrepaid ?? s.costTriggerParent)
-        a.triggerAfter = s.activatingPrepaid ?? s.costTriggerParent;
-    const previous = s.activatingPrepaid;
-    if (a.prepaid)
-        s.activatingPrepaid = a.id;
-    try {
-        automationEngine.activated(s, a);
-        observeTargets(s, a);
+function collectTriggers(s,run){const before=s.collectingEventTriggers;s.collectingEventTriggers=true;try{run();}finally{if(before)s.collectingEventTriggers=before;else delete s.collectingEventTriggers;}if(!before)automationEngine.flushTriggerCosts(s,{batch:true});}
+function offerTrigger(s,a){
+ if(a.kind==='auto-ability')return automationEngine.offerTrigger(s,a);
+ if(!earlyTriggerTiming(s)){if(a.mandatory&&!a.claimMobileTarget)trigger(s,a);else s.triggerChoices.push(a);return;}
+ if(a.mandatory&&!a.claimMobileTarget){a.committed=true;trigger(s,a);return;}
+ if(deferTriggerCost(s,a))return;
+ commitTrigger(s,a);
+}
+function chooseBasicTrigger(s,p,c){
+        const a = s.triggerChoices.find(a => a.id === c.triggerId && a.controller === p);
+        need(a, '当前没有该触发选择');
+        need(typeof c.fire === 'boolean', '需要明确选择是否发动');
+        if (c.fire) {
+            if (a.effect.kind === 'seal-from-graveyard') {
+                need(!graveyardLocked(s), '镇魂曲禁止在墓地中发动传闻能力');
+                const target = s.cards[c.targetId], loc = s.locations[c.targetId];
+                need(target && loc?.zone === 'play' && !loc.faceDown && hasCardType(target, 'character') && (controllerOf(s, c.targetId) === p || !hasBarrier(s, c.targetId)), '请指定场上的目标角色（合法目标不能具有敌方屏障）');
+                a.targetId = c.targetId;
+                a.targetZoneVersion = loc.zoneVersion;
+                a.sealHost = sealHost(s, c.targetId);
+            }
+            trigger(s, a);
+        }
+        s.triggerChoices = s.triggerChoices.filter(x => x.id !== a.id);
+        if (!s.triggerChoices.length)
+            resumeRules(s);
+        return;
     }
-    finally {
-        if (previous === undefined)
-            delete s.activatingPrepaid;
-        else
-            s.activatingPrepaid = previous;
-    }
-    registerGroup(s, a.group);
-    s.pendingTriggers.push(a);
-    log(s, `${a.mandatory ? '强制触发' : '触发能力'}已发动${effectObjectsLog(s, a.targets ?? (a.effect?.kind === 'seal-from-graveyard' && a.targetId ? [{ kind: 'card', cardId: a.targetId }] : []))}，等待下一个快速行动窗口。`);
+function commitTrigger(s,a){
+ const p=a.controller;
+ if(triggerUnavailable(s,a))return;
+ const c=triggerCostDecision(s,a);if(!c.fire){need(!a.mandatory,'强制触发必须发动');return;}
+ const previous=s.triggerBatchApplying;s.triggerBatchApplying=true;
+ s.triggerChoices.push(a);a.committed=true;
+ try{const command={...c,id:`${a.id}:commit`,triggerId:a.id,type:a.kind==='abyss-ability'?'abyss-trigger':'trigger-choice'};if(a.kind==='abyss-ability')abyssEngine.command(s,p,command);else chooseBasicTrigger(s,p,command);}finally{if(previous)s.triggerBatchApplying=previous;else delete s.triggerBatchApplying;}
+}
+function trigger(s,a){
+ a.abilityDescription??=abilityDescription(s,a);
+ if(a.committed||s.triggerBatchApplying||s.activatingPrepaid||s.costTriggerParent)a.awaitTriggerRound=true;
+ if(s.activatingPrepaid??s.costTriggerParent)a.triggerAfter=s.activatingPrepaid??s.costTriggerParent;
+ const previous=s.activatingPrepaid;if(a.prepaid||a.committed)s.activatingPrepaid=a.id;
+ try{automationEngine.activated(s,a);observeTargets(s,a);}finally{if(previous===undefined)delete s.activatingPrepaid;else s.activatingPrepaid=previous;}
+ registerGroup(s,a.group);s.pendingTriggers.push(a);log(s,`${a.mandatory?'强制触发':'触发能力'}已发动${effectObjectsLog(s,a.targets??(a.effect?.kind==='seal-from-graveyard'&&a.targetId?[{kind:'card',cardId:a.targetId}]:[]))}，等待下一个快速行动窗口。`);
 }
 function openWindow(s) {
     if (s.triggerBatchApplying || s.triggerRound)
         return;
+    automationEngine.flushTriggerCosts(s, { batch: true });
     s.flow.locked = false;
     if (keeperEngine.block(s))
         return;
@@ -763,10 +787,10 @@ function resolveInner(s, a) {
     repeatResolved(s, a);
 }
 const sealingEngine = createSealingEngine({ move, log, event: cardEvent });
-const roundEngine = createRoundEngine({ inspectCards: (...args) => automationEngine.inspectCards(...args), resolveEffectBattle: (s, a) => automationEngine.resolve(s, a), move, conceal, setLocation, eternalAttachmentOptions: (s, p, id) => automationEngine.options(s, p, { ...s.cards[id].attachment, cardId: id, attachmentPlay: true }), eternalAttachmentTarget: (s, p, id, value, regional) => automationEngine.prepare(s, p, { targetIds: [value] }, regional ? { target: 'district' } : { ...s.cards[id].attachment, cardId: id, attachmentPlay: true })[0], resolveRoundEnd: (s, a) => automationEngine.resolve(s, a), log, openWindow, pay, hasPriority, trigger, seal: sealingEngine.seal, releaseSeals: sealingEngine.release, cleanupSeals: sealingEngine.cleanup, stateTriggers: s => { automationEngine.conditions(s); environmentEngine.conditions(s); }, ruleActions: s => { environmentEngine.stateActions(s); uniqueEngine.check(s); }, phaseEvent: cardEvent, environment: () => environmentEngine });
-const automationEngine = createAutomationEngine({ revealWorldDistrict: (s, d) => environmentEngine.reveal(s, d), repeatResolved, payCostBatch, payEnvironmentTrigger: (s, a) => environmentEngine.payOfferedTrigger(s, a), effectBattle: (...args) => roundEngine.effectBattle(...args), claimDistrict: (...args) => roundEngine.claimDistrict(...args), observeTargets, move, conceal, announce, registerGroup, seal: sealingEngine.seal, setLocation, log, pay, checkLoyalty, standardAction, hasPriority, openWindow, draw: roundEngine.draw, stateBased: roundEngine.stateBased, finish: roundEngine.finishGame, trigger, onTriggersChosen: resumeRules, startHidden, castDuringResolution, castOptions: (s, p, id) => { const card = s.cards[id], status = keeperCastStatus(s, p, id); return { castAllowed: status.allowed, castReason: status.reason }; }, resolveOriginal: (s, a) => resolveInner(s, { ...a, hallucination: undefined }) });
+const roundEngine = createRoundEngine({ collectTriggers, offerTrigger, inspectCards: (...args) => automationEngine.inspectCards(...args), resolveEffectBattle: (s, a) => automationEngine.resolve(s, a), move, conceal, setLocation, eternalAttachmentOptions: (s, p, id) => automationEngine.options(s, p, { ...s.cards[id].attachment, cardId: id, attachmentPlay: true }), eternalAttachmentTarget: (s, p, id, value, regional) => automationEngine.prepare(s, p, { targetIds: [value] }, regional ? { target: 'district' } : { ...s.cards[id].attachment, cardId: id, attachmentPlay: true })[0], resolveRoundEnd: (s, a) => automationEngine.resolve(s, a), log, openWindow, pay, hasPriority, trigger, seal: sealingEngine.seal, releaseSeals: sealingEngine.release, cleanupSeals: sealingEngine.cleanup, stateTriggers: s => { automationEngine.conditions(s); environmentEngine.conditions(s); }, ruleActions: s => { environmentEngine.stateActions(s); uniqueEngine.check(s); }, phaseEvent: cardEvent, environment: () => environmentEngine });
+const automationEngine = createAutomationEngine({ revealWorldDistrict: (s, d) => environmentEngine.reveal(s, d), repeatResolved, payCostBatch, offerTrigger, commitTrigger, payEnvironmentTrigger: (s, a) => environmentEngine.payOfferedTrigger(s, a), effectBattle: (...args) => roundEngine.effectBattle(...args), claimDistrict: (...args) => roundEngine.claimDistrict(...args), observeTargets, move, conceal, announce, registerGroup, seal: sealingEngine.seal, setLocation, log, pay, checkLoyalty, standardAction, hasPriority, openWindow, draw: roundEngine.draw, stateBased: roundEngine.stateBased, finish: roundEngine.finishGame, trigger, onTriggersChosen: resumeRules, startHidden, castDuringResolution, castOptions: (s, p, id) => { const card = s.cards[id], status = keeperCastStatus(s, p, id); return { castAllowed: status.allowed, castReason: status.reason }; }, resolveOriginal: (s, a) => resolveInner(s, { ...a, hallucination: undefined }) });
 const uniqueEngine = createUniqueEngine({ move, log, resume: resumeRules });
-const abyssEngine = createAbyssEngine({ repeatResolved, move, seal: sealingEngine.seal, log, pay, hasPriority, standardAction, announce, openWindow, stateBased: roundEngine.stateBased, draw: roundEngine.draw, event: cardEvent, trigger, registerGroup, resume: resumeRules, targetOptions: (...args) => automationEngine.options(...args), targetRefs: (...args) => automationEngine.prepare(...args), startHidden });
+const abyssEngine = createAbyssEngine({ offerTrigger, repeatResolved, move, seal: sealingEngine.seal, log, pay, hasPriority, standardAction, announce, openWindow, stateBased: roundEngine.stateBased, draw: roundEngine.draw, event: cardEvent, trigger, registerGroup, resume: resumeRules, targetOptions: (...args) => automationEngine.options(...args), targetRefs: (...args) => automationEngine.prepare(...args), startHidden });
 const zoneActionEngine = createZoneActionEngine({ payCostBatch, resolveEffect: (s, a) => automationEngine.resolve(s, a), move, seal: sealingEngine.seal, draw: roundEngine.draw, log, pay, checkLoyalty, hasPriority, standardAction, announce, stateBased: roundEngine.stateBased, event: cardEvent, targetOptions: (...args) => automationEngine.options(...args), targetRefs: (...args) => automationEngine.prepare(...args), startHidden });
 function keeperCastStatus(s, p, id) {
     const card = printedRulesCard(s, id), base = card.spell ?? card.attachment;
@@ -848,24 +872,7 @@ const keeperEngine = createKeeperEngine({ log, move, prepareCast: prepareKeeperC
         s.flow.locked = !!(s.effectChoice || s.damageChoice || s.roundChoice || s.hidden || s.battle);
         resumeRules(s);
     } });
-function cardEvent(...args) {
-    if (args[2] === 'reveal')
-        args[5] = { lockedBefore: !!args[3]?.entryLockedBefore, ...args[5] };
-    if (automationEngine.event(...args) === false)
-        return false;
-    environmentEngine.event(...args);
-    abyssEngine.event(...args);
-    automationEngine.conditions(args[0], args[4]);
-    environmentEngine.conditions(args[0], args[4]);
-    if (args[2] === 'sealed') {
-        reincarnateAfterEntry(args[0], args[1], args[2], args[4], { move, event: cardEvent, log });
-        const s = args[0], id = args[1], departure = s.locations[id]?.coreReturnPending;
-        if (departure) {
-            delete s.locations[id].coreReturnPending;
-            automationEngine.shoggothCompleteDeparture(s, id, departure);
-        }
-    }
-}
+function cardEvent(...args){const state=args[0],collecting=state.collectingEventTriggers;state.collectingEventTriggers=true;try{if(args[2]==='reveal')args[5]={lockedBefore:!!args[3]?.entryLockedBefore,...args[5]};if(automationEngine.event(...args)===false)return false;environmentEngine.event(...args);abyssEngine.event(...args);automationEngine.conditions(args[0],args[4]);environmentEngine.conditions(args[0],args[4]);if(args[2]==='sealed'){const s=args[0],id=args[1],departure=s.locations[id]?.coreReturnPending;if(departure){delete s.locations[id].coreReturnPending;automationEngine.shoggothCompleteDeparture(s,id,departure);}}}finally{if(collecting)state.collectingEventTriggers=collecting;else delete state.collectingEventTriggers;}if(!collecting)automationEngine.flushTriggerCosts(state,{batch:true});}
 function finishSetup(s) {
     for (const p of [0, 1])
         if (!roundEngine.draw(s, [p], s.societies?.[p]?.initialHand ?? 6))
@@ -878,6 +885,7 @@ const environmentEngine = createEnvironmentEngine({ repeatResolved, resolveCardA
 function resumeRules(s) {
     if (s.triggerBatchApplying || s.triggerRound)
         return;
+    automationEngine.flushTriggerCosts(s, { batch: true });
     roundEngine.stateBased(s);
     if (keeperEngine.block(s) || s.damageChoice || s.effectChoice || s.ruleChoice || s.triggerChoices.length || s.status !== 'playing')
         return;
@@ -1213,26 +1221,7 @@ function executeCommandInner(s, p, c) {
         finishHidden(s);
         return;
     }
-    if (c.type === 'trigger-choice') {
-        const a = s.triggerChoices.find(a => a.id === c.triggerId && a.controller === p);
-        need(a, '当前没有该触发选择');
-        need(typeof c.fire === 'boolean', '需要明确选择是否发动');
-        if (c.fire) {
-            if (a.effect.kind === 'seal-from-graveyard') {
-                need(!graveyardLocked(s), '镇魂曲禁止在墓地中发动传闻能力');
-                const target = s.cards[c.targetId], loc = s.locations[c.targetId];
-                need(target && loc?.zone === 'play' && !loc.faceDown && hasCardType(target, 'character') && (controllerOf(s, c.targetId) === p || !hasBarrier(s, c.targetId)), '请指定场上的目标角色（合法目标不能具有敌方屏障）');
-                a.targetId = c.targetId;
-                a.targetZoneVersion = loc.zoneVersion;
-                a.sealHost = sealHost(s, c.targetId);
-            }
-            trigger(s, a);
-        }
-        s.triggerChoices = s.triggerChoices.filter(x => x.id !== a.id);
-        if (!s.triggerChoices.length)
-            resumeRules(s);
-        return;
-    }
+    if(c.type==='trigger-choice'){chooseBasicTrigger(s,p,c);return;}
     if (c.type === 'finish-battle') {
         need(s.battle?.controller === p, '只有测试发起方能结束本次战斗测试');
         need(!s.triggerChoices.length, '请先完成触发能力是否发动的选择');
@@ -1683,7 +1672,7 @@ function finishHidden(s) {
             if (a.kind === 'auto-ability')
                 automationEngine.offerTrigger(s, a);
             else
-                s.triggerChoices.push(a);
+                offerTrigger(s, a);
         }
         if (winner !== null && winner !== undefined)
             cardEvent(s, null, 'contest-won', { faceDown: false }, group, { contest: 'hidden', winner });
@@ -1756,7 +1745,7 @@ export function viewFor(s, p, revision, code, { libraryScoreOnly = false } = {})
     migrateLegacyDeterChoice(s);
     const view = { code, revision, mode: s.mode, rulesVersion: s.rulesVersion, status: s.status, worldCardCount: s.worldCardCount ?? 29,
         bot: s.bot ? { id: s.bot.id, seat: s.bot.seat, difficulty: s.bot.difficulty ?? 'normal', name: s.seats[s.bot.seat].name, deckName: s.deckSelections?.[s.bot.seat]?.name, pending: !!s.bot.pending, undoPaused: !!s.bot.undoPaused, blocked: s.bot.blocked ?? null, ...(p === s.bot.seat ? { actionKeys: s.bot.actionKeys ?? [], libraryNames: botLibraryNames(s, p) } : {}) } : null,
-        triggerRound: (() => { const r = triggerRoundView(s, p); return r ? { ...r, abilities: r.abilities.map(a => ({ ...a, unavailable: !libraryScoreOnly && !a.pending && triggerUnavailable(s, a) })) } : null; })(), deathCostChoice: deathCostView(s, p), triggerOrderChoice: triggerOrderView(s), ...keeperEngine.view(s, p), ...roundEngine.view(s, p), ...uniqueEngine.view(s), damageChoice: s.damageChoice ?? null, ...environmentEngine.view(s, p),
+        triggerTiming: s.triggerTiming ?? 'legacy', triggerRound: (() => { const r = triggerRoundView(s, p); return r ? { ...r, abilities: r.abilities.map(a => ({ ...a, unavailable: !libraryScoreOnly && !a.pending && triggerUnavailable(s, a) })) } : null; })(), deathCostChoice: deathCostView(s, p), triggerOrderChoice: triggerOrderView(s), ...keeperEngine.view(s, p), ...roundEngine.view(s, p), ...uniqueEngine.view(s), damageChoice: s.damageChoice ?? null, ...environmentEngine.view(s, p),
         canResumeTriggerWindow: canResumeTriggerWindow(s), characterCosts: !libraryScoreOnly && s.players[p] ? Object.fromEntries([...s.players[p].hand, ...graveCards(s, p), ...s.players[p].assets.map(a => a.id), ...Object.keys(s.locations).filter(id => s.locations[id].zone === 'sealed')].filter(id => castSourceStatus(s, p, id).allowed).map(id => [id, deathCharacterCostOptions(s, p, id, 'play')]).filter(([, v]) => v).map(([id, v]) => [id, { ...v, cards: v.cards.map(x => identity(s, x)) }])) : {}, revealExtraCosts: !libraryScoreOnly && s.players[p] ? Object.fromEntries(s.players[p].play.filter(id => s.locations[id].faceDown).map(id => [id, deathCharacterCostOptions(s, p, id, 'reveal')]).filter(([, v]) => v).map(([id, v]) => [id, { ...v, cards: v.cards.map(x => identity(s, x)) }])) : {},
         ...(!libraryScoreOnly ? { ...automationEngine.view(s, p), ...cardInspectionView(s, p), ...abyssEngine.view(s, p), ...zoneActionEngine.view(s, p), ...manualView(s, p, (...args) => automationEngine.options(...args)) } : {}), ...(s.deathContinuation ? { effectChoice: null, environmentChoice: null, triggerOrderChoice: null, roundChoice: null } : {}),
         result: s.result ?? null, createdAt: s.createdAt ?? null, endedAt: s.endedAt ?? null, canDelete: s.status === 'finished' && p === 0, logCount: s.logs.length, recordComplete: !s.logs.length || s.logs[0].id === 1,

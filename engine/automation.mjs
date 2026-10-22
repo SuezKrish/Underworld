@@ -1,3 +1,4 @@
+import {earlyTriggerTiming,lateTriggerTiming,refreshTriggerPrice} from './trigger-timing.mjs';
 import { effectObjectsLog, paidCostsClause } from './action-log.mjs';
 import { abilityDescription } from './ability-description.mjs';
 import { rememberHardDeckCards, hardDeckCards } from './hard-bot-library.mjs';
@@ -2289,7 +2290,7 @@ export function createAutomationEngine(ctx) {
         announce(s, p, card.id, c.id, base.sacrificeCharacter || base.sacrificeCharacters || base.sacrificeAsset || base.tapCharacters || base.discardCost || base.timeCostX || base.alternativeCost || hades ? costGroup : null);
         return true;
     }
-    function validateTrigger(s, p, c, a) {
+    function validateTrigger(s, p, c, a) {refreshTriggerPrice(s,a);
         const plan = a.plan;
         ;
         need(!['graveyard', 'headquarters'].includes(plan.sourceSnapshot?.zone) || !graveyardLocked(s, a.cardId, p, plan.sourceSnapshot.zone), '镇魂曲禁止在墓地中发动能力');
@@ -2371,6 +2372,7 @@ export function createAutomationEngine(ctx) {
     }
     function costedTrigger(s, a) { const p = a.plan; return p.triggerCost || p.optionalHiddenCost || (p.cost ?? 0) > 0 || ['abandonScoreCost', 'sourceWoundCost', 'graveShuffleCost', 'tap', 'discardCost', 'concealSelfCost', 'sealedBottomCost', 'societyShuffleCost', 'graveBottomCost', 'handSealCost', 'honorCost', 'societyMarkerCost', 'sacrificeAttached', 'returnGrantedCost', 'sourceProgressCost', 'progressCost', 'sacrificeAssetOrPlan', 'sourceTimeCost', 'graveSealCost', 'alternativeCost', 'counterCost', 'scoreSelfCost', 'timeCostX', 'tapCharacters', 'sacrificeAsset', 'extraCost', 'removeTimeCost', 'sacrificeSelf', 'sacrificeCharacter', 'sacrificeCharacters'].some(k => p[k]); }
     function triggerUnavailable(s, a) {
+        refreshTriggerPrice(s, a);
         const plan = a.plan, p = a.controller;
         if (plan.oncePerRound && s.abilityUses?.[plan.usageKey]?.round === s.round && s.abilityUses[plan.usageKey].count >= plan.oncePerRound)
             return true;
@@ -2431,65 +2433,29 @@ export function createAutomationEngine(ctx) {
             log(s, `${a.displayName}选择不发动。`);
             return;
         }
-        a.prepaid = true;
+        a.committed = true;
+        a.prepaid = !!costedTrigger(s, a);
         activateTrigger(s, a.controller, { ...c, id: `${a.id}:payment` }, a);
         log(s, `${a.displayName}已支付触发费用，等待触发轮入栈。`);
     }
-    function payTriggerBatch(s, abilities) {
-        const available = abilities.filter(a => !triggerUnavailable(s, a));
-        if (!available.length)
-            return;
-        if (available.length === 1) {
-            payOfferedTrigger(s, available[0]);
-            return;
-        }
-        const c = triggerCostBatchDecision(s, available.map(a => ({ ...a, targetOptions: options(s, a.controller, a.plan) }))), ds = c.decisions;
-        need(ds.length === available.length && new Set(ds.map(d => d.triggerId)).size === available.length && ds.every(d => available.some(a => a.id === d.triggerId) && typeof d.fire === 'boolean'), '请为每条触发选择是否支付费用');
-        const accepted = ds.filter(d => d.fire), order = c.abilityIds ?? accepted.map(d => d.triggerId);
-        need(order.length === accepted.length && new Set(order).size === order.length && order.every(id => accepted.some(d => d.triggerId === id)), '请选择本批触发费用的支付顺序');
-        for (const a of available) {
-            const d = ds.find(d => d.triggerId === a.id);
-            need(!a.mandatory || d.fire, '强制触发必须发动');
-            if (d.fire)
-                validateTrigger(s, a.controller, d, a);
-        }
-        for (const id of order) {
-            const a = available.find(a => a.id === id), d = ds.find(d => d.triggerId === id);
-            if (triggerUnavailable(s, a)) {
-                log(s, `${a.displayName}已无法支付费用或已达次数上限，不发动。`);
-                continue;
-            }
-            let valid = true;
-            try {
-                validateTrigger(s, a.controller, d, a);
-            }
-            catch (e) {
-                if (!(e instanceof RuleError))
-                    throw e;
-                valid = false;
-            }
-            if (!valid) {
-                log(s, `${a.displayName}本批费用已被其他能力消耗，不发动。`);
-                continue;
-            }
-            a.prepaid = true;
-            activateTrigger(s, a.controller, { ...d, id: `${a.id}:payment` }, a);
-        }
-    }
-    function flushTriggerCosts(s, opts = {}) { flushCostQueue(s, (_, a) => a.kind === 'auto-ability' ? payOfferedTrigger(s, a) : ctx.payEnvironmentTrigger(s, a), { ...opts, activateBatch: payTriggerBatch }); }
-    function offerTrigger(s, a) {
-        a.abilityDescription ??= abilityDescription(s, a);
-        ;
-        if (!costedTrigger(s, a)) {
-            if (a.mandatory && a.plan.target === 'none')
-                trigger(s, a);
-            else
-                s.triggerChoices.push(a);
-            return;
-        }
-        if (!deferTriggerCost(s, a))
-            payOfferedTrigger(s, a);
-    }
+    function payTriggerBatch(s,abilities){
+  const available=abilities.filter(a=>!triggerUnavailable(s,a));if(!available.length)return;
+  if(available.length===1){payOfferedTrigger(s,available[0]);return;}
+  const c=triggerCostBatchDecision(s,available.map(a=>({...a,targetOptions:options(s,a.controller,a.plan)}))),ds=c.decisions;
+  need(ds.length===available.length&&new Set(ds.map(d=>d.triggerId)).size===available.length&&ds.every(d=>available.some(a=>a.id===d.triggerId)&&typeof d.fire==='boolean'),'请为每条触发选择是否支付费用');
+  const accepted=ds.filter(d=>d.fire),order=c.abilityIds??accepted.map(d=>d.triggerId);need(order.length===accepted.length&&new Set(order).size===order.length&&order.every(id=>accepted.some(d=>d.triggerId===id)),'请选择本批触发费用的支付顺序');
+  for(const a of available){const d=ds.find(d=>d.triggerId===a.id);need(!a.mandatory||d.fire,'强制触发必须发动');if(d.fire)validateTrigger(s,a.controller,d,a);}
+  for(const id of order){const a=available.find(a=>a.id===id),d=ds.find(d=>d.triggerId===id);if(triggerUnavailable(s,a)){log(s,`${a.displayName}已无法支付费用或已达次数上限，不发动。`);continue;}let valid=true;try{validateTrigger(s,a.controller,d,a);}catch(e){if(!(e instanceof RuleError))throw e;valid=false;}if(!valid){log(s,`${a.displayName}本批费用已被其他能力消耗，不发动。`);continue;}a.committed=true;a.prepaid=!!costedTrigger(s,a);activateTrigger(s,a.controller,{...d,id:`${a.id}:payment`},a);}
+ }
+    function flushTriggerCosts(s,opts={}){flushCostQueue(s,(_,a)=>a.kind==='auto-ability'?payOfferedTrigger(s,a):a.kind==='environment-ability'?ctx.payEnvironmentTrigger(s,a):ctx.commitTrigger(s,a),{...opts,activateBatch:payTriggerBatch});}
+    function offerTrigger(s,a){
+  a.abilityDescription??=abilityDescription(s,a);
+  if(a.plan.predictionTapCost)a.plan.cost=s.hiddenWins?.[a.controller]===s.round?0:2;
+  if(lateTriggerTiming(s)){s.triggerChoices.push(a);return;}
+  if(earlyTriggerTiming(s)){if(a.mandatory&&a.plan.target==='none'&&!a.plan.oncePerRound&&!costedTrigger(s,a)){a.committed=true;trigger(s,a);return;}if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);return;}
+  if(!costedTrigger(s,a)){if(a.mandatory&&a.plan.target==='none')trigger(s,a);else s.triggerChoices.push(a);return;}
+  if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);
+ }
     function emit(s, id, def, event, loc, group, extra = {}) {
         const cqState = cqTriggerState(s, id, def, loc);
         if (cqState === false)
@@ -2567,7 +2533,7 @@ export function createAutomationEngine(ctx) {
             if (used?.round === s.round && used.count >= plan.oncePerRound)
                 return;
         }
-        if (event === 'death' && String(plan.target).startsWith('own-grave'))
+        if (!lateTriggerTiming(s) && event === 'death' && String(plan.target).startsWith('own-grave'))
             plan.eventTargetRefs = options(s, loc.controller ?? card.owner, plan).filter(o => !(s.simultaneousDepartureIds ?? []).includes(actual(s, o.id))).map(o => ({ id: o.id, zone: s.locations[actual(s, o.id)]?.zone, zoneVersion: s.locations[actual(s, o.id)]?.zoneVersion }));
         registerGroup?.(s, group);
         const a = { id: uuid(), kind: 'auto-ability', event, cardId: id, sourceId: id, ...((extra.triggerAfter ?? s.activatingPrepaid ?? s.costTriggerParent) ? { triggerAfter: extra.triggerAfter ?? s.activatingPrepaid ?? s.costTriggerParent } : {}), controller: loc.controller ?? card.owner, displayName: loc.faceDown ? `暗藏者 · ${def.abilityLabel ?? '触发能力'}` : def.abilityLabel ? `${card.name} · ${def.abilityLabel}` : card.name, group, plan, targets: [], mandatory: !!def.mandatory };

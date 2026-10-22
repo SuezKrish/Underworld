@@ -142,7 +142,7 @@ export function runDeathCommand(s, p, c, apply) {
         }
         else if (choice.kind === 'trigger-cost') {
             if (c.type !== 'trigger-cost-choice' || p !== choice.controller || c.choiceId !== choice.id || typeof c.fire !== 'boolean')
-                throw new RuleError('请先决定是否支付触发费用；当前没有快速行动窗口');
+                throw new RuleError('请先确认触发费用和目标；当前没有快速行动窗口');
         }
         else if (choice.kind === 'command-post-tax') {
             if (c.type !== 'continuous-choice' || p !== choice.controller || c.choiceId !== choice.id || typeof c.fire !== 'boolean')

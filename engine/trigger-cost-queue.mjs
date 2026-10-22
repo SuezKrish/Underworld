@@ -1,7 +1,7 @@
 // Capture the event-time price; the cost-payment engine flushes death triggers
 // together while all declared sacrifices are still on the battlefield.
 export function deferTriggerCost(s, a) {
-    if (!s.eventGroup?.startsWith('cost:'))
+    if (!s.eventGroup?.startsWith('cost:') && !(s.triggerTiming === 'event' && s.collectingEventTriggers))
         return false;
     s.deferredTriggerCosts ??= [];
     s.deferredTriggerCosts.push(structuredClone({ ...a, ...(s.costTriggerParent ? { triggerAfter: s.costTriggerParent } : {}) }));

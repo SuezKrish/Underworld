@@ -51,7 +51,7 @@ export function finishedInformation(s) { return s.status === 'finished' ? knownI
 export function finishedRoomView(view) {
     // Old rooms can still have ordered inspections or interrupted choices. Use
     // a read-only allowlist rather than forwarding those windows or Bot memory.
-    const fields = ['code', 'revision', 'mode', 'rulesVersion', 'status', 'worldCardCount', 'worldDeckCount', 'result', 'createdAt', 'endedAt', 'canDelete', 'logCount', 'recordComplete', 'deckSelections', 'deckRequired', 'seat', 'seats', 'round', 'players', 'societies', 'districts', 'logs', 'finishedInformation', 'manualWithoutConsent', 'undoAvailable', 'undoLabel'];
+    const fields = ['code', 'revision', 'mode', 'rulesVersion', 'triggerTiming', 'status', 'worldCardCount', 'worldDeckCount', 'result', 'createdAt', 'endedAt', 'canDelete', 'logCount', 'recordComplete', 'deckSelections', 'deckRequired', 'seat', 'seats', 'round', 'players', 'societies', 'districts', 'logs', 'finishedInformation', 'manualWithoutConsent', 'undoAvailable', 'undoLabel'];
     const turn = view.turn ? pick(view.turn, ['phase', 'phaseLabel', 'step', 'stepLabel', 'extraBattle', 'firstPlayer', 'privilegeUsed', 'district', 'districtNumber', 'kind', 'contestLabel', 'lastContest', 'priorityStepKey', 'priorityStepLabel']) : null;
     const publicView = pick(view, fields);
     for (const [i, p] of (publicView.players ?? []).entries()) {
@@ -65,5 +65,5 @@ export function finishedRoomView(view) {
         triggerRound: null, deathCostChoice: null, keeperChoice: null, roundChoice: null, ruleChoice: null, effectChoice: null, environmentChoice: null, triggerOrderChoice: null, damageChoice: null, hidden: null, battle: null, inspection: null, cardInspection: null, manualRequest: null, manualSelection: null };
 }
 export function roomRecord(s, code, createdAt = s.createdAt ?? null) {
-    return { format: 'under-world-record', version: 2, code, status: s.status, players: s.seats.map(p => p ? { name: p.name } : null), createdAt, endedAt: s.endedAt ?? null, result: s.result ?? null, rulesVersion: s.rulesVersion, complete: !s.logs.length || s.logs[0].id === 1, logs: s.logs, information: finishedInformation(s) };
+    return { format: 'under-world-record', version: 2, code, status: s.status, players: s.seats.map(p => p ? { name: p.name } : null), createdAt, endedAt: s.endedAt ?? null, result: s.result ?? null, rulesVersion: s.rulesVersion, triggerTiming: s.triggerTiming ?? 'legacy', complete: !s.logs.length || s.logs[0].id === 1, logs: s.logs, information: finishedInformation(s) };
 }

@@ -37,7 +37,7 @@ function shuffle(cards) {
     ;
     deckWasShuffled(cards);
 }
-export function createAbyssEngine({ repeatResolved, move, seal, log, pay, hasPriority, standardAction, announce, openWindow, stateBased, draw, event, trigger, registerGroup, resume, targetOptions, targetRefs }) {
+export function createAbyssEngine({ offerTrigger, repeatResolved, move, seal, log, pay, hasPriority, standardAction, announce, openWindow, stateBased, draw, event, trigger, registerGroup, resume, targetOptions, targetRefs }) {
     const active = s => s.mode === 'automation-play';
     function handAllowed(s, p, id) { const c = printedRulesCard(s, id), l = s.locations[id]; return false; }
     function disUse(s, id) { return `${id}:${s.locations[id].fieldVersion ?? s.locations[id].zoneVersion}:dis-pater`; }
@@ -263,7 +263,7 @@ export function createAbyssEngine({ repeatResolved, move, seal, log, pay, hasPri
             if (!ds.some(d => !used(s, keys[d])))
                 continue;
             registerGroup(s, group);
-            s.triggerChoices.push({ id: uuid(), kind: 'abyss-ability', event: 'sealed', cardId: source, controller: p, displayName: s.cards[source].name, group, ...(s.costTriggerParent ? { triggerAfter: s.costTriggerParent } : {}), effect: 'abyss-order', subjectId: id, subjectVersion: loc.zoneVersion, hostRef: details.host, domains: ds, usageKeys: keys, mandatory: false });
+            offerTrigger(s, { id: uuid(), kind: 'abyss-ability', event: 'sealed', cardId: source, controller: p, displayName: s.cards[source].name, group, ...(s.costTriggerParent ? { triggerAfter: s.costTriggerParent } : {}), effect: 'abyss-order', subjectId: id, subjectVersion: loc.zoneVersion, hostRef: details.host, domains: ds, usageKeys: keys, mandatory: false });
         }
     }
     function view(s, p) {

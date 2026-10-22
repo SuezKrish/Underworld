@@ -1,3 +1,4 @@
+import { refreshTriggerPrice } from './trigger-timing.mjs';
 import { RuleError } from './core.mjs';
 import { triggerDisplayName } from './trigger-display.mjs';
 import { abilityDescriptionView } from './ability-description.mjs';
@@ -9,7 +10,7 @@ const waiting = s => s.status !== 'playing' || s.deathContinuation || s.effectCh
 // A round is frozen only when its first controller submits. Reading a room
 // must not mutate it, and newly induced triggers must not join this snapshot.
 export function currentTriggerRound(s) {
-    if (waiting(s))
+    if (waiting(s) || s.triggerTiming === 'stack' && (s.battle || s.roundChoice || s.effectBattle))
         return null;
     if (s.triggerRound)
         return s.triggerRound;
@@ -25,14 +26,14 @@ export function currentTriggerRound(s) {
     const number = (s.triggerRoundNumber ?? 0) + 1;
     return { id: `trigger-round:${number}:${entries.map(a => a.id).sort().join('|')}`, number, first, players, index: 0,
         stackNow: (!s.flow.locked || !!s.triggerOrderChoice) && !s.battle,
-        entries: entries.map(a => ({ ...a, pending: s.pendingTriggers.some(x => x.id === a.id) })) };
+        entries: entries.map(original => { const a = refreshTriggerPrice(s, structuredClone(original)); return { ...a, pending: s.pendingTriggers.some(x => x.id === a.id) }; }) };
 }
 export function triggerRoundView(s, p) {
     const r = currentTriggerRound(s);
     if (!r)
         return null;
     const controller = r.players[r.index];
-    return { id: r.id, number: r.number, controller, first: r.first, counts: [0, 1].map(p => r.entries.filter(a => a.controller === p).length),
+    return { id: r.id, number: r.number, orderingOnly: s.triggerTiming === 'event', controller, first: r.first, counts: [0, 1].map(p => r.entries.filter(a => a.controller === p).length),
         abilities: controller === p ? r.entries.filter(a => a.controller === p).map(a => ({ ...a, displayName: triggerDisplayName(s, a), abilityDescription: abilityDescriptionView(s, a, p) })) : [] };
 }
 export function submitTriggerRound(s, p, c, { execute, resume, log, unavailable, validate }) {
@@ -41,6 +42,8 @@ export function submitTriggerRound(s, p, c, { execute, resume, log, unavailable,
     need(current.players[current.index] === p, '请等待行动优先权玩家先确认本轮触发');
     const r = s.triggerRound ??= structuredClone(current), own = r.entries.filter(a => a.controller === p);
     const choices = own.filter(a => !a.pending), decisions = c.decisions, order = c.abilityIds;
+    if (s.triggerTiming === 'event' && own.every(a => a.pending))
+        need(Array.isArray(decisions) && decisions.length === 0, '提前决定模式的触发轮只能排序，不能改选目标、费用或取消发动');
     need(Array.isArray(decisions) && decisions.length === choices.length && new Set(decisions.map(x => x.triggerId)).size === choices.length && decisions.every(x => choices.some(a => a.id === x.triggerId) && typeof x.fire === 'boolean'), '请为本轮每条触发选择是否发动');
     const byId = new Map(decisions.map(x => [x.triggerId, x]));
     for (const a of choices)

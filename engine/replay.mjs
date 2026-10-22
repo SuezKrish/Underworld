@@ -15,7 +15,7 @@ const zones = ['hand', 'play', 'graveyard', 'headquarters', 'assets', 'aside', '
 const pick = (value, keys) => Object.fromEntries(keys.filter(k => value?.[k] !== undefined).map(k => [k, structuredClone(value[k])]));
 export function replayProjection(s) {
     const info = knownInformation(s), cards = Object.fromEntries(info.cards.map(c => [c.id, { ...c, ...(c.zone === 'play' ? { effectiveIcons: effectiveIcons(s, c.id), effectiveDefense: effectiveDefense(s, c.id) } : {}) }]));
-    return { cursor: s.replayCursor, round: s.round, status: s.status, turn: pick(s.turn, turnKeys), priority: s.flow?.priority, logId: s.logs.at(-1)?.id ?? 0, worldDeckCount: info.worldDeckCount, cards,
+    return { triggerTiming: s.triggerTiming ?? 'legacy', cursor: s.replayCursor, round: s.round, status: s.status, turn: pick(s.turn, turnKeys), priority: s.flow?.priority, logId: s.logs.at(-1)?.id ?? 0, worldDeckCount: info.worldDeckCount, cards,
         players: info.players.map(p => ({ ...pick(p, ['name', 'markers', 'honor', 'costPool', 'score', 'deckCount']), ...Object.fromEntries(zones.map(z => [z, p[z].map(c => c.id)])), coreAreaId: p.coreArea?.id })),
         societies: info.societies.map(c => c.id), districts: (s.districts ?? []).map(c => c?.id ?? null), sealed: info.sealed.map(c => c.id), stack: info.stack.map(({ card, ...a }) => a) };
 }
@@ -66,7 +66,7 @@ export function safeReplayFrame(raw) {
         throw Error('回放场面格式无效');
     const cards = Object.fromEntries(Object.entries(raw.cards).filter(([id, c]) => c && typeof c === 'object' && !['deck', 'world-deck'].includes(c.zone) && typeof c.name === 'string').map(([id, c]) => [id, { ...pick(c, cardKeys), id }]));
     const ids = v => Array.isArray(v) ? v.filter(id => typeof id === 'string' && Object.hasOwn(cards, id)) : [];
-    return { ...pick(raw, ['cursor', 'round', 'status', 'priority', 'logId', 'worldDeckCount']), turn: pick(raw.turn, turnKeys), cards,
+    return { ...pick(raw, ['triggerTiming', 'cursor', 'round', 'status', 'priority', 'logId', 'worldDeckCount']), turn: pick(raw.turn, turnKeys), cards,
         players: raw.players.map(p => ({ ...pick(p, ['name', 'markers', 'honor', 'costPool', 'score', 'deckCount']), ...Object.fromEntries(zones.map(z => [z, ids(p[z])])), coreAreaId: Object.hasOwn(cards, p.coreAreaId) ? p.coreAreaId : undefined })),
         societies: ids(raw.societies), districts: (raw.districts ?? []).map(id => Object.hasOwn(cards, id) ? id : null), sealed: ids(raw.sealed), stack: (raw.stack ?? []).map(a => ({ ...pick(a, ['id', 'kind', 'controller', 'cardId', 'sourceId', 'displayName', 'abilityLabel']), targets: (a.targets ?? []).map(t => pick(t, ['kind', 'cardId', 'district', 'player', 'entryId'])) })) };
 }
@@ -79,7 +79,7 @@ export function normalizeReplayRecord(data) {
     if (!Array.isArray(chunks) || chunks.length > 20000 || chunks.some(c => c?.version !== 1 || !c.base?.state || !Array.isArray(c.previous) || c.previous.length > 1000))
         throw Error('回放数据格式无效');
     const logs = data.logs.filter(l => l && typeof l.text === 'string').map(l => pick(l, ['id', 'text', 'round', 'phase', 'step', 'kind', 'player', 'at']));
-    return { format: 'under-world-record', version: 2, code: typeof data.code === 'string' ? data.code : '导入记录', status: 'finished', players: data.players.map(p => ({ name: typeof p?.name === 'string' ? p.name : '玩家' })), ...pick(data, ['createdAt', 'endedAt', 'result', 'rulesVersion', 'complete']), logs, replay: { version: 1, chunks } };
+    return { format: 'under-world-record', version: 2, code: typeof data.code === 'string' ? data.code : '导入记录', status: 'finished', players: data.players.map(p => ({ name: typeof p?.name === 'string' ? p.name : '玩家' })), ...pick(data, ['createdAt', 'endedAt', 'result', 'rulesVersion', 'triggerTiming', 'complete']), logs, replay: { version: 1, chunks } };
 }
 // References keep playback memory bounded to the currently decoded chunk.
 // Undo cursors remove the abandoned branch and its logs before playback starts.

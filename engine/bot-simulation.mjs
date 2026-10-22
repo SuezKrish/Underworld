@@ -51,7 +51,7 @@ function seeded(seed, fn) {
             delete globalThis.crypto;
     }
 }
-export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', 'white-anglican'], maxCommands = 2200, policy = botCommands, cardValue = botCardValue, difficulty = 'normal', openingFirstPlayer = null, includeTrace = false, includeDecisions = false, onProgress } = {}) {
+export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', 'white-anglican'], maxCommands = 2200, policy = botCommands, cardValue = botCardValue, difficulty = 'normal', triggerTiming = 'event', openingFirstPlayer = null, includeTrace = false, includeDecisions = false, onProgress } = {}) {
     if (!['normal', 'hard'].includes(difficulty))
         throw Error('Invalid BOT difficulty');
     if (openingFirstPlayer !== null && openingFirstPlayer !== 0 && openingFirstPlayer !== 1)
@@ -65,7 +65,7 @@ export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', '
                 throw Error('Unknown BOT profile');
             const ids = new Set(bots.flatMap(b => b.deck.cards.map(c => c.cardId))), defs = ctx.compiled.filter(c => ids.has(c.catalogId) || c.token);
             const environment = ctx.environment.map(c => ({ ...c, plan: { ...c.plan, actions: evaluationSocietyActions(c.plan?.actions) } }));
-            let s = createRoomState(bots[0].name, 'simulation-0', 'automation-play', defs, defs.filter(c => c.token), environment);
+            let s = createRoomState(bots[0].name, 'simulation-0', 'automation-play', defs, defs.filter(c => c.token), environment, triggerTiming);
             s.openingFirstPlayer = openingFirstPlayer;
             joinSeat(s, bots[1].name, 'simulation-1');
             s.deckRequired = true;

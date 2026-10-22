@@ -1291,7 +1291,7 @@ export function botCommands(v) {
         ;
         if (a.kind === 'trigger-cost-batch') {
             if (a.controller !== p)
-                return [];
+                return [];if(a.abilities.every(x=>x.event==='mobility'))return triggerRoundCommands({...v,triggerRound:{id:a.id,controller:p,abilities:a.abilities}}).map(c=>({...c,type:'trigger-cost-batch-choice',choiceId:a.id}));
             const enabled = defaultTriggerEnabled(a.abilities), used = new Set();
             let available = a.available, drawBudget = libraryBudget(v, policyHelpers);
             const decisions = a.abilities.map(x => {
@@ -1308,8 +1308,16 @@ export function botCommands(v) {
         if (a.kind === 'trigger-cost') {
             if (a.controller !== p)
                 return [];
-            if (!a.ability.plan)
-                return [{ type: 'trigger-cost-choice', choiceId: a.id, fire: a.available >= a.ability.cost && (!a.ability.claimMobileTarget || a.targetOptions.length > 0), targetIds: a.targetOptions.length ? [a.targetOptions[0].id] : [] }];
+            if (!a.ability.plan) {
+                const x = a.ability;
+                if (x.kind === 'abyss-ability') {
+                    const domain = x.domains.find(d => !v.abyssUses || v.abyssUses[x.usageKeys[d]] !== v.round);
+                    return [{ type: 'trigger-cost-choice', choiceId: a.id, fire: !!domain, domain }];
+                }
+                if (x.kind !== 'environment-ability')
+                    return triggers({ ...v, triggerChoices: [x] }).map(c => ({ ...c, type: 'trigger-cost-choice', choiceId: a.id }));
+                return [{ type: 'trigger-cost-choice', choiceId: a.id, fire: regionTriggerUseful(v,x,policyHelpers) && a.available >= (x.cost ?? 0) && (!x.claimMobileTarget || a.targetOptions.length > 0), targetIds: a.targetOptions.length ? [a.targetOptions[0].id] : [] }];
+            }
             return triggers({ ...v, triggerChoices: [a.ability] }).map(c => ({ ...paidTriggerDraft(v, a.ability, c), type: 'trigger-cost-choice', choiceId: a.id }));
         }
         ;

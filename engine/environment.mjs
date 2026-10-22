@@ -1,3 +1,4 @@
+import {earlyTriggerTiming,lateTriggerTiming} from './trigger-timing.mjs';
 import { effectObjectsLog, paidCostsClause } from './action-log.mjs';
 import { abilityDescription } from './ability-description.mjs';
 import { tapCostCards } from './tap-costs.mjs';
@@ -49,35 +50,12 @@ const still = (s, r) => r && s.locations[r.id]?.zoneVersion === r.version;
 function matches(s, id, f = {}) { const c = printedRulesCard(s, id), types = effectiveSubtypes(s, id); return (!f.type || hasCardType(c, f.type)) && matchesCardNameFilter(c, f) && (!f.subtype || types.includes(f.subtype)) && (!f.subtypesAny || f.subtypesAny.some(x => types.includes(x))) && (!f.magic || effectiveMagicDomains(s, id).includes(f.magic)) && (!f.unique || c.unique === true || c.unique === 1) && (!f.factionName || c.faction?.split('·')[1] === f.factionName) && (!f.subtitle || c.subtitle === f.subtitle) && (!f.subtitleAny || f.subtitleAny.includes(c.subtitle)); }
 export function createEnvironmentEngine(ctx) {
     const { move, setLocation, seal, releaseSeals, conceal, draw, log, trigger, registerGroup, pay, hasPriority, standardAction, announce, openWindow, stateBased, event, startHidden, onSetupDone, onPhaseDone, targetOptions, targetRefs } = ctx;
-    function payOfferedTrigger(s, a) {
-        const p = a.controller, targetOptions = a.claimMobileTarget ? claimMobile(s, p, a).map(id => ({ id, name: s.cards[id].name })) : [];
-        if ((s.players[p].costPool ?? 0) + s.players[p].assets.filter(x => !x.tapped).length < (a.cost ?? 0) || a.claimMobileTarget && !targetOptions.length)
-            return;
-        const c = triggerCostDecision(s, a, targetOptions);
-        if (!c.fire)
-            return;
-        const ids = c.targetIds ?? [];
-        if (a.claimMobileTarget) {
-            need(ids.length === 1 && targetOptions.some(o => o.id === ids[0]), '请选择本方机动角色');
-            a.targets = [capture(s, { kind: 'card', cardId: ids[0] })];
-        }
-        pay(s, p, a.cost);
-        a.prepaid = true;
-        trigger(s, a);
-    }
-    function emit(s, p, source, ops, group, mandatory = false, extra = {}) {
-        registerGroup(s, group);
-        const a = { id: uuid(), kind: 'environment-ability', event: extra.event ?? 'environment', cardId: source.id, sourceId: source.id, controller: p, displayName: source.name, group, mandatory, ops, ...(s.costTriggerParent ? { triggerAfter: s.costTriggerParent } : {}), sourceDistrict: extra.district, ...extra };
-        a.abilityDescription = abilityDescription(s, a);
-        if ((a.cost ?? 0) > 0) {
-            if (!deferTriggerCost(s, a))
-                payOfferedTrigger(s, a);
-        }
-        else if (mandatory)
-            trigger(s, a);
-        else
-            s.triggerChoices.push(a);
-    }
+    function payOfferedTrigger(s,a){const p=a.controller,targetOptions=a.claimMobileTarget?claimMobile(s,p,a).map(id=>({id,name:s.cards[id].name})):[];
+  if((s.players[p].costPool??0)+s.players[p].assets.filter(x=>!x.tapped).length<(a.cost??0)||a.claimMobileTarget&&!targetOptions.length)return;
+  const c=triggerCostDecision(s,a,targetOptions);if(!c.fire)return;
+  const ids=c.targetIds??[];if(a.claimMobileTarget){need(ids.length===1&&targetOptions.some(o=>o.id===ids[0]),'请选择本方机动角色');a.targets=[capture(s,{kind:'card',cardId:ids[0]})];}pay(s,p,a.cost??0);a.committed=true;a.prepaid=(a.cost??0)>0;trigger(s,a);
+ }
+    function emit(s,p,source,ops,group,mandatory=false,extra={}){registerGroup(s,group);const a={id:uuid(),kind:'environment-ability',event:extra.event??'environment',cardId:source.id,sourceId:source.id,controller:p,displayName:source.name,group,mandatory,ops,...(s.costTriggerParent?{triggerAfter:s.costTriggerParent}:{}),sourceDistrict:extra.district,...extra};a.abilityDescription=abilityDescription(s,a);if(lateTriggerTiming(s))s.triggerChoices.push(a);else if((a.cost??0)>0||earlyTriggerTiming(s)&&(!mandatory||a.claimMobileTarget)){if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);}else {a.committed=earlyTriggerTiming(s);if(mandatory)trigger(s,a);else s.triggerChoices.push(a);}}
     function initialize(s) {
         if (!s.environmentCatalog)
             return false;
