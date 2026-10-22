@@ -529,14 +529,7 @@ export function createAutomationEngine(ctx) {
             plan.paidDomains = [...effectiveMagicDomains(s, c.costCardId)];
         }
         ;
-        if (plan.target === 'gunfire-district') {
-            const ids = c.targetIds ?? [], mode = plan.selectedMode ?? c.mode;
-            need(plan.modes?.some(m => m.id === mode), '请选择当前可用的枪火谈判模式');
-            need(Array.isArray(ids) && ids.length >= 1 && ids.length <= 3 && typeof ids[0] === 'string' && ids[0].startsWith('district:') && (mode !== 'police' || ids.length === 1), '请选择一个目标地区及至多两个暗藏者');
-            const district = prepare(s, p, { targetIds: [ids[0]] }, { ...plan, target: 'district' })[0], hidden = prepare(s, p, { targetIds: ids.slice(1) }, { ...plan, target: 'hidden-up-to-two' });
-            need(hidden.every(t => s.locations[t.cardId].district === district.district), '暗藏者须位于所选目标地区');
-            return [district, ...hidden.map(t => ({ ...t, requiredDistrict: district.district, requiredDistrictId: district.cardId }))];
-        }
+        if(plan.target==='gunfire-district'){if(c.mode==='both'){const order=c.modeOrder??['destroy','police'];need(Array.isArray(order)&&order.length===2&&new Set(order).size===2&&order.every(m=>['destroy','police'].includes(m)),'请选择两项的结算顺序');}const ids=c.targetIds??[],mode=plan.selectedMode??c.mode;need(plan.modes?.some(m=>m.id===mode),'请选择当前可用的枪火谈判模式');need(Array.isArray(ids)&&ids.length>=1&&ids.length<=3&&typeof ids[0]==='string'&&ids[0].startsWith('district:')&&(mode!=='police'||ids.length===1),'请选择一个目标地区及至多两个暗藏者');const district=prepare(s,p,{targetIds:[ids[0]]},{...plan,target:'district'})[0],hidden=prepare(s,p,{targetIds:ids.slice(1)},{...plan,target:'hidden-up-to-two'});need(hidden.every(t=>s.locations[t.cardId].district===district.district),'暗藏者须位于所选目标地区');return [district,...hidden.map(t=>({...t,requiredDistrict:district.district,requiredDistrictId:district.cardId}))];}
         if (plan.cqRepeatModes) {
             need(Array.isArray(c.modes) && c.modes.length === 2 && c.modes.every(m => plan.modes.some(x => x.id === m)), '请选择两项模式，可以重复');
             return c.modes.flatMap((mode, i) => prepare(s, p, { targetIds: c.modeTargetIds?.[i] ?? [] }, { ...plan, ...plan.modeTargets[mode], cqRepeatModes: null, modeTargets: null }).map(t => ({ ...t, modeIndex: i })));
@@ -2214,8 +2207,7 @@ export function createAutomationEngine(ctx) {
         if (hades && !free)
             need(Array.isArray(hadesIds) && hadesIds.length === 2 && new Set(hadesIds).size === 2 && hadesIds.every(x => hadesCosts(s, p, card.id).includes(x)), '哈迪斯需要两张其他同主类别墓地牌作为回底费用');
         ;
-        if (base.gunfireNegotiation)
-            base.selectedMode = c.mode;
+        if(base.gunfireNegotiation){base.selectedMode=c.mode;base.gunfireModeOrder=c.mode==='both'?[...(c.modeOrder??['destroy','police'])]:[c.mode];}
         if (base.cqRepeatModes)
             base.selectedCQModes = [...c.modes];
         if (base.multiMode)

@@ -25,31 +25,21 @@ export function createLateNonQsEffects({ move, event, seal, choose, finishSpell,
             choose(s, a, 'late-non-qs-mother-select', p, ids, { versions: Object.fromEntries(ids.map(id => [id, s.locations[id].zoneVersion])), canFail: true, choiceLabel: '梦魇主母 · 选择打出或现身的牌' });
             return true;
         }
-        if (plan.operation === 'gunfire') {
-            const district = targets.find(t => t.kind === 'district');
-            if (!district)
-                return false;
-            const mode = plan.selectedMode ?? a.mode;
-            beginEventGroup(s, a.id);
-            try {
-                if (mode !== 'police')
-                    for (const t of targets.filter(t => t.kind === 'card'))
-                        destroy(s, t.cardId);
-                const template = s.reserveTemplates.find(c => c.catalogId === 'TK003');
-                if (mode !== 'destroy' && template)
-                    for (let i = 0; i < 2; i++) {
-                        const id = uuid();
-                        s.cards[id] = { ...structuredClone(template), id, owner: p };
-                        s.locations[id] = { zone: 'reserve', zoneVersion: 0 };
-                        if (move(s, id, 'play', { controller: p, district: district.district, faceDown: false, tapped: enterTapped(s, id, district.district) }))
-                            event(s, id, 'entry', s.locations[id], a.id, { method: 'effect-placement' });
-                    }
-            }
-            finally {
-                endEventGroup(s);
-            }
-            return false;
-        }
+        if(plan.operation==='gunfire'){
+   const district=targets.find(t=>t.kind==='district');if(!district)return false;
+   const mode=plan.selectedMode??a.mode;
+   beginEventGroup(s,a.id);try{
+    for(const item of plan.gunfireModeOrder??(mode==='both'?['destroy','police']:[mode])){
+    if(item==='destroy')for(const t of targets.filter(t=>t.kind==='card'))destroy(s,t.cardId);
+    const template=s.reserveTemplates.find(c=>c.catalogId==='TK003');
+    if(item==='police'&&template)for(let i=0;i<2;i++){
+     const id=uuid();s.cards[id]={...structuredClone(template),id,owner:p};s.locations[id]={zone:'reserve',zoneVersion:0};
+     if(move(s,id,'play',{controller:p,district:district.district,faceDown:false,tapped:enterTapped(s,id,district.district)}))event(s,id,'entry',s.locations[id],a.id,{method:'effect-placement'});
+    }
+    }
+   }finally{endEventGroup(s);}
+   return false;
+  }
         if (plan.operation === 'well-ghost-wound') {
             if (s.districts[plan.sourceDistrict]?.id !== plan.sourceDistrictCardId)
                 return false;
