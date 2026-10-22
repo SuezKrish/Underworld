@@ -13803,7 +13803,7 @@
       "multiMode": {
         "min": 1,
         "max": 2,
-        "order": "printed"
+        "order": "selected"
       },
       "modes": [
         {

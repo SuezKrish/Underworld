@@ -1,3 +1,4 @@
+import {passEntersNextStep,passPriorityLabel} from '../engine/pass-label.mjs';
 'use client';
 import { useEffect, useId, useRef, useState, type RefObject } from 'react';
 import { ArrowRight, Layers3, Menu, MessageSquare, SlidersHorizontal, X } from 'lucide-react';
@@ -80,8 +81,8 @@ export function MobileBattleDock({ room, panel, setPanel, needsChoice, busy, loc
     locked: boolean;
     act: (c: any) => Promise<void>;
 }) {
-    const end = room.turn?.standardAllowed && room.flow.stepOwner === room.seat && !room.flow.stack.length && !room.turn.actionClosed, pass = `让过一次优先权${end ? '（结束标准行动）' : ''}`;
-    return <nav className='mobile-battle-dock' aria-label='对局快捷操作'><button aria-pressed={panel === 'actions'} onClick={() => setPanel(panel === 'actions' ? null : 'actions')}><SlidersHorizontal size={18}/><span>操作{needsChoice && <b className='mobile-choice-dot' aria-label='有待完成的选择'/>}</span></button><button aria-pressed={panel === 'stack'} onClick={() => setPanel(panel === 'stack' ? null : 'stack')}><Layers3 size={18}/><span>堆叠 {room.flow.stack.length}</span></button><button aria-pressed={panel === 'log'} onClick={() => setPanel(panel === 'log' ? null : 'log')}><MessageSquare size={18}/><span>日志</span></button><button className='primary mobile-pass' aria-label={pass} disabled={busy || room.status !== 'playing' || room.flow.priority !== room.seat || locked || room.pendingChoiceCount > 0} onClick={() => act({ type: 'pass' })}><span>让过一次优先权{end && <small>（结束标准行动）</small>}</span><ArrowRight size={16}/></button></nav>;
+    const end=passEntersNextStep(room),pass=passPriorityLabel(room);
+    return <nav className='mobile-battle-dock' aria-label='对局快捷操作'><button aria-pressed={panel === 'actions'} onClick={() => setPanel(panel === 'actions' ? null : 'actions')}><SlidersHorizontal size={18}/><span>操作{needsChoice && <b className='mobile-choice-dot' aria-label='有待完成的选择'/>}</span></button><button aria-pressed={panel === 'stack'} onClick={() => setPanel(panel === 'stack' ? null : 'stack')}><Layers3 size={18}/><span>堆叠 {room.flow.stack.length}</span></button><button aria-pressed={panel === 'log'} onClick={() => setPanel(panel === 'log' ? null : 'log')}><MessageSquare size={18}/><span>日志</span></button><button className='primary mobile-pass' aria-label={pass} disabled={busy || room.status !== 'playing' || room.flow.priority !== room.seat || locked || room.pendingChoiceCount > 0} onClick={() => act({ type: 'pass' })}><span>让过一次优先权{end && <small>（进入下个步骤）</small>}</span><ArrowRight size={16}/></button></nav>;
 }
 export function DistrictNavigation({ room, containerRef }: {
     room: any;

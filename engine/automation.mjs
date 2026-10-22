@@ -2308,8 +2308,7 @@ export function createAutomationEngine(ctx) {
             const ids = c.sacrificeIds ?? [], allowed = sacrificeOptions(s, p, plan);
             need(Array.isArray(ids) && new Set(ids).size === ids.length && (plan.sacrificeCharacters.variable || ids.length === plan.sacrificeCharacters.count) && ids.every(id => allowed.includes(id)), '请选择规定数量的合法本方角色作为牺牲费用');
         }
-        if (plan.modes)
-            need(plan.modes.some(m => m.id === c.mode), '请选择能力模式');
+        if(plan.multiMode)selectedModeIds(plan,c);else if(plan.modes)need(plan.modes.some(m=>m.id===c.mode),'请选择能力模式');
         if (plan.oncePerRound) {
             const used = s.abilityUses?.[plan.usageKey];
             need(!used || used.round !== s.round || used.count < plan.oncePerRound, '本回合该能力已经发动过');
@@ -2319,8 +2318,7 @@ export function createAutomationEngine(ctx) {
     }
     function activateTrigger(s, p, c, a) {
         const plan = a.plan, targets = validateTrigger(s, p, c, a);
-        if (plan.modes)
-            a.mode = c.mode;
+        if(plan.multiMode)plan.selectedModes=selectedModeIds(plan,c);else if(plan.modes)a.mode=c.mode;
         if (plan.oncePerRound) {
             s.abilityUses ??= {};
             const used = s.abilityUses[plan.usageKey];
@@ -2452,8 +2450,8 @@ export function createAutomationEngine(ctx) {
   a.abilityDescription??=abilityDescription(s,a);
   if(a.plan.predictionTapCost)a.plan.cost=s.hiddenWins?.[a.controller]===s.round?0:2;
   if(lateTriggerTiming(s)){s.triggerChoices.push(a);return;}
-  if(earlyTriggerTiming(s)){if(a.mandatory&&a.plan.target==='none'&&!a.plan.oncePerRound&&!costedTrigger(s,a)){a.committed=true;trigger(s,a);return;}if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);return;}
-  if(!costedTrigger(s,a)){if(a.mandatory&&a.plan.target==='none')trigger(s,a);else s.triggerChoices.push(a);return;}
+  if(earlyTriggerTiming(s)){if(a.mandatory&&a.plan.target==='none'&&!a.plan.modes&&!a.plan.oncePerRound&&!costedTrigger(s,a)){a.committed=true;trigger(s,a);return;}if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);return;}
+  if(!costedTrigger(s,a)){if(a.mandatory&&a.plan.target==='none'&&!a.plan.modes)trigger(s,a);else s.triggerChoices.push(a);return;}
   if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);
  }
     function emit(s, id, def, event, loc, group, extra = {}) {

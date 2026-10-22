@@ -54,7 +54,7 @@ const need = (v, m) => {
 };
 const kinds = ['investigation', 'battle', 'influence'];
 export const contestNames = { investigation: '调查对抗', battle: '战斗对抗', influence: '势力对抗' };
-const stepNames = { reset: '重置步骤', mulligan: '起始手牌与再调度', prepare: '准备步骤', draw: '抓牌步骤', 'first-action': '先手行动步骤', 'second-action': '后手行动步骤', 'mobility-first': '先手机动快速行动窗口', 'mobility-second': '后手机动快速行动窗口', 'contest-before': '对抗前快速行动窗口', 'contest-resolve': '对抗奖励结算', 'contest-triggers': '对抗触发选择', 'contest-after': '对抗后快速行动窗口', 'claim-before': '地区赢取 · 回底前快速行动窗口', 'claim-eternal': '永恒卡牌移动或重新结附', 'claim-return': '地区卡牌返回牌库底', 'claim-lake': '亚伯拉罕湖持续能力', 'world-preview': '开局世界牌库检视', 'society-setup': '秘社开局秘密选择', 'claim-after': '地区赢取后快速行动窗口', end: '结束步骤', recovery: '恢复步骤' };
+const stepNames = { reset: '重置步骤', mulligan: '起始手牌与再调度', prepare: '准备步骤', draw: '抓牌步骤', 'first-action': '先手行动步骤', 'second-action': '后手行动步骤', 'contest-start':'对抗阶段开始', 'mobility-first': '先手机动快速行动窗口', 'mobility-second': '后手机动快速行动窗口', 'contest-before': '对抗前快速行动窗口', 'contest-resolve': '对抗奖励结算', 'contest-triggers': '对抗触发选择', 'contest-after': '对抗后快速行动窗口', 'claim-before': '地区赢取 · 回底前快速行动窗口', 'claim-eternal': '永恒卡牌移动或重新结附', 'claim-return': '地区卡牌返回牌库底', 'claim-lake': '亚伯拉罕湖持续能力', 'world-preview': '开局世界牌库检视', 'society-setup': '秘社开局秘密选择', 'claim-after': '地区赢取后快速行动窗口', end: '结束步骤', recovery: '恢复步骤' };
 const phaseNames = { setup: '游戏准备', start: '开始阶段', action: '行动阶段', contest: '对抗阶段', end: '结束阶段' };
 const nonnegative = (n, m) => need(Number.isSafeInteger(n) && n >= 0, m);
 const uniqueIds = (ids, m) => need(Array.isArray(ids) && ids.every(id => typeof id === 'string') && new Set(ids).size === ids.length, m);
@@ -430,32 +430,20 @@ export function createRoundEngine(ctx) {
         log(s, s.mode === 'automation-play' ? `双方就绪：真实卡牌自动化测试，支持${s.automationCards.length}条角色、事务、附属与备牌指示物记录，使用测试地区；不是完整正式牌组。${s.deckSelections?.some(Boolean) ? s.seats.map((seat, p) => `${seat.name}使用${s.deckSelections[p]?.name ?? '自动化测试牌组'}，起始手牌${s.deckSelections[p]?.society.initialHand ?? 6}张`).join('；') + '。秘社对局能力尚未接入。' : '各6张手牌。'}无起始资产。` : '双方就绪：各6张文字测试牌，无起始资产。各自保留手牌或进行一次再调度，随后随机确定先手。');
     }
     function contestSkipped(s, district, kind) { const d = s.districts[district]; return kind === 'battle' && districtTraits(s, district).includes('黄昏') && [0, 1].some(p => societyPlan(s, p).skipTwilightBattleWhenMoreHand && s.players[p].hand.length > s.players[1 - p].hand.length) || s.effects.some(e => e.kind === 'skip-contests' && e.district === district && e.districtCardId === d?.id && (!e.contest || e.contest === kind)) || kind === 'investigation' && Object.entries(s.locations).some(([id, l]) => l.zone === 'sealed' && !l.faceDown && l.hostId === `district-host:${d?.id}` && l.hostVersion === districtHostVersion(d) && printedRulesCard(s, id).automation?.sealedSkipInvestigation) || kind === 'investigation' && s.players.flatMap(pl => pl.play).some(id => s.locations[id]?.zone === 'play' && !s.locations[id].faceDown && s.locations[id].district === district && (printedRulesCard(s, id).automation?.static === 'skip-source-investigation' || printedRulesCard(s, id).automation?.static === 'untapped-skip-investigation' && !s.locations[id].tapped)); }
-    function beforeContest(s, district, kind) {
-        clearCosts(s);
-        s.turn.district = district;
-        s.turn.kind = kind;
-        s.turn.lastContest = null;
-        if (kind === 'influence' && !s.turn.contestIteration)
-            s.turn.influenceDistrictCardId = s.districts[district]?.id;
-        if (!s.districts[district] || contestSkipped(s, district, kind)) {
-            log(s, `地区${districtNumber(s, district)} · ${contestNames[kind]}因空位或卡牌效果略过。`);
-            nextContest(s);
-            return;
-        }
-        window(s, 'contest', 'contest-before');
-        log(s, `地区${districtNumber(s, district)} · ${contestNames[kind]}：开始前快速行动窗口。`);
-    }
-    function beginMobility(s) {
-        if (s.turn.phase !== 'contest') {
-            s.turn.phase = 'contest';
-            s.turn.phaseTriggerPending = 'mobility';
-            if (ctx.environment?.().phaseStart(s))
-                return;
-            delete s.turn.phaseTriggerPending;
-        }
-        s.turn.mobilityQueue = [0, 1].map(p => s.players[p].play.filter(id => hasCardType(s.cards[id], 'character') && !s.locations[id].tapped && hasKeyword(s, id, '机动') && !abilitiesSuppressed(s, id)).map(id => { const l = s.locations[id]; return { id: uuid(), kind: 'auto-ability', cardId: id, controller: p, displayName: s.cards[id].name, event: 'mobility', group: `mobility:${s.round}:${p}`, mandatory: false, targets: [], plan: { target: 'other-district', effect: 'move-source', sourceId: id, sourceDistrict: l.district, sourceZoneVersion: l.zoneVersion, sourceSnapshot: { zone: 'play', zoneVersion: l.zoneVersion, faceDown: false, controller: p, district: l.district } } }; }));
-        mobilityWindow(s, s.turn.firstPlayer);
-    }
+    function beforeContest(s,district,kind){
+  clearCosts(s);s.turn.district=district;s.turn.kind=kind;s.turn.lastContest=null;
+  if(kind==='influence'&&!s.turn.contestIteration)s.turn.influenceDistrictCardId=s.districts[district]?.id;
+  if(!s.districts[district]||contestSkipped(s,district,kind)){log(s,`地区${districtNumber(s,district)} · ${contestNames[kind]}因空位或卡牌效果略过。`);nextContest(s);return}
+  if(s.contestWindowRule==='after-only'){const previous=priorityStepKey(s);s.turn.phase='contest';s.turn.step='contest-resolve';s.flow.stepOwner=s.turn.firstPlayer;s.flow.passed=[];s.flow.locked=true;s.roundChoice=null;beginPriorityStep(s,previous);resolveContest(s);return;}
+  window(s,'contest','contest-before');
+  log(s,`地区${districtNumber(s,district)} · ${contestNames[kind]}：开始前快速行动窗口。`);
+ }
+    function beginMobility(s){
+  if(s.turn.phase!=='contest'){s.turn.phase='contest';s.turn.phaseTriggerPending='mobility';if(ctx.environment?.().phaseStart(s))return;delete s.turn.phaseTriggerPending;}
+  s.turn.mobilityQueue=[0,1].map(p=>s.players[p].play.filter(id=>hasCardType(s.cards[id],'character')&&!s.locations[id].tapped&&hasKeyword(s,id,'机动')&&!abilitiesSuppressed(s,id)).map(id=>{const l=s.locations[id];return {id:uuid(),kind:'auto-ability',cardId:id,controller:p,displayName:s.cards[id].name,event:'mobility',group:`mobility:${s.round}:${p}`,mandatory:false,targets:[],plan:{target:'other-district',effect:'move-source',sourceId:id,sourceDistrict:l.district,sourceZoneVersion:l.zoneVersion,sourceSnapshot:{zone:'play',zoneVersion:l.zoneVersion,faceDown:false,controller:p,district:l.district}}};}));
+  if(s.contestWindowRule==='after-only'){const previous=priorityStepKey(s);s.turn.step='contest-start';s.turn.district=null;s.turn.kind=null;s.turn.lastContest=null;s.flow.stepOwner=s.turn.firstPlayer;s.flow.passed=[];s.roundChoice=null;beginPriorityStep(s,previous);const queue=[s.turn.firstPlayer,1-s.turn.firstPlayer].flatMap(p=>s.turn.mobilityQueue[p]);delete s.turn.mobilityQueue;delete s.turn.mobilityPlayer;(ctx.collectTriggers??((_s,run)=>run()))(s,()=>{for(const a of queue)ctx.offerTrigger(s,a);});window(s,'contest','contest-start');log(s,'对抗阶段开始：处理机动能力，随后开放快速行动窗口。');return;}
+  mobilityWindow(s,s.turn.firstPlayer);
+ }
     function mobilityWindow(s,p){const queue=s.turn.mobilityQueue?.[p]??[];if(!queue.length){if(p===s.turn.firstPlayer){mobilityWindow(s,1-p);return;}delete s.turn.mobilityQueue;beforeContest(s,0,kinds[0]);return;}s.turn.district=null;s.turn.kind=null;s.turn.mobilityPlayer=p;(ctx.collectTriggers??((_s,run)=>run()))(s,()=>{for(const a of queue)ctx.offerTrigger(s,a);});s.turn.mobilityQueue[p]=[];window(s,'contest',p===s.turn.firstPlayer?'mobility-first':'mobility-second');log(s,`${s.seats[p].name}选择机动触发；先手机动完成后再处理后手。`);}
     function nextInfluenceSource(s) {
         const d = s.districts[s.turn.district], used = s.turn.extraInfluenceUsed ?? [];
@@ -911,6 +899,7 @@ export function createRoundEngine(ctx) {
         }
         else if (step === 'second-action')
             beginMobility(s);
+        else if(step==='contest-start')beforeContest(s,0,kinds[0]);
         else if (step === 'mobility-first')
             mobilityWindow(s, 1 - s.turn.firstPlayer);
         else if (step === 'mobility-second') {
@@ -1211,8 +1200,8 @@ export function createRoundEngine(ctx) {
                 publicChoice.targets = a.targetIds.filter(id => battleDamageRecipient(s, id) && s.locations[id].district === s.turn.district && controllerOf(s, id) !== a.controller).map(id => ({ ...identity(s, id), ...s.locations[id], effectiveDefense: effectiveDefense(s, id), woundsPrevented: woundsPrevented(s, id), guardRequirement: keywordAmount(s, id, '护卫') }));
             }
         }
-        return { turn: { phase: t.phase, phaseLabel: phaseNames[t.phase], step: t.step, stepLabel: s.effectBattle ? '额外' + contestNames[s.effectBattle.kind ?? 'battle'] + ' · ' + stepNames[t.step] : stepNames[t.step], extraBattle: !!s.effectBattle, firstPlayer: t.firstPlayer, privilegeUsed: t.privilegeUsed, actionClosed: t.actionClosed, district: t.phase === 'contest' || s.effectBattle || t.claim ? t.district : null, districtNumber: t.phase === 'contest' || s.effectBattle || t.claim ? (s.turn.claim?.districtNumber ?? districtNumber(s, t.district)) : null, kind: t.phase === 'contest' || s.effectBattle ? t.kind : null, contestLabel: t.phase === 'contest' || s.effectBattle ? contestNames[t.kind] : null, lastContest: t.lastContest,
-                reputationPending: !t.claim && regionWinner(s.districts[t.district]) === null && t.phase === 'contest' && t.kind === 'influence' && !nextInfluenceSource(s) && !(t.reputationDone ?? []).includes(t.district),
+        return { turn: { phase: t.phase, phaseLabel: phaseNames[t.phase], step: t.step, stepLabel: s.effectBattle ? '额外' + contestNames[s.effectBattle.kind ?? 'battle'] + ' · ' + stepNames[t.step] : stepNames[t.step], extraBattle: !!s.effectBattle, firstPlayer: t.firstPlayer, privilegeUsed: t.privilegeUsed, actionClosed: t.actionClosed, district: t.phase === 'contest' || s.effectBattle || t.claim ? t.district : null, districtNumber: t.district!==null&&(t.phase === 'contest' || s.effectBattle || t.claim) ? (s.turn.claim?.districtNumber ?? districtNumber(s, t.district)) : null, kind: t.phase === 'contest' || s.effectBattle ? t.kind : null, contestLabel: t.phase === 'contest' || s.effectBattle ? contestNames[t.kind] : null, lastContest: t.lastContest,
+                extraInfluencePending:t.phase==='contest'&&t.kind==='influence'&&!!nextInfluenceSource(s),reputationPending: !t.claim && regionWinner(s.districts[t.district]) === null && t.phase === 'contest' && t.kind === 'influence' && !nextInfluenceSource(s) && !(t.reputationDone ?? []).includes(t.district),
                 priorityStepKey: priorityStepKey(s), priorityStepLabel: (t.phase === 'contest' || s.effectBattle) && t.kind ? `地区${t.claim?.districtNumber ?? districtNumber(s, t.district)} · ${contestNames[t.kind]}` : stepNames[t.step], claimResume: t.claim?.resume ? { phase: t.claim.resume.turn.phase, step: t.claim.resume.turn.step, stepLabel: stepNames[t.claim.resume.turn.step] ?? '原步骤', stepOwner: t.claim.resume.stepOwner } : null, standardAllowed: t.phase === 'action' && ['first-action', 'second-action'].includes(t.step) && !t.actionClosed,
                 discardRequired: t.step === 'recovery' ? s.players.map((x, i) => Math.max(0, x.hand.length - playerHandLimit(s, i))) : null,
                 returnCardIds: t.claim ? returnIds(s, p).map(id => s.locations[id].faceDown && controllerOf(s, id) !== p ? `hidden:${s.locations[id].hiddenHandle}` : id) : [], returnDone: t.claim?.orders.map(x => x !== null) ?? null, claimWinner: t.claim?.winner ?? null },

@@ -1,3 +1,4 @@
+import {upcomingContest} from './contest-timing.mjs';
 import { nightPatrolMoves, greenCarmenTactics, greenEmployeeSetup, greenEmployeeScore, greenEmployeeRevealHold, greenOpeningMulligan } from './green-black-tactics.mjs';
 import { blueBot, blueHandBonus, bluePlayBonus, blueDistrictBonus, blueAttachmentScore, blueBatAttachTargets, blueBatMobility, blueBloodSacrifice, bluePhoenixContest, blueMobilityRevealScore, blueRevealReserve, blueEngineRevealScore, blueBattleDiscards, blueBattleDistrictBonus, blueHeartPathPlayScore, blueMulligan, blueSecretDeployAllowed, blueHiddenDistrictBonus, blueBloodSearch } from './blue-dragon-bot-policy.mjs';
 import { actionEffectForecast } from './bot-effect-forecast.mjs';
@@ -128,7 +129,7 @@ function contestPending(v, d, kind) {
     const t = v.turn;
     if (['setup', 'start', 'action'].includes(t.phase))
         return true;
-    if (t.phase !== 'contest' || !['contest-before', 'contest-after', 'contest-resolve', 'contest-triggers', 'mobility-first', 'mobility-second'].includes(t.step))
+    if (t.phase !== 'contest' || !['contest-before', 'contest-after', 'contest-resolve', 'contest-triggers', 'contest-start', 'mobility-first', 'mobility-second'].includes(t.step))
         return false;
     if (t.district === null || t.district < d)
         return true;
@@ -724,7 +725,12 @@ function triggers(v) {
     }
     return candidates;
 }
-function tactical(v) {
+function tactical(v,mode='normal'){
+ if(mode==='normal'){
+  const next=upcomingContest(v);
+  if(next){const projected={...v,turn:{...v.turn,...next,step:'contest-before'}},seen=new Set();return [...tactical(v,'scores'),...tactical(projected,'scores')].sort((a,b)=>b.score-a.score).filter(x=>{const key=JSON.stringify(x.command);if(seen.has(key))return false;seen.add(key);return true;}).map(x=>x.command);}
+ }
+
     const choices = [], p = v.seat, available = pool(v), standard = v.turn?.standardAllowed && v.flow.stepOwner === p && !v.flow.stack.length;
     const responses = responsePlan(v, policyHelpers), revealBudget = Math.max(reservedReveal(v), responses.ambushMana), shieldBudget = Math.max(shieldReserve(v), responses.responseMana), untapped = mine(v).assets.filter(a => !a.tapped).length, reserve = Math.max(wheelRecoveryDraw(v) ? wheelPrice(v) : 0, revealBudget + (revealBudget + shieldBudget <= untapped ? shieldBudget : Math.max(0, shieldBudget - revealBudget))), spare = Math.max(0, available - reserve);
     const add = (command, score, key, defensiveRescue = false) => {
@@ -1176,7 +1182,7 @@ function tactical(v) {
                     add({ type: 'play', cardId: c.id, district: d }, 85 + bonus + districtScore(v, d, faceUp(v, c)));
         }
     anglicanInfluenceTactics(v, policyHelpers, add, { reservedMana: reserve, candidates: choices.map(x => x.command) });
-    return choices.sort((a, b) => b.score - a.score).map(x => x.command);
+    return mode==='scores'?choices:choices.sort((a,b)=>b.score-a.score).map(x=>x.command);
 }
 function paidTriggerDraft(v, a, c, used = new Set()) {
     if (!c?.fire)

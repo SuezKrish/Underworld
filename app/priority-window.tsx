@@ -1,3 +1,4 @@
+import {passPriorityLabel} from '../engine/pass-label.mjs';
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, GripHorizontal, RotateCcw } from 'lucide-react';
@@ -97,7 +98,7 @@ export function PriorityWindow({ room, busy, locked, act }: {
   </div>
   <div className='priority-body'><div className='turn-indicator'><span className={myPriority ? 'live-dot' : 'idle-dot'}/>{room.status === 'finished' ? '对局结束' : locked ? '请完成当前步骤的选择' : myPriority ? '轮到你行动' : '等待对方行动'}</div>
    {claimWindow && claimResume && <p className='claim-resume-note'>地区赢取{room.turn.step === 'claim-before' ? '前' : '后'}快速行动窗口。双方让过并完成结算后，返回{claimResume.stepLabel}。</p>}
-   <button className='primary wide' disabled={busy || room.status !== 'playing' || !myPriority || locked || room.pendingChoiceCount > 0} onClick={() => act({ type: 'pass' })}>让过一次优先权{room.turn?.standardAllowed && room.flow.stepOwner === room.seat && !room.flow.stack.length && !room.turn.actionClosed ? '（结束标准行动）' : ''}<ArrowRight size={15}/></button>
+   <button className='primary wide' disabled={busy || room.status !== 'playing' || !myPriority || locked || room.pendingChoiceCount > 0} onClick={() => act({ type: 'pass' })}>{passPriorityLabel(room)}<ArrowRight size={15}/></button>
    <AutoPassControls room={room} busy={busy} act={act}/>
   </div>
  </aside>;
