@@ -130,13 +130,7 @@ export function createShoggothEffects(ctx) {
             choose(s, a, 'shoggoth-pay-honor', p, [], { choiceLabel: '古语专家佩德罗 · 是否支付1名誉并抓牌' });
             return true;
         }
-        else if (op === 'basic-core-move' || op === 'basic-core-defense') {
-            const ids = coreRoles(s, p);
-            if (pick(s, a, 'basic-core', ids, { operation: op, destination: targets[0], choiceLabel: op === 'basic-core-move' ? '基础测试 · 选择重置并移动的核心' : '基础测试 · 选择获得防御力的核心' }))
-                return true;
-            if (op === 'basic-core-defense')
-                draw(s, [p], 1);
-        }
+        else if (op === 'basic-core-move' || op === 'basic-core-defense') {for(const id of coreRoles(s,p)){if(op==='basic-core-move'){resetCard(s,id);relocate(s,id,d,{event,group:a.id});}else buff(s,id,'modify-defense',{amount:1});}if(op==='basic-core-defense')draw(s,[p],1);}
         else if (op === 'task-influence') {
             const inf = s.districts[d].influence;
             if (inf[1 - p])
@@ -276,20 +270,7 @@ export function createShoggothEffects(ctx) {
                     destroy(s, plan.subjectId);
             }
         }
-        else if (op === 'mind-sync') {
-            const host = plan.hostAttachment, l = s.locations[host];
-            if (l?.zone === 'play' && !l.faceDown && l.zoneVersion === plan.hostAttachmentVersion) {
-                if (a.mode === 'control') {
-                    if ((l.counters?.locked ?? 0) > 0 && !cardHasKeyword(s, host, '永恒'))
-                        takeControl(s, host, p, { sourceId: a.cardId, sourceZoneVersion: plan.sourceZoneVersion, shoggothControl: true });
-                }
-                else {
-                    counter(s, host, 'locked');
-                    event(s, host, 'locked', l, a.id, { operator: p });
-                    draw(s, [p], 1);
-                }
-            }
-        }
+        else if (op === 'mind-sync') {const host=plan.hostAttachment,l=s.locations[host];if(l?.zone==='play'&&!l.faceDown&&l.zoneVersion===plan.hostAttachmentVersion){if(a.mode==='control'){if((l.counters?.locked??0)>0&&!cardHasKeyword(s,host,'永恒'))takeControl(s,host,p,{sourceId:a.cardId,sourceZoneVersion:plan.sourceZoneVersion,shoggothControl:true});}else {counter(s,host,'locked');event(s,host,'locked',l,a.id,{operator:p});}}if(a.mode!=='control')draw(s,[p],1);}
         else if (op === 'cluster-search') {
             if (!librarySearchBlocked(s)) {
                 const n = plan.chosenX ?? 0, ids = s.players[p].deck.filter(id => hasCardType(s.cards[id], 'character') && s.cards[id].printedCost === n && s.cards[id].subtypes?.some(t => ['士兵', '工程师', '机械'].includes(t)));
@@ -396,10 +377,7 @@ export function createShoggothEffects(ctx) {
             if (s.locations[a.cardId]?.zone === 'play' && s.locations[a.cardId].zoneVersion === plan.sourceZoneVersion)
                 buff(s, a.cardId, 'barrier');
         }
-        else if (op === 'core-reset-knife') {
-            resetCard(s, id);
-            counter(s, id, 'battle');
-        }
+        else if (op === 'core-reset-knife') {for(const core of coreRoles(s,p)){resetCard(s,core);counter(s,core,'battle');}}
         else if (op === 'sacrifice-honor') {
             if (pick(s, a, 'sacrifice', sacrifice(s, p), { after: 'honor4', choiceLabel: '吞噬蔓延 · 牺牲一个本方角色' }))
                 return true;
@@ -439,7 +417,7 @@ export function createShoggothEffects(ctx) {
                 enter(s, id, p, ds[rand(ds.length)], a.id);
         }
         else if (op === 'core-shield')
-            counter(s, id, 'shield');
+            {for(const core of coreRoles(s,p))counter(s,core,'shield');}
         else if (op === 'lock-draw') {
             counter(s, id, 'locked');
             event(s, id, 'locked', s.locations[id], a.id, { operator: p });
@@ -473,35 +451,15 @@ export function createShoggothEffects(ctx) {
             if (deter(s, a, 1))
                 return true;
         }
-        else if (op === 'core-plan') {
-            if (s.locations[plan.sourceId]?.zone === 'play' && s.locations[plan.sourceId].zoneVersion === plan.sourceZoneVersion) {
-                move(s, plan.sourceId, 'graveyard', { cause: 'sacrifice' });
-                const id = s.selectedCoreIds?.[p];
-                if (s.locations[id]?.zone === 'core' && s.locations[id].corePlayer === p && enter(s, id, p, d, a.id)) {
-                    choose(s, a, 'shoggoth-shield-optional', p, [], { roleId: id, roleVersion: s.locations[id].zoneVersion, choiceLabel: '计划：修格斯 · 是否放置一个护盾标志' });
-                    return true;
-                }
-            }
-        }
-        else if (op === 'officer') {
-            const n = s.societyStates?.[p]?.counters['失控'] ?? 0;
-            if (n > 0 && s.locations[a.cardId]?.zone === 'play' && s.locations[a.cardId].zoneVersion === plan.sourceZoneVersion) {
-                addWounds(s, a.cardId, 1, { event, group: a.id });
-                setCardMarker(s, s.societyStates[p], "counter", '失控', n - 1);
-                choose(s, a, 'shoggoth-draw-optional', p, [], { choiceLabel: '决绝的士官 · 是否抓一张牌' });
-                return true;
-            }
-        }
+        else if (op === 'core-plan') {if(s.locations[plan.sourceId]?.zone==='play'&&s.locations[plan.sourceId].zoneVersion===plan.sourceZoneVersion)move(s,plan.sourceId,'graveyard',{cause:'sacrifice'});const id=s.selectedCoreIds?.[p];if(s.locations[id]?.zone==='core'&&s.locations[id].corePlayer===p&&enter(s,id,p,d,a.id)){choose(s,a,'shoggoth-shield-optional',p,[],{roleId:id,roleVersion:s.locations[id].zoneVersion,choiceLabel:'计划：修格斯 · 是否放置一个护盾标志'});return true;}}
+        else if (op === 'officer') {const n=s.societyStates?.[p]?.counters['失控']??0;if(n>0){if(s.locations[a.cardId]?.zone==='play'&&s.locations[a.cardId].zoneVersion===plan.sourceZoneVersion)addWounds(s,a.cardId,1,{event,group:a.id});setCardMarker(s,s.societyStates[p],"counter",'失控',n-1);choose(s,a,'shoggoth-draw-optional',p,[],{choiceLabel:'决绝的士官 · 是否抓一张牌'});return true;}}
         else if (op === 'enemy-conceal') {
             const q = targets[0]?.player, ids = chars(s, q);
             if (pick(s, a, 'conceal', ids, { controller: q, choiceLabel: '选择一个本方角色潜伏' }))
                 return true;
             honor(s, p, 1);
         }
-        else if (op === 'core-protect') {
-            buff(s, id, 'modify-defense', { amount: 1 });
-            buff(s, id, 'barrier');
-        }
+        else if (op === 'core-protect') {for(const core of coreRoles(s,p)){buff(s,core,'modify-defense',{amount:1});buff(s,core,'barrier');}}
         else if (op === 'water-lock') {
             for (const id of field(s, 1 - p))
                 if (districtTraits(s, s.locations[id].district).includes('水域') && (s.locations[id].faceDown || hasCardType(s.cards[id], 'character'))) {
@@ -548,9 +506,7 @@ export function createShoggothEffects(ctx) {
                 }
             }
         }
-        else if (op === 'core-barrier') {
-            buff(s, id, 'barrier');
-        }
+        else if (op === 'core-barrier') {for(const core of coreRoles(s,p))buff(s,core,'barrier');}
         finishSpell(s, a);
         return true;
     }

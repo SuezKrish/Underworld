@@ -12960,7 +12960,7 @@
       ],
       "modeTargets": {
         "reset": {
-          "target": "own-core",
+          "target": "none",
           "effect": "shoggoth",
           "operation": "core-reset-knife"
         },
@@ -13225,7 +13225,7 @@
       ],
       "modeTargets": {
         "shield": {
-          "target": "own-core",
+          "target": "none",
           "effect": "shoggoth",
           "operation": "core-shield"
         },
@@ -13401,7 +13401,7 @@
           "cost": 0,
           "honorCost": 1,
           "sacrificeSelf": true,
-          "target": "own-core",
+          "target": "none",
           "effect": "shoggoth",
           "operation": "core-barrier"
         }
@@ -13554,7 +13554,7 @@
       ],
       "modeTargets": {
         "protect": {
-          "target": "own-core",
+          "target": "none",
           "effect": "shoggoth",
           "operation": "core-protect"
         },

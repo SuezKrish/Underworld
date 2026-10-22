@@ -127,3 +127,6 @@ export function batchKeyword(s, id, k) {
 export function sourceLive(s, plan) { const l = s.locations[plan.sourceId]; return (l?.zone === 'play' || plan.societySource && l?.zone === 'society') && !l.faceDown && l.zoneVersion === plan.sourceZoneVersion; }
 export function sourceDistrictLive(s, plan) { return s.districts[plan.sourceDistrict]?.id === plan.sourceDistrictCardId; }
 export function sourceSeals(s, plan) { return sourceLive(s, plan) ? sealedOn(s, plan.sourceId) : []; }
+
+// Leaving and returning creates a different source object.
+export function sameSourceObject(s,id,plan){return id===plan.sourceId&&(plan.sourceZoneVersion===undefined||s.locations[id]?.zoneVersion===plan.sourceZoneVersion);}

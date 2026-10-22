@@ -1,3 +1,4 @@
+import {sameSourceObject} from './batch-rules.mjs';
 import { hardDeckCards, rememberHardDeckCards } from './hard-bot-library.mjs';
 import { changeHonor } from './player-resources.mjs';
 import { influenceRemovalOptions, removeSelectedInfluence, swapRegionInfluence, placeRegionInfluence } from './club-influence.mjs';
@@ -178,15 +179,10 @@ export function createBatchEffects(ctx) {
                 s.districts[district].destroyed = 1;
         }
         else if (op === 'priest-sacrifice-destroy') {
-            if (sourceDistrictLive(s, plan)) {
-                const ids = lossOptions(s, p, 'character').filter(id => id !== plan.sourceId && inEffectDistrict(s, id, plan.sourceDistrict));
-                if (ids.length) {
-                    choose(s, a, 'batch-priest-sacrifice', p, ids, { public: true, versions: Object.fromEntries(ids.map(id => [id, s.locations[id].zoneVersion])), choiceLabel: '主祭伊兹帕帕洛特 · 牺牲另一个本方角色' });
-                    return true;
-                }
-                s.districts[plan.sourceDistrict].destroyed = 1;
-            }
-        }
+   if(sourceDistrictLive(s,plan)){const ids=lossOptions(s,p,'character').filter(id=>!sameSourceObject(s,id,plan)&&inEffectDistrict(s,id,plan.sourceDistrict));
+    if(ids.length){choose(s,a,'batch-priest-sacrifice',p,ids,{public:true,versions:Object.fromEntries(ids.map(id=>[id,s.locations[id].zoneVersion])),choiceLabel:'主祭伊兹帕帕洛特 · 牺牲另一个本方角色'});return true;}
+   }
+  }
         else if (op === 'shrike-retreat') {
             if (sourceLive(s, plan)) {
                 const l = s.locations[plan.sourceId], options = s.districts.flatMap((d, i) => d && i !== l.district && canMoveToDistrict(s, plan.sourceId, i) ? [{ id: `district:${i}`, name: `地区${i + 1} · ${d.name}`, districtCardId: d.id }] : []);
@@ -960,12 +956,9 @@ export function createBatchEffects(ctx) {
                 return;
         }
         else if (x.kind === 'batch-priest-sacrifice') {
-            need(x.cardIds.includes(c.cardId) && s.locations[c.cardId]?.zone === 'play' && !s.locations[c.cardId].faceDown && s.locations[c.cardId].zoneVersion === x.versions[c.cardId] && controllerOf(s, c.cardId) === p && s.locations[c.cardId].district === plan.sourceDistrict && hasCardType(s.cards[c.cardId], 'character') && !cardHasKeyword(s, c.cardId, '永恒'), '请选择仍然合法的本方角色');
-            if (sourceDistrictLive(s, plan)) {
-                move(s, c.cardId, 'graveyard', { cause: 'sacrifice' });
-                s.districts[plan.sourceDistrict].destroyed = 1;
-            }
-        }
+   need(x.cardIds.includes(c.cardId)&&s.locations[c.cardId]?.zone==='play'&&!s.locations[c.cardId].faceDown&&s.locations[c.cardId].zoneVersion===x.versions[c.cardId]&&controllerOf(s,c.cardId)===p&&s.locations[c.cardId].district===plan.sourceDistrict&&hasCardType(s.cards[c.cardId],'character')&&!cardHasKeyword(s,c.cardId,'永恒'),'请选择仍然合法的本方角色');
+   if(sourceDistrictLive(s,plan)){const version=s.locations[c.cardId].zoneVersion;if(move(s,c.cardId,'graveyard',{cause:'sacrifice'})&&s.locations[c.cardId].zoneVersion!==version)s.districts[plan.sourceDistrict].destroyed=1;}
+  }
         else if (x.kind === 'batch-shrike-retreat') {
             const option = x.options.find(o => o.id === c.cardId);
             need(option, '请选择合法移动地区');

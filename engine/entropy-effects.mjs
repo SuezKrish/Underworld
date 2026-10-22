@@ -1,3 +1,4 @@
+import {sameSourceObject} from './batch-rules.mjs';
 import { placeRegionInfluence } from './club-influence.mjs';
 import { setCardMarker } from './counter-placement.mjs';
 import { addWounds } from './wounds.mjs';
@@ -125,16 +126,7 @@ export function createEntropyEffects(ctx) {
             }
             return false;
         }
-        if (op === 'verthandi-leave') {
-            if (sameDistrict(s, plan.sourceDistrict, plan.sourceDistrictCardId)) {
-                beginEventGroup(s, a.id);
-                for (const id of roles(s))
-                    if (id !== plan.sourceId && s.locations[id].district === plan.sourceDistrict && !effectiveSubtypes(s, id).includes('灾难'))
-                        destroy(s, id);
-                endEventGroup(s);
-            }
-            return false;
-        }
+        if (op === 'verthandi-leave') {if(sameDistrict(s,plan.sourceDistrict,plan.sourceDistrictCardId)){beginEventGroup(s,a.id);for(const id of roles(s))if(!sameSourceObject(s,id,plan)&&s.locations[id].district===plan.sourceDistrict&&!effectiveSubtypes(s,id).includes('灾难'))destroy(s,id);endEventGroup(s);}return false;}
         if (op === 'world-devourer') {
             if (sameDistrict(s, plan.sourceDistrict, plan.sourceDistrictCardId))
                 s.districts[plan.sourceDistrict].destroyed = 1;

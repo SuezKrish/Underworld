@@ -84,7 +84,7 @@ import { effectiveMagicDomains } from './magic-domains.mjs';
 import { hasCardType, hasAnyCardType } from './card-types.mjs';
 import { districtTimeMarkers } from './time-markers.mjs';
 import { dealDamage } from './damage.mjs';
-import { consumeDiscounts, batBlocksTransaction, cannotTarget, cannotFlip, sourceLive, sourceDistrictLive } from './batch-rules.mjs';
+import { consumeDiscounts, batBlocksTransaction, cannotTarget, cannotFlip, sourceLive, sourceDistrictLive, sameSourceObject } from './batch-rules.mjs';
 import { createBatchEffects } from './batch-effects.mjs';
 import { sealHost, liveSealHost, sealedOn } from './sealing.mjs';
 import { takeControl, updateControl, effectiveActions, currentSocietyName, effectiveSubtypes, cardHasKeyword, sacrificeCostBlocked, hasBarrier, playerHasBarrier, graveyardLocked, castingCost, castingDiscount, enterTapped, keywordAmount } from './derived.mjs';
@@ -207,7 +207,7 @@ export function createAutomationEngine(ctx) {
             return false;
         if (plan.otherHost && id === s.locations[plan.sourceId]?.attachedTo)
             return false;
-        if (plan.otherTarget && id === plan.sourceId)
+        if (plan.otherTarget && sameSourceObject(s,id,plan))
             return false;
         if (plan.requiredSubtitle && printed?.subtitle !== plan.requiredSubtitle)
             return false;
@@ -300,7 +300,7 @@ export function createAutomationEngine(ctx) {
             target = 'character-or-hidden';
         }
         if (target === 'district-character-or-hidden' || target === 'district-any-character-or-hidden') {
-            if (l.zone !== 'play' || l.district !== plan.sourceDistrict || target === 'district-character-or-hidden' && id === plan.sourceId)
+            if (l.zone !== 'play' || l.district !== plan.sourceDistrict || target === 'district-character-or-hidden' && sameSourceObject(s,id,plan))
                 return false;
             if (l.faceDown)
                 return !s.flow.stack.some(a => a.kind === 'reveal-character' && a.cardId === id);
@@ -329,7 +329,7 @@ export function createAutomationEngine(ctx) {
         if (target === 'own-sergei-hunter')
             return !barrierBlocked && void 0;
         if (target === 'district-own-other-character')
-            return (true || !c.noAttachments && !c.noEquipment && (s.cards[plan.sourceId]?.owner === controllerOf(s, id) || !hasBarrier(s, id)) && (!c.automation?.allowedAttachmentSubtypes || effectiveSubtypes(s, plan.sourceId).some(t => c.automation.allowedAttachmentSubtypes.includes(t)))) && l.zone === 'play' && !l.faceDown && l.district === plan.sourceDistrict && controllerOf(s, id) === p && id !== plan.sourceId && hasCardType(c, 'character') && !barrierBlocked;
+            return (true || !c.noAttachments && !c.noEquipment && (s.cards[plan.sourceId]?.owner === controllerOf(s, id) || !hasBarrier(s, id)) && (!c.automation?.allowedAttachmentSubtypes || effectiveSubtypes(s, plan.sourceId).some(t => c.automation.allowedAttachmentSubtypes.includes(t)))) && l.zone === 'play' && !l.faceDown && l.district === plan.sourceDistrict && controllerOf(s, id) === p && !sameSourceObject(s,id,plan) && hasCardType(c, 'character') && !barrierBlocked;
         if (target === 'filtered-attachment')
             return l.zone === 'play' && !l.faceDown && hasCardType(c, 'attachment') && filterCard(c, plan.filter) && !barrierBlocked;
         if (target === 'own-attachment')
@@ -376,7 +376,7 @@ export function createAutomationEngine(ctx) {
                 return false;
         }
         if (target === 'other-subtitle-character')
-            return id !== plan.sourceId && c.subtitle === plan.subtitle;
+            return !sameSourceObject(s,id,plan) && c.subtitle === plan.subtitle;
         if (target === 'unique-character')
             return !!c.unique;
         if (target === 'ordered-assault')
@@ -392,7 +392,7 @@ export function createAutomationEngine(ctx) {
         if (target === 'nonhuman-character')
             return !effectiveSubtypes(s, id).includes('人类') && (!plan.excludeAngel || !effectiveSubtypes(s, id).includes('天使'));
         if (target === 'district-other-character')
-            return l.district === plan.sourceDistrict && id !== plan.sourceId;
+            return l.district === plan.sourceDistrict && !sameSourceObject(s,id,plan);
         if (target === 'district-filtered-character')
             return l.district === plan.sourceDistrict && filterCard({ ...c, subtypes: effectiveSubtypes(s, id) }, plan.filter);
         if (target === 'own-district-character')
@@ -428,7 +428,7 @@ export function createAutomationEngine(ctx) {
         if (target === 'district-human')
             return l.district === plan.sourceDistrict && effectiveSubtypes(s, id).includes('人类');
         if (target === 'district-other-magic-character')
-            return id !== plan.sourceId && l.district === plan.sourceDistrict && !!c.magicDomains?.length;
+            return !sameSourceObject(s,id,plan) && l.district === plan.sourceDistrict && !!c.magicDomains?.length;
         if (target === 'magic-character')
             return !!c.magicDomains?.length;
         if (target === 'printed-human-character')
@@ -444,9 +444,9 @@ export function createAutomationEngine(ctx) {
         if (target === 'district-character')
             return l.district === plan.sourceDistrict;
         if (target === 'own-other-character')
-            return controllerOf(s, id) === p && id !== plan.sourceId;
+            return controllerOf(s, id) === p && !sameSourceObject(s,id,plan);
         if (target === 'own-other-district-character')
-            return controllerOf(s, id) === p && id !== plan.sourceId && l.district === plan.sourceDistrict;
+            return controllerOf(s, id) === p && !sameSourceObject(s,id,plan) && l.district === plan.sourceDistrict;
         return ['character', 'character-or-hidden', 'non-core-character'].includes(target);
     }
     function stackTargetLegal(s, a, target) {
@@ -1170,7 +1170,7 @@ export function createAutomationEngine(ctx) {
         }
         else if (effect === 'damage-source-district' || effect === 'damage-source-district-other') {
             for (const id of s.players.flatMap(pl => pl.play))
-                if (!s.locations[id].faceDown && inEffectDistrict(s, id, plan.sourceDistrict) && hasCardType(s.cards[id], 'character') && (effect !== 'damage-source-district-other' || id !== plan.sourceId))
+                if (!s.locations[id].faceDown && inEffectDistrict(s, id, plan.sourceDistrict) && hasCardType(s.cards[id], 'character') && (effect !== 'damage-source-district-other' || !sameSourceObject(s,id,plan)))
                     hurt(s, id, 1);
         }
         else if (effect === 'destroy-vampire-influence') {
@@ -1187,7 +1187,7 @@ export function createAutomationEngine(ctx) {
                     tapCard(s, id);
         }
         else if (effect === 'destroy-source-district-other') {
-            const ids = s.players.flatMap(pl => pl.play).filter(id => id !== plan.sourceId && inEffectDistrict(s, id, plan.sourceDistrict) && (s.locations[id].faceDown || hasCardType(s.cards[id], 'character')));
+            const ids = s.players.flatMap(pl => pl.play).filter(id => !sameSourceObject(s,id,plan) && inEffectDistrict(s, id, plan.sourceDistrict) && (s.locations[id].faceDown || hasCardType(s.cards[id], 'character')));
             beginEventGroup(s, a.id);
             for (const id of ids)
                 destroy(s, id);
@@ -1219,7 +1219,7 @@ export function createAutomationEngine(ctx) {
         else if (effect === 'grant-own-other-barrier') {
             if (effectiveSocietyMarkers(s, p).exposed === 0)
                 for (const target of s.players[p].play)
-                    if (target !== plan.sourceId && hasCardType(s.cards[target], 'character') && !s.locations[target].faceDown && plan.subtypesAny.some(t => effectiveSubtypes(s, target).includes(t)))
+                    if (!sameSourceObject(s,target,plan) && hasCardType(s.cards[target], 'character') && !s.locations[target].faceDown && plan.subtypesAny.some(t => effectiveSubtypes(s, target).includes(t)))
                         s.effects.push({ kind: 'barrier', targetId: target, targetZoneVersion: s.locations[target].zoneVersion, duration: 'until-end-of-round' });
         }
         else if (effect === 'move-source') {
