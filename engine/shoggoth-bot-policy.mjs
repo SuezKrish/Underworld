@@ -1,6 +1,7 @@
 import { hasCardType } from './card-types.mjs';
 import { libraryNameCount, copyIndex } from './bot-dynamic-planning.mjs';
-import { endHandForecast } from './bot-resource-planning.mjs';
+import { endHandForecast, libraryBudget } from './bot-resource-planning.mjs';
+import { regionWinner } from './region-claims.mjs';
 export const lockingBot = v => v.bot?.id === 'shoggoth-locking';
 const mine = v => v.players[v.seat], own = v => mine(v).play.filter(c => !c.faceDown), foes = v => v.players[1 - v.seat].play.filter(c => c.faceDown || hasCardType(c, 'character'));
 const support = v => own(v).filter(c => c.catalogId === 'BH29');
@@ -10,13 +11,82 @@ const coreAvailable = v => !!core(v) || mine(v).coreArea?.cards.some(c => c.id =
 const task = d => hasCardType(d, 'task');
 const markNeed = (v, i) => Math.max(0, (v.districts[i]?.threshold ?? 99) - (v.districts[i]?.influence?.[v.seat] ?? 0) + (v.districts[i]?.influence?.[1 - v.seat] ?? 0));
 const loss = v => v.societies?.[v.seat]?.counters?.['失控'] ?? 0;
+const officers = v => own(v).filter(c => c.catalogId === 'BH27' && !c.printedTextBlank && !c.abilitiesSuppressed && (c.effectiveDefense ?? Math.max(0, (c.defense ?? 0) - (c.wounds ?? 0))) > 0);
+const samples = v => mine(v).hand.filter(c => c.catalogId === 'BQ064');
+const isCommand = c => c.subtypes?.includes('命令');
+const price = (v, c, h) => v.castingCosts?.[c.id] ?? h.cost(c);
+// A single point must actually secure an unclaimed task. Influence already
+// queued on the stack is not another reason to spend a second command.
+function taskClaimScore(v, d, h) {
+    const region = v.districts[d];
+    if (!task(region) || regionWinner(region) !== null || markNeed(v, d) !== 1)
+        return null;
+    const queued = v.flow.stack.some(a => a.controller === v.seat && a.targetIds?.some(id => id === `district:${d}` || id === region.id) &&
+        (a.displayName === '基础测试' && a.mode === 'influence' || a.displayName === '吞噬蔓延' && a.mode === 'spawn'));
+    if (queued)
+        return null;
+    if (mine(v).scoreCards.filter(task).length >= 2)
+        return 600;
+    // Claim rewards and the core/hideout loop are worth acting before contests.
+    // Returning established support engines is a real opportunity cost.
+    const leaving = own(v).filter(c => c.district === d && !task(c) && c.id !== coreId(v) && !h.keyword(c, '永恒') && !h.keyword(c, '撤回'));
+    const engineCost = leaving.reduce((n, c) => n + (c.catalogId === 'BH29' ? 22 : Math.max(0, h.value(c)) * 0.8), 0);
+    return 165 + (region.catalogId === 'BH59' ? 25 : region.catalogId === 'BQ112' ? 15 : 8) - Math.min(65, engineCost);
+}
+function claimCommandScore(v, c, mode, targets, h) {
+    const eligible = c.catalogId === 'BQ109' && mode === 'influence' || c.catalogId === 'BQ049' && mode === 'spawn';
+    if (!eligible)
+        return null;
+    const d = Number(targets?.[0]?.slice(9));
+    if (c.catalogId === 'BQ049' && v.districts[d]?.owner !== v.seat)
+        return null;
+    const score = taskClaimScore(v, d, h);
+    return score === null ? null : score - price(v, c, h) * 10;
+}
+// The third counter closes ordinary plays and paid flips. Count what that
+// would postpone, and whether a surviving officer or an affordable sample
+// can reopen the engine; do not penalize red cards merely for being red.
+export function lockingCommandPenalty(v, c, command, h) {
+    if (!lockingBot(v) || loss(v) !== 2 || !c?.faction?.startsWith('红') || claimCommandScore(v, c, command.mode, command.targetIds, h) !== null)
+        return 0;
+    const blocked = [...mine(v).hand.filter(x => x.id !== c.id && !isCommand(x) && x.id !== coreId(v)), ...mine(v).play.filter(x => x.faceDown && x.id !== coreId(v) && !isCommand(x))];
+    if (!blocked.length)
+        return 0;
+    const after = h.pool(v) - price(v, c, h), canClear = samples(v).some(x => h.loyalty(v, x) && price(v, x, h) <= after && libraryBudget(v, h) >= 3);
+    return canClear ? 4 : Math.min(48, 12 + blocked.length * 9) - (officers(v).length ? 8 : 0);
+}
+function sampleScore(v, c, h) {
+    const n = loss(v);
+    if (n === 0 || n > libraryBudget(v, h))
+        return null;
+    const hand = mine(v).hand.length, urgent = hand <= 2 && (mine(v).deckCount ?? 0) > h.drawReserve(v) + n;
+    // Three counters is the normal harvest. At two, only a genuinely starved
+    // hand justifies spending the cure early; an officer can supply that refill.
+    if (n < 3 && (!urgent || n < 2 || officers(v).length))
+        return null;
+    const after = h.pool(v) - price(v, c, h), unlock = n === 3 && [
+        ...mine(v).hand.filter(x => x.id !== c.id && !isCommand(x) && x.id !== coreId(v) && h.loyalty(v, x) && !h.duplicate(v, x) && price(v, x, h) <= after),
+        ...mine(v).play.filter(x => x.faceDown && !isCommand(x) && !x.automation?.noPaidReveal && h.loyalty(v, x) && (v.revealCosts?.[x.id] ?? h.cost(x)) <= after)
+    ].length;
+    if (!unlock && officers(v).length && hand - 1 + n > (mine(v).handLimit ?? 7))
+        return null;
+    return (n === 3 ? 110 : 68) + (urgent ? 18 : 0) + (unlock ? 65 : 0) - Math.max(0, hand - 1 + n - (mine(v).handLimit ?? 7)) * 12;
+}
 const openingContact = v => lockingBot(v) && mine(v).coreArea?.cards.some(c => c.id === coreId(v)) && (libraryNameCount(v, '佩德罗的藏身处') ?? 1) > 0 && !own(v).some(c => c.catalogId === 'BQ066');
 const firstContact = v => mine(v).hand.find(c => c.catalogId === 'BQ066');
 // Establish the mission/core engine before collecting a second expensive
 // support. This is an opening plan, not an unlimited preference for contacts.
-export function lockingAssetAllowed(v, c) { return !lockingBot(v) || c.id !== coreId(v) && (!openingContact(v) || c.id !== firstContact(v)?.id); }
+export function lockingAssetAllowed(v, c) { return !lockingBot(v) || c.id !== coreId(v) && (!openingContact(v) || c.id !== firstContact(v)?.id) && !(c.catalogId === 'BQ064' && loss(v) >= 2 && samples(v).length === 1 && !officers(v).length); }
 export function lockingLibraryBonus(v, c, context) {
-    if (!openingContact(v) || context.kind !== 'hand')
+    if (!lockingBot(v) || context.kind !== 'hand')
+        return 0;
+    if (c.catalogId === 'BQ064' && loss(v) >= 2 && !samples(v).length)
+        return copyIndex(v, c) === 0 ? (loss(v) === 3 ? 220 : 55) : 0;
+    // Keep the next setup draw above generic grey-asset ties, rather than draw
+    // several spare contacts when only the first tutor is needed.
+    if (c.catalogId === 'BH29' && copyIndex(v, c) === 0 && support(v).length < 2 && (!openingContact(v) || !firstContact(v)))
+        return 70;
+    if (!openingContact(v) || loss(v) >= 3)
         return 0;
     const contact = firstContact(v);
     if (!contact) {
@@ -65,7 +135,11 @@ export function lockingHandBonus(v, c) {
         const copies = copyIndex(v, c);
         return copies === 0 ? 55 : copies === 1 ? core(v) && support(v).length && mine(v).honor >= 2 ? 22 : -12 : -45;
     }
-    return c.catalogId === 'BQ058' && !mine(v).play.some(x => x.catalogId === 'BQ058') ? 24 : c.catalogId === 'BH27' && !own(v).some(x => x.catalogId === 'BH27') ? 7 : c.catalogId === 'BQ066' ? 35 : 0;
+    if (c.catalogId === 'BQ064')
+        return samples(v).some(x => x.id !== c.id) ? -12 : loss(v) >= 2 ? 65 : 8;
+    if (c.catalogId === 'BH27')
+        return !officers(v).length ? (loss(v) === 2 ? 50 : loss(v) > 0 ? 25 : 7) : -12;
+    return c.catalogId === 'BQ058' && !mine(v).play.some(x => x.catalogId === 'BQ058') ? 24 : c.catalogId === 'BQ066' ? 35 : 0;
 }
 export function lockingDistrictBonus(v, d, c) {
     if (!lockingBot(v))
@@ -201,7 +275,7 @@ export function lockingTactics(v, h, add) {
             if (price <= available && h.loyalty(v, c))
                 for (const d of h.districts(v, up))
                     if (!h.lethalBattleRisk(v, up, d))
-                        add({ type: 'play', cardId: c.id, district: d }, c.catalogId === 'BH29' ? 130 : h.value(c) + 45);
+                        add({ type: 'play', cardId: c.id, district: d }, c.catalogId === 'BH29' ? 130 : c.catalogId === 'BH27' && loss(v) === 2 ? 140 : h.value(c) + 45);
             if (c.catalogId === 'BH29' && !mine(v).play.some(x => x.faceDown && x.catalogId === 'BH29') && !mine(v).actionsUsed.secret && available >= 1 && !c.publicNow)
                 for (const d of h.districts(v, { ...c, faceDown: true, effectiveIcons: undefined }))
                     add({ type: 'secret-deploy', cardId: c.id, district: d }, 110 + h.districtScore(v, d, { ...c, faceDown: true, effectiveIcons: undefined }));
@@ -278,8 +352,10 @@ export function lockingTactics(v, h, add) {
             if (combo && honor < 2 && fodder && h.value(fodder) < 8)
                 add({ ...base, mode: 'sacrifice', targetIds: [] }, 58);
             for (const o of targets('spawn')) {
-                const d = Number(o.id.slice(9));
-                add({ ...base, mode: 'spawn', targetIds: [o.id] }, 16 + h.districtScore(v, d, { icons: { investigation: 1, battle: 1, influence: 1 } }) + (task(v.districts[d]) ? 10 : 0));
+                const d = Number(o.id.slice(9)), claim = claimCommandScore(v, c, 'spawn', [o.id], h);
+                if (regionWinner(v.districts[d]) !== null)
+                    continue;
+                add({ ...base, mode: 'spawn', targetIds: [o.id] }, claim ?? (16 + h.districtScore(v, d, { icons: { investigation: 1, battle: 1, influence: 1 } }) + (task(v.districts[d]) ? 10 : 0)));
             }
         }
         if (c.catalogId === 'BQ109') {
@@ -287,16 +363,19 @@ export function lockingTactics(v, h, add) {
             if (x && mine(v).deckCount > h.drawReserve(v) && !h.targetedByUs(v, x.id))
                 add({ ...base, mode: 'defense', targetIds: [] }, 23);
             for (const o of targets('influence')) {
-                const d = Number(o.id.slice(9));
-                if (markNeed(v, d) <= 1)
-                    add({ ...base, mode: 'influence', targetIds: [o.id] }, 75);
+                const claim = claimCommandScore(v, c, 'influence', [o.id], h);
+                if (claim !== null)
+                    add({ ...base, mode: 'influence', targetIds: [o.id] }, claim);
             }
             if (x?.tapped)
                 for (const o of targets('move'))
                     add({ ...base, mode: 'move', targetIds: [o.id] }, 30 + h.districtScore(v, Number(o.id.slice(9)), x));
         }
-        if (c.catalogId === 'BQ064' && standard && (v.societies[p].counters?.['失控'] ?? 0) > 0)
-            add({ ...base, targetIds: [] }, 55 + (v.societies[p].counters['失控'] ?? 0) * 10);
+        if (c.catalogId === 'BQ064' && standard) {
+            const score = sampleScore(v, c, h);
+            if (score !== null)
+                add({ ...base, targetIds: [] }, score);
+        }
         if (c.catalogId === 'BQ061' && standard)
             for (const o of opts) {
                 const x = h.lookup(v, o.id);

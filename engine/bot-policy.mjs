@@ -8,7 +8,7 @@ import { criminalBot, criminalHandBonus, criminalAssetBonus, criminalPreferHidde
 import { anglicanBot, anglicanHandBonus, anglicanAssetBonus, anglicanMulligan, anglicanTactics, anglicanInfluenceTactics, anglicanMonkChoice, anglicanMeditationHold } from './anglican-bot-policy.mjs';
 import { defaultTriggerEnabled } from './trigger-selection.mjs';
 import { radioBot, radioHandBonus, radioAssetBonus, radioDistrictBonus, radioPreferHidden, radioDeployAllowed, radioReserve, radioReveal, radioMulligan, radioTrigger, radioChoice, radioHiddenScore, radioTactics } from './rumor-radio-bot-policy.mjs';
-import { lockingHandBonus, lockingAssetBonus, lockingAssetAllowed, lockingDistrictBonus, lockingChoice, lockingTactics, lockingMulligan, lockingRevealBonus, lockingCommandAllowed, lockingReveal } from './shoggoth-bot-policy.mjs';
+import { lockingHandBonus, lockingAssetBonus, lockingAssetAllowed, lockingDistrictBonus, lockingChoice, lockingTactics, lockingMulligan, lockingRevealBonus, lockingCommandAllowed, lockingCommandPenalty, lockingReveal } from './shoggoth-bot-policy.mjs';
 import { hasCardType } from './card-types.mjs';
 import { uniqueIdentity, matchesCardNameFilter } from './card-names.mjs';
 import { botLibraryHasName } from './bot-library-information.mjs';
@@ -755,6 +755,8 @@ function tactical(v) {
             return;
         if (command.type === 'play' && !lockingCommandAllowed(v, lookup(v, command.cardId), command.mode))
             return;
+        if (command.type === 'play')
+            score -= lockingCommandPenalty(v, source, command, policyHelpers);
         // A proactive engine removal may use its own response budget, but should
         // not silently spend the mana reserved for a staged contest ambush.
         if (standard && command.type === 'play' && plan?.actionPhaseOnly && ['destroy', 'destroy-if-sealed', 'damage', 'wound', 'shuffle-owner', 'bounce', 'return-hand', 'conceal'].includes(plan.effect) && revealBudget > 0 &&
