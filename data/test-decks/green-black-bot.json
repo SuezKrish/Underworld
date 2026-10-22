@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "绿黑速攻（Bot）",
+  "societyId": "MSJC02",
+  "cards": [
+    {
+      "cardId": "JC014",
+      "count": 3
+    },
+    {
+      "cardId": "BH11",
+      "count": 3
+    },
+    {
+      "cardId": "BH09",
+      "count": 3
+    },
+    {
+      "cardId": "BH07",
+      "count": 3
+    },
+    {
+      "cardId": "WM019",
+      "count": 3
+    },
+    {
+      "cardId": "LC02",
+      "count": 3
+    },
+    {
+      "cardId": "BH41",
+      "count": 3
+    },
+    {
+      "cardId": "BQ091",
+      "count": 3
+    },
+    {
+      "cardId": "JC086",
+      "count": 3
+    },
+    {
+      "cardId": "JC084",
+      "count": 3
+    },
+    {
+      "cardId": "JZ55",
+      "count": 3
+    },
+    {
+      "cardId": "JC017",
+      "count": 3
+    },
+    {
+      "cardId": "BH10",
+      "count": 3
+    },
+    {
+      "cardId": "JZ54",
+      "count": 3
+    },
+    {
+      "cardId": "BQ020",
+      "count": 3
+    },
+    {
+      "cardId": "CQ24",
+      "count": 2
+    },
+    {
+      "cardId": "BH12",
+      "count": 3
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}

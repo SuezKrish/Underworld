@@ -1,0 +1,2570 @@
+[
+  {
+    "id": "DQ01",
+    "name": "沉没的废墟",
+    "source": {
+      "text": "赢取触发：每位玩家从他的牌库中寻找一张牌，将他的牌库洗牌，然后将该牌置于其牌库顶。",
+      "type": "地区",
+      "typeLine": "地区-遗迹/水域",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "search",
+          "player": "winner",
+          "destination": "top"
+        },
+        {
+          "kind": "search",
+          "player": "other",
+          "destination": "top"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ02",
+    "name": "佛罗伦萨",
+    "source": {
+      "text": "赢取触发：由赢取佛罗伦萨的玩家开始，每位玩家可以各令一个由其操控的暗藏者现身。\n\nFAQ：\n◆因佛罗伦萨的赢取能力翻面的暗藏者无需满足其忠诚条件。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "reveal",
+          "player": "winner",
+          "optional": true
+        },
+        {
+          "kind": "reveal",
+          "player": "other",
+          "optional": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ03",
+    "name": "京都",
+    "source": {
+      "text": "赢取触发：将所有非人类角色翻面为暗藏者。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "conceal-all",
+          "nonhuman": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ04",
+    "name": "伦敦",
+    "source": {
+      "text": "赢取触发：将所有角色翻面为暗藏者。然后若有玩家在同一地区操控多个暗藏者，则将这些暗藏者洗混。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "conceal-all"
+        },
+        {
+          "kind": "shuffle-hidden"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ05",
+    "name": "莫斯科",
+    "source": {
+      "text": "赢取触发：由赢取莫斯科的玩家开始，每位玩家各牺牲一个角色，然后抓等同于他所牺牲的角色的防御力数值的牌。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "sacrifice-draw-defense",
+          "player": "winner"
+        },
+        {
+          "kind": "sacrifice-draw-defense",
+          "player": "other"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ06",
+    "name": "纽约",
+    "source": {
+      "text": "赢取触发：每位玩家弃掉任意数量的手牌，然后抓等量的牌。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "discard-redraw",
+          "player": "winner"
+        },
+        {
+          "kind": "discard-redraw",
+          "player": "other"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ23",
+    "name": "巴塞罗那",
+    "source": {
+      "text": "赢取触发：每位玩家选择并弃掉任意数量的手牌，然后抓等量的牌。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "discard-redraw",
+          "player": "winner"
+        },
+        {
+          "kind": "discard-redraw",
+          "player": "other"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ07",
+    "name": "切尔诺贝利",
+    "source": {
+      "text": "赢取触发：切尔诺贝利对场上的所有角色造成1点伤害。",
+      "type": "地区",
+      "typeLine": "地区-城市/遗迹",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "damage-all",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ08",
+    "name": "上海",
+    "source": {
+      "text": "赢取触发：选择一项：\n·每位玩家抓两张牌。\n·每位玩家弃两张牌。",
+      "type": "地区",
+      "typeLine": "地区-城市/水域",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "mode",
+          "modes": [
+            {
+              "id": "draw",
+              "label": "每位玩家抓两张",
+              "ops": [
+                {
+                  "kind": "draw-both",
+                  "count": 2
+                }
+              ]
+            },
+            {
+              "id": "discard",
+              "label": "每位玩家弃两张",
+              "ops": [
+                {
+                  "kind": "discard",
+                  "player": "winner",
+                  "count": 2
+                },
+                {
+                  "kind": "discard",
+                  "player": "other",
+                  "count": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ09",
+    "name": "死者之城",
+    "source": {
+      "text": "赢取触发：选择一个地区，由赢取死者之城的玩家开始，每位玩家令各自墓地中的一张角色牌正面进场并放置于该地区。\n\nFAQ：\n◆当使用死者之城的赢取触发能力选择带有混乱关键词的角色时，需要随机选择进入的地区，而非直接进入死者之城选择的地区。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "choose-district",
+          "key": "enterDistrict"
+        },
+        {
+          "kind": "grave-enter",
+          "player": "winner",
+          "districtKey": "enterDistrict"
+        },
+        {
+          "kind": "grave-enter",
+          "player": "other",
+          "districtKey": "enterDistrict"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ10",
+    "name": "香港",
+    "source": {
+      "text": "赢取触发：每位玩家可以自他的牌库中寻找一张附属牌，同时展示并置于各自手中，然后洗牌。",
+      "type": "地区",
+      "typeLine": "地区-城市/水域",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "simultaneous-search",
+          "filter": {
+            "type": "attachment"
+          },
+          "destination": "hand",
+          "reveal": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ11",
+    "name": "拉斯维加斯",
+    "source": {
+      "text": "赢取触发：每位玩家各展示其牌库顶牌，若所展示牌的印刷费用为偶数，则他可以将该牌置于其资产区作为一个资产，否则需将该牌洗回牌库。\n\nFAQ：\n◆当拉斯维加斯的赢取触发能力展示顶牌为没有费用的牌（如熵力化身、 白骨仆人），没有费用的牌视为偶数。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "even-top-asset",
+          "player": "winner"
+        },
+        {
+          "kind": "even-top-asset",
+          "player": "other"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ12",
+    "name": "武陵源",
+    "source": {
+      "text": "赢取强制触发：进行一次隐秘对抗。\n持续：当你赢取武陵源时，本局游戏中你获胜所需的分数减少2。",
+      "type": "地区",
+      "typeLine": "地区-山脉/隐秘对抗",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "hidden"
+        }
+      ],
+      "winMandatory": true,
+      "victoryReductionOnWin": 2
+    }
+  },
+  {
+    "id": "DQ13",
+    "name": "埃里伯斯山",
+    "source": {
+      "text": "赢取触发：在所有秘社上各放置一个【隐秘】标志。",
+      "type": "地区",
+      "typeLine": "地区-荒野/极地",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "markers-both",
+          "marker": "hidden",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ26",
+    "name": "杭州",
+    "source": {
+      "text": "赢取触发：在每位玩家的秘社上各放置一个【隐秘】。",
+      "type": "地区",
+      "typeLine": "地区-城市/遗迹",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "markers-both",
+          "marker": "hidden",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ14",
+    "name": "古城瓦莱塔",
+    "source": {
+      "text": "行动1，横置一个位于本地区的角色：进行一次隐秘对抗。双方玩家都可以发动本能力，且每位玩家每回合各只能发动一次。",
+      "type": "地区",
+      "typeLine": "地区-城市/隐秘对抗",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "actions": [
+        {
+          "id": "hidden",
+          "label": "横置本地区任一角色 · 隐秘对抗",
+          "cost": 1,
+          "tap": false,
+          "ops": [
+            {
+              "kind": "hidden"
+            }
+          ],
+          "tapDistrictCharacter": true,
+          "oncePerRound": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ19",
+    "name": "梦之回廊",
+    "source": {
+      "text": "行动1，横置一个位于本地区的角色：进行一次隐秘对抗。双方玩家都可以发动本能力，且每位玩家每回合各只能发动一次。\n赢取触发：移除所有秘社上的【暴露】和【隐秘】标志。",
+      "type": "地区",
+      "typeLine": "地区-异界/隐秘对抗",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "星辰",
+      "iconsDefense": "5/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "actions": [
+        {
+          "id": "hidden",
+          "label": "横置本地区任一角色 · 隐秘对抗",
+          "cost": 1,
+          "tap": false,
+          "ops": [
+            {
+              "kind": "hidden"
+            }
+          ],
+          "tapDistrictCharacter": true,
+          "oncePerRound": true
+        }
+      ],
+      "win": [
+        {
+          "kind": "clear-markers-both"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ15",
+    "name": "亚伯拉罕湖",
+    "source": {
+      "text": "持续：本地区翻开时，每位玩家各将其牌库顶牌封印在该地区上。\n持续：当你赢取本地区时，你可以将封印在其上的所有牌洗入其拥有者的牌库。",
+      "type": "地区",
+      "typeLine": "地区-荒野/水域",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "sealTopOnReveal": true,
+      "recycleSealsOnClaim": true
+    }
+  },
+  {
+    "id": "DQ16",
+    "name": "洛杉矶",
+    "source": {
+      "text": "持续：该地区在对抗阶段时额外进行一次势力对抗。\n持续：该地区上所有角色的声望能力额外触发一次。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "8/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "extraInfluence": true,
+      "extraReputation": true
+    }
+  },
+  {
+    "id": "DQ17",
+    "name": "劣地巴德兰兹",
+    "source": {
+      "text": "赢取触发：每位玩家预测5，然后你可以进行一次隐秘对抗。",
+      "type": "地区",
+      "typeLine": "地区-荒野",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "predict",
+          "player": "winner",
+          "count": 5
+        },
+        {
+          "kind": "predict",
+          "player": "other",
+          "count": 5
+        },
+        {
+          "kind": "optional",
+          "label": "进行隐秘对抗",
+          "ops": [
+            {
+              "kind": "hidden"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ18",
+    "name": "加州一号公路",
+    "source": {
+      "text": "持续：所有本地区的角色获得“行动，横置：移动至相邻地区。”的能力。",
+      "type": "地区",
+      "typeLine": "地区-城市/交通枢纽",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "roadMove": true
+    }
+  },
+  {
+    "id": "DQ20",
+    "name": "洛杉矶",
+    "source": {
+      "text": "赢取触发：每位玩家预测X。X为该玩家操控的所有角色拥有的［黑眼］和［白眼］图标数量之和加2。",
+      "type": "地区",
+      "typeLine": "地区-城市/学校",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "predict",
+          "player": "winner",
+          "count": "investigation-plus-two"
+        },
+        {
+          "kind": "predict",
+          "player": "other",
+          "count": "investigation-plus-two"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ21",
+    "name": "墨尔本",
+    "source": {
+      "text": "赢取触发：每位玩家自他的牌库中寻找一张事务牌，将该牌展示后置于其手中，然后洗牌。",
+      "type": "地区",
+      "typeLine": "地区-城市/水域",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "search",
+          "player": "winner",
+          "filter": {
+            "type": "spell"
+          },
+          "destination": "hand",
+          "reveal": true
+        },
+        {
+          "kind": "search",
+          "player": "other",
+          "filter": {
+            "type": "spell"
+          },
+          "destination": "hand",
+          "reveal": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ22",
+    "name": "集体潜意识之海",
+    "source": {
+      "text": "持续：所有位于本地区的角色获得灵体。\n赢取触发：将所有其他地区上的角色移回其拥有者的手上。",
+      "type": "地区",
+      "typeLine": "地区-异界",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "心灵",
+      "iconsDefense": "5/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "grantSpirit": true,
+      "win": [
+        {
+          "kind": "return-all-characters"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ24",
+    "name": "巴黎",
+    "source": {
+      "text": "赢取触发：每位玩家抓一张牌，你可以进行一次隐秘对抗。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "draw-both",
+          "count": 1
+        },
+        {
+          "kind": "optional",
+          "label": "进行隐秘对抗",
+          "ops": [
+            {
+              "kind": "hidden"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ25",
+    "name": "日月潭",
+    "source": {
+      "text": "赢取触发：每位玩家各选择一个其所操控的位于其他地区的角色，将该角色移回其拥有者手中。",
+      "type": "地区",
+      "typeLine": "地区-水域/山脉",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "return-character",
+          "player": "winner"
+        },
+        {
+          "kind": "return-character",
+          "player": "other"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ27",
+    "name": "失落的神庙",
+    "source": {
+      "text": "赢取触发：每位玩家自他的牌库中寻找一张牌，将该牌置于他的手中，然后洗牌。",
+      "type": "地区",
+      "typeLine": "地区-遗迹/森林",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/3"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "search",
+          "player": "winner",
+          "destination": "hand"
+        },
+        {
+          "kind": "search",
+          "player": "other",
+          "destination": "hand"
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ28",
+    "name": "长滩",
+    "source": {
+      "text": "赢取触发：每位玩家自他的牌库中寻找一张附属牌，将该牌展示后置于其手中，然后洗牌。",
+      "type": "地区",
+      "typeLine": "地区-城市/水域",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "3/2"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "search",
+          "player": "winner",
+          "filter": {
+            "type": "attachment"
+          },
+          "destination": "hand",
+          "reveal": true
+        },
+        {
+          "kind": "search",
+          "player": "other",
+          "filter": {
+            "type": "attachment"
+          },
+          "destination": "hand",
+          "reveal": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "DQ29",
+    "name": "华盛顿 D．C．",
+    "source": {
+      "text": "赢取触发：由赢取华盛顿 D．C．的玩家开始，每位玩家可以各将一个角色或附属牌从其手中放置进场，并置于目标地区或结附于合法目标上。",
+      "type": "地区",
+      "typeLine": "地区-城市",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "-",
+      "magic": "无",
+      "iconsDefense": "4/4"
+    },
+    "plan": {
+      "kind": "district",
+      "complete": true,
+      "win": [
+        {
+          "kind": "hand-enter",
+          "player": "winner",
+          "optional": true
+        },
+        {
+          "kind": "hand-enter",
+          "player": "other",
+          "optional": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC01",
+    "name": "帷幕守望",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【黄】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【帷幕守望】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黄·帷幕守望",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "帷幕守望"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC02",
+    "name": "猎魔人",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【绿】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【猎魔人】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-群体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "绿·猎魔人",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "猎魔人"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC03",
+    "name": "王座会",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【蓝】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【王座会】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社/吸血鬼",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "蓝·王座会",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "王座会"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC04",
+    "name": "鸣钟教派",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【红】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【鸣钟教派】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-秘密教派",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "红·鸣钟教派",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "鸣钟教派"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC05",
+    "name": "国家机构",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【灰】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【国家机构】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-机构",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "灰·国家机构",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "国家机构"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC06",
+    "name": "圣贤",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【白】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【圣贤】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-群体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "白·圣贤",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "圣贤"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC07",
+    "name": "方碑序列",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【黑】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【方碑序列】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黑·方碑序列",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "方碑序列"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC08",
+    "name": "梦境行者",
+    "source": {
+      "text": "持续：构筑时你的牌组中需包含25张或更多【紫】派系的牌。\n行动3，横置：若你具有【先手标志】，则抓一张牌。\n行动4，横置：从你的牌库中寻找一张【梦境行者】独有牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-群体/梦境",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "紫·梦境行者",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        },
+        {
+          "id": "unique-search",
+          "label": "寻找本派系独有牌（每局一次）",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "unique": true,
+                "factionName": "梦境行者"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC09",
+    "name": "秘社",
+    "source": {
+      "text": "行动3，横置：若你具有【先手标志】，则抓一张牌。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "中立",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "first-draw",
+          "label": "先手时抓一张牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "firstOnly": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSBQ01",
+    "name": "龙之欢宴",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【蓝】，【绿】和【中立】派系的牌。名称为鲜血的牌，构筑时在牌组中的数量没有限制。\n触发：在抓取起始手牌前，从你的牌库中寻找一张名为鲜血的牌，将其封印在龙之欢宴上，然后洗牌。\n持续：当一个本方角色离场时，若有名为鲜血的附属结附于其上，你可以将该附属封印在龙之欢宴上，而非置于墓地。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-群体/吸血鬼",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "蓝·王座会",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "beforeHand": [
+        {
+          "kind": "search",
+          "filter": {
+            "name": "鲜血"
+          },
+          "destination": "seal"
+        }
+      ],
+      "bloodLeaveReplacement": true
+    },
+    "textAliases": [
+      "持续：构**筑时**你的牌组中只能包含【蓝】，【绿】和【中立】派系的牌。名称为鲜血的牌，构筑时在牌组中的数量没有限制。\n触发：在抓取起始手牌前，从你的牌库中寻找一张名为鲜血的牌，将其封印在龙之欢宴上，然后洗牌。\n触发：本方角色离场时，你可以将因该角色离场而进入墓地的名称为鲜血的牌从墓地封印到本秘社上。\n初始手牌：6"
+    ]
+  },
+  {
+    "id": "MSBQ03",
+    "name": "圣甲虫药业",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【黑】、【白】和【中立】派系的牌。名称为无名尸体的牌，构筑时在牌组中的数量没有限制。\n行动1，横置：将你墓地中的一张名为无名尸体的牌封印在目标副名为圣甲虫产业的本方附属上。\n持续：每有一张角色牌封印在其上，结附于地区且副名为圣甲虫产业的本方附属就获得一个［黑星］。\n行动3，横置：从你的牌库中寻找一张副名为圣甲虫产业的牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-企业",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黑·方碑序列",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "industrySealedIcons": true,
+      "actions": [
+        {
+          "id": "seal-corpse",
+          "label": "封印墓地的无名尸体于本方圣甲虫产业",
+          "cost": 1,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "seal-grave-corpse"
+            }
+          ],
+          "target": "industry"
+        },
+        {
+          "id": "industry-search",
+          "label": "寻找圣甲虫产业（每局一次）",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "subtitle": "圣甲虫产业"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "oncePerGame": true
+        }
+      ]
+    },
+    "textAliases": [
+      "持续：构筑时你的牌组中只能包含【黑】、【白】和【中立】派系的牌。名称为无名尸体的牌，构筑时在牌组中的数量没有限制。\n行动，1，横置：将你墓地中的一张名为无名尸体的牌封印在目标副名为圣甲虫产业的本方附属上。\n持续：每有一张角色牌封印在其上，副名为圣甲虫产业且结附于地区的本方附属就获得一个［黑星］。\n行动，3，横置：从你的牌库中寻找一张副名为圣甲虫产业的牌，展示该牌后置于你的手中，然后洗牌。该能力每局游戏只能发动一次。\n初始手牌：6"
+    ]
+  },
+  {
+    "id": "MSBQ04",
+    "name": "天闻山庄",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含任意一个颜色派系和中立派系的牌。\n持续：若你具有【先手标志】，则在进行隐秘对抗时你所展示的牌获得+1。\n行动2，横置：检视目标玩家的手牌，或检视目标暗藏者，或检视目标秘密计划。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-宗门",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "中立",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "pending": [],
+      "hiddenFirstBonus": 1,
+      "actions": [
+        {
+          "id": "inspect",
+          "label": "检视玩家手牌、暗藏者或秘密计划",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "inspect-target"
+            }
+          ],
+          "target": "player-hidden-or-plan"
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSCQ01",
+    "name": "水月",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【黄】和【中立】派系的牌，以及其他派系的法师和法术牌。\n行动2：在水月上放置一个卜卦标志。\n触发：当你打出一张法术牌时，预测X。X等于水月上的卜卦标志数量。\n行动3，横置：若水月上有卜卦标志，进行一次隐秘对抗。本次隐秘对抗中你所展示的牌获得+X。X等于水月上的卜卦标志数量。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社/宗门",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黄·昆仑",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "castSpellPredict": true,
+      "actions": [
+        {
+          "id": "divination",
+          "label": "放置卜卦标志",
+          "cost": 2,
+          "tap": false,
+          "ops": [
+            {
+              "kind": "society-counter",
+              "counter": "divination",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "id": "hidden",
+          "label": "隐秘对抗（卜卦修正）",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "hidden",
+              "bonus": "divination",
+              "bonusScope": "card"
+            }
+          ],
+          "requireCounter": "divination"
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSCQ02",
+    "name": "诺尔维隐修会",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【红】或【中立】派系的牌，以及灾难、时间和命运牌。\n持续：在游戏开始时，设置初始地区牌后，毁灭地区三。\n持续：如有地区上有四个或更多时间标志，毁灭该地区。\n触发：当你赢得一个已毁灭的地区时，抓一张牌。\n初始手牌：5",
+      "type": "秘社",
+      "typeLine": "秘社-秘密教派",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "红·鸣钟教派",
+      "magic": "无",
+      "iconsDefense": "5"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "initialDestroyDistrict": 2,
+      "destroyAtFourTime": true,
+      "drawDestroyedClaim": true
+    }
+  },
+  {
+    "id": "MSJC10",
+    "name": "貘组",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【黄】和【中立】派系的牌，以及其他派系【星】领域的牌。\n行动2，横置：从你的手中选择一张【星】领域的牌，将其封印在貘组上，然后抓一张牌。\n行动2，横置，将一张封印在貘组上的牌置于其拥有者的牌库底：目标角色获得或失去灵体能力直到回合结束。\n行动4，横置，将两张封印在貘组上的牌置于其拥有者的牌库底：选择目标地区，令一张封印在貘组上的角色牌正面进场并置于该地区，且由你操控。\n初始手牌：6\n\nFAQ：\n◆貘组秘社的三能力发动后，需先将两张封印在貘组秘社牌上的卡置于牌库底，在结算时，如果此能力被响应导致目标地区被赢取（敌方还差一势力标记时赢取地区翻面夜总会看门人）翻开新的地区，则貘组的三能力因目标不合法而失效。",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社/分支",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黄·帷幕守望",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "seal-star",
+          "label": "封印星辰手牌并抓牌",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "seal-hand",
+              "filter": {
+                "magic": "星辰"
+              }
+            },
+            {
+              "kind": "draw",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "spirit",
+          "label": "回底一张封印牌 · 获得或失去灵体",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "spirit-mode"
+            }
+          ],
+          "target": "character",
+          "sealedCost": 1
+        },
+        {
+          "id": "sealed-enter",
+          "label": "回底两张封印牌 · 封印角色进场",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "sealed-enter"
+            }
+          ],
+          "target": "district",
+          "sealedCost": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC11",
+    "name": "S．P．T．执行部",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【绿】和【中立】派系的牌，以及其他派系带有［黑刀］能力图标的人类角色牌。\n行动3，横置：目标角色获得杀伤1直到回合结束。\n行动3，横置：选择目标地区，所有位于该地区，且带有［黑刀］能力图标的本方角色获得撤回直到回合结束。\n初始手牌：6\n\nFAQ：\n◆若 S．P．T．执行部秘社的二能力已经发动且目标地区牌被赢取时，玩家通过其他能力使位于其他地区的角色移动进入被赢取地区，这些角色不会获得撤回。",
+      "type": "秘社",
+      "typeLine": "秘社-企业/部门",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "绿·猎魔人",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "lethal",
+          "label": "授予杀伤1",
+          "cost": 3,
+          "tap": true,
+          "target": "character",
+          "ops": [
+            {
+              "kind": "grant-keyword",
+              "keyword": "杀伤1"
+            }
+          ]
+        },
+        {
+          "id": "withdraw",
+          "label": "地区黑刀角色获得撤回",
+          "cost": 3,
+          "tap": true,
+          "target": "district",
+          "ops": [
+            {
+              "kind": "district-keyword",
+              "keyword": "撤回"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC12",
+    "name": "爱弗罗德家族",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【蓝】和【中立】派系的牌，以及其他派系的吸血鬼或奴仆角色牌。\n持续：所有印刷费用小于或等于2的本方人类角色额外具有奴仆类别。\n行动1，横置，横置三个本方奴仆角色：抓一张牌。\n行动2，横置，横置三个本方吸血鬼角色：目标敌方玩家弃一张牌。\n初始手牌：6\n\nFAQ：\n◆当本方秘社是爱弗罗德家族时，只有在场上的 2 费及以下人类角色才额外具有奴仆类别。在牌库、 手牌以及墓地等其他区域的人类角色牌，都不具有奴仆类别。",
+      "type": "秘社",
+      "typeLine": "秘社-家族/吸血鬼",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "蓝·王座会",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "cheapHumansAreSlaves": true,
+      "actions": [
+        {
+          "id": "slaves-draw",
+          "label": "横置三个奴仆 · 抓牌",
+          "cost": 1,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1
+            }
+          ],
+          "tapCharacters": {
+            "count": 3,
+            "subtype": "奴仆"
+          }
+        },
+        {
+          "id": "vampires-discard",
+          "label": "横置三个吸血鬼 · 对手弃牌",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "discard",
+              "player": "other",
+              "count": 1
+            }
+          ],
+          "tapCharacters": {
+            "count": 3,
+            "subtype": "吸血鬼"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC13",
+    "name": "计时者",
+    "source": {
+      "text": "持续：构筑时你的牌组中，非【红】且非【中立】派系的牌不能超过12张。\n行动2，横置：在目标角色或附属上放置一个时间标志。\n行动3，横置：消灭所有其上有三个或更多时间标志的角色和附属，然后每有一个角色或附属因此法被消灭，就抓一张牌。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-秘密教派/分支",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "红·鸣钟教派",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "time",
+          "label": "目标角色或附属放置时间标志",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "target-counter",
+              "counter": "time",
+              "amount": 1
+            }
+          ],
+          "target": "character-or-attachment"
+        },
+        {
+          "id": "destroy-time",
+          "label": "消灭时间标志至少3的角色/附属并抓牌",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "destroy-time-draw"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC14",
+    "name": "哨兵",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【灰】和【中立】派系的牌，以及其他派系不具有魔法领域图标的牌。\n行动3，横置：在目标敌方暗藏者上放置一个锁定标志。\n行动3，横置：选择目标本方角色，将其移动到目标具有锁定标志的角色或暗藏者所在的地区。\n初始手牌：6\n\nFAQ：\n◆哨兵秘社的一能力需先选择角色或暗藏者，在结算时，如果你指定的暗藏者已响应翻面为角色，则哨兵的一能力因目标不合法而失效，反之，指定的角色响应翻面成暗藏者，此能力也同样失效。",
+      "type": "秘社",
+      "typeLine": "秘社-机构",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "灰·国家机构",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "lock",
+          "label": "为敌方暗藏者放置锁定标志",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "target-counter",
+              "counter": "locked",
+              "amount": 1
+            }
+          ],
+          "target": "enemy-hidden"
+        },
+        {
+          "id": "move-lock",
+          "label": "本方角色移动至锁定目标所在地区",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "move-to-lock"
+            }
+          ],
+          "target": "own-character",
+          "secondTarget": "locked-character-or-hidden"
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC15",
+    "name": "隐士",
+    "source": {
+      "text": "持续：构筑时你的牌组中，非【白】且非【中立】派系的牌不能超过12张。\n持续：在每局游戏开始时，在本方秘社上放置一个【隐秘】标志。\n行动3，横置：选择目标地区，若你的手牌数量大于或等于四张，你可以从手中展示一张角色牌，然后将其以暗藏者状态置于该地区。\n初始手牌：6\n\nFAQ：\n◆隐士秘社的二能力可以将带公开关键词的角色以暗藏者状态置于地区。\n\n、",
+      "type": "秘社",
+      "typeLine": "秘社-群体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "白·圣贤",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "initialHidden": 1,
+      "actions": [
+        {
+          "id": "hidden-enter",
+          "label": "手牌至少4 · 展示角色并暗藏进场",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "hand-hidden-enter",
+              "optional": true
+            }
+          ],
+          "target": "district"
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC16",
+    "name": "颂亡者",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【黑】和【中立】派系的牌，以及其他派系【死】领域的牌。\n触发：在第一个回合的准备步骤开始时，将你牌库顶的三张牌置于你的墓地。\n行动3，横置：将你牌库顶的一张牌置于你的墓地。\n行动6，横置，将你墓地中的七张牌封印在颂亡者上：选择目标地区，令你墓地中的目标【死】领域的角色牌正面进场并置于该地区。\n初始手牌：5\n\nFAQ：\n◆颂亡者秘社的二能力发动后，需先将七张牌封印在颂亡者上，在结算时，如果此能力被响应导致目标地区被赢取（敌方还差一势力标记时赢取地区翻面夜总会看门人）翻开新的地区，则颂亡者的二能力因目标不合法而失效。",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社/分支",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黑·方碑序列",
+      "magic": "无",
+      "iconsDefense": "5"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "firstPrepare": [
+        {
+          "kind": "mill",
+          "count": 3
+        }
+      ],
+      "actions": [
+        {
+          "id": "mill",
+          "label": "牌库顶一张置墓",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "mill",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "grave-enter",
+          "label": "封印墓地七张 · 死亡角色进场",
+          "cost": 6,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "target-grave-enter"
+            }
+          ],
+          "target": "own-death-grave-character",
+          "secondTarget": "district",
+          "graveSealCost": 7
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJC17",
+    "name": "梦魇族群",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【紫】和【中立】派系的牌，以及其他派系的灵体角色或梦境牌。\n持续：你从牌库底抓牌，而非牌库顶。\n行动3，横置：若你具有【先手标志】，则将你牌库顶的一张牌封印在目标角色上。\n行动4，横置：将你墓地中的目标灵体角色牌置于你的牌库顶。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-群体/梦境",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "紫·梦境行者",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "drawFromBottom": true,
+      "actions": [
+        {
+          "id": "seal-top",
+          "label": "先手时封印顶牌于角色",
+          "cost": 3,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "seal-top-to-target",
+              "firstOnly": true
+            }
+          ],
+          "target": "character"
+        },
+        {
+          "id": "spirit-top",
+          "label": "墓地灵体角色置牌库顶",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "target-top"
+            }
+          ],
+          "target": "own-spirit-grave-character"
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJZ01",
+    "name": "猛禽战术小组",
+    "source": {
+      "text": "持续：构筑时你的牌组中需至少包含15张副名为“猛禽”战术小组的牌。\n行动2，横置，牺牲一个资产：从你的牌库中寻找一张副名为“猛禽”战术小组的牌，展示该牌后置于你的手中，然后洗牌。\n行动，横置：本回合中你所打出的下一张装备附属牌，若其结附的目标是副名为“猛禽”战术小组的角色，则所需费用减少1。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-团体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "绿·猎魔人",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "search",
+          "label": "牺牲资产 · 寻找猛禽小组",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "subtitleAny": [
+                  "“猛禽”战术小组",
+                  "猛禽战术小组"
+                ]
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ],
+          "sacrificeAsset": true
+        },
+        {
+          "id": "equipment-discount",
+          "label": "下一张装备结附猛禽角色时费用减少1",
+          "timing": "standard",
+          "cost": 0,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "next-equipment-discount",
+              "hostSubtitle": "“猛禽”战术小组"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJZ04",
+    "name": "破茧者教团",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【红】，【紫】和【中立】派系的牌。\n持续：在抓取起始手牌前，从你的牌库中寻找至多五张梦魇角色牌，且他们的名称不能相同，将这些牌封印在破茧者教团上，然后洗牌。\n触发1：当一个本方宿主角色死亡时，将一张封印在破茧者教团上的梦魇角色牌以暗藏者状态置于该地区。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-秘密教派",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "红·破茧者",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "beforeHandSecret": {
+        "filter": {
+          "type": "character",
+          "subtype": "梦魇"
+        },
+        "max": 5,
+        "distinctNames": true,
+        "destination": "seal"
+      },
+      "hostDeathRelease": true,
+      "hostDeathReleaseCost": 1
+    }
+  },
+  {
+    "id": "MSLC02",
+    "name": "加利福尼亚猎团",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【绿】和【中立】派系的牌。\n触发1：当你赢取一个地区时，抓一张牌。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-团体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "绿·猎魔人",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "claimDrawCost": 1
+    }
+  },
+  {
+    "id": "MSLC04",
+    "name": "圣公会",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【白】和【中立】派系的牌。\n行动3，横置：横置一个本方僧侣，然后若其所在地区上没有势力标志，则放置一个本方势力标志。\n初始手牌：7",
+      "type": "秘社",
+      "typeLine": "秘社-教派",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "白·圣贤",
+      "magic": "无",
+      "iconsDefense": "7"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "anglican-offline-influence",
+          "label": "圣公会 · 僧侣布道",
+          "cost": 3,
+          "tap": true,
+          "botDisabled": true,
+          "ops": [
+            {
+              "kind": "monk-empty-influence"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSLC05",
+    "name": "劣地长老",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【白】和【中立】派系的牌，以及其他派系【星】领域的牌。\n行动3，横置：若你具有【先手标志】，则在目标地区上生成一个黄昏界域独有附属指示物。\n持续：若你手牌数量比对手的更多，则所有黄昏地区略过战斗对抗步骤。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "白·圣贤",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "skipTwilightBattleWhenMoreHand": true,
+      "actions": [
+        {
+          "id": "twilight",
+          "label": "先手生成黄昏界域",
+          "timing": "standard",
+          "cost": 3,
+          "tap": true,
+          "target": "district",
+          "ops": [
+            {
+              "kind": "spawn-token",
+              "catalogId": "TK002",
+              "firstOnly": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSLC06",
+    "name": "居民武装",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【中立】派系的牌。\n行动1，横置：自你的牌库中寻找一张名为无知路人的牌，将该牌放置进场且位于目标城市地区，然后洗牌。\n行动2，横置：选择不具有魔法领域图标的目标本方人类角色，在该角色上放置一个［黑刀］或+1防御力能力图标标志。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-团体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "中立",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "search-enter",
+          "label": "无知路人进场于城市地区",
+          "cost": 1,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search-enter",
+              "filter": {
+                "name": "无知路人"
+              },
+              "districtTarget": true
+            }
+          ],
+          "target": "city-district"
+        },
+        {
+          "id": "permanent-buff",
+          "label": "无领域本方人类获得黑刀或防御标志",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "permanent-buff-mode"
+            }
+          ],
+          "target": "own-nonmagic-human"
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSWM01",
+    "name": "曼纽家族",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【蓝】【黄】【中立】派系的牌，以及其他派系的吸血鬼或阴魂牌。\n持续：在进行隐秘对抗时，你所展示的阴魂牌获得+1。\n行动4，横置：本局游戏中，所有你拥有的吸血鬼和法师角色牌，额外具有阴魂类别。\n行动，横置，横置一个本方阴魂角色：若本方秘社上没有【暴露】，抓一张牌。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-家族/吸血鬼",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "蓝·王座会",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "hiddenGhostBonus": 1,
+      "actions": [
+        {
+          "id": "ghost-types",
+          "label": "本局拥有的吸血鬼/法师额外为阴魂",
+          "cost": 4,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "ghost-types"
+            }
+          ]
+        },
+        {
+          "id": "ghost-draw",
+          "label": "横置阴魂 · 无暴露时抓牌",
+          "cost": 0,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1,
+              "noExposed": true
+            }
+          ],
+          "tapCharacters": {
+            "count": 1,
+            "subtype": "阴魂"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSWM02",
+    "name": "公众安全委员会",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【灰】【黄】【中立】派系的牌，以及其他派系的特工、媒体或互联网牌。\n行动，横置：移除目标秘社上的所有【暴露】或【隐秘】标志，该能力每局游戏只能发动一次。\n行动2，横置，弃一张媒体或互联网牌：进行一次隐秘对抗。本次对抗中你获得+X，X等于你所弃掉的牌之印刷费用。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-机构",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "灰·国家机构",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "clear-markers",
+          "label": "移除目标秘社的隐秘或暴露（每局一次）",
+          "cost": 0,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "clear-markers-mode"
+            }
+          ],
+          "target": "society",
+          "oncePerGame": true
+        },
+        {
+          "id": "hidden",
+          "label": "弃媒体/互联网 · 隐秘对抗",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "hidden",
+              "bonus": "discard-cost",
+              "bonusScope": "player"
+            }
+          ],
+          "discard": {
+            "count": 1,
+            "subtypesAny": [
+              "媒体",
+              "互联网"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSWM03",
+    "name": "冷山帮",
+    "source": {
+      "text": "持续：构筑时你的牌组中，非【黑】且非【中立】派系的牌不能超过12张。\n持续：在抓取起始手牌前，从你的牌库中寻找一张名为黑市的附属牌，展示该牌后置于你的手中，然后洗牌。\n行动2，横置，弃一张牌，横置一个本方罪犯角色：抓一张牌。若所弃的是罪犯牌，则令因发动该能力而横置的罪犯角色潜伏。\n初始手牌：5",
+      "type": "秘社",
+      "typeLine": "秘社-黑帮",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黑·方碑序列",
+      "magic": "无",
+      "iconsDefense": "5"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "beforeHand": [
+        {
+          "kind": "search",
+          "filter": {
+            "name": "黑市",
+            "type": "attachment"
+          },
+          "destination": "hand",
+          "reveal": true
+        }
+      ],
+      "actions": [
+        {
+          "id": "draw-conceal",
+          "label": "弃牌并横置罪犯 · 抓牌，条件潜伏",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "draw",
+              "count": 1
+            },
+            {
+              "kind": "conceal-cost-criminal"
+            }
+          ],
+          "discard": {
+            "count": 1
+          },
+          "tapCharacters": {
+            "count": 1,
+            "subtype": "罪犯"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJZ02",
+    "name": "盛夏王廷",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【绿】派系的牌，以及仙灵牌。\n行动3，横置：若你具有【先手标志】，则在目标地区上生成一个仙灵斗士角色指示物。\n强制触发：当你操控四个或更多仙灵角色时，转变。\n初始手牌：6\n\nFAQ：\n◆在准备步骤若有多个触发能力可生效（如转变为凛冬王庭后己方场上存在仙后泰坦尼亚）玩家可自行决定能力触发的先后顺序。",
+      "type": "秘社",
+      "typeLine": "秘社-群体/仙灵",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "绿·仙灵",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "fairy-fighter",
+          "label": "生成仙灵斗士（具有先手标志时）",
+          "timing": "standard",
+          "cost": 3,
+          "tap": true,
+          "target": "district",
+          "ops": [
+            {
+              "kind": "spawn-token",
+              "catalogId": "TK006",
+              "firstOnly": true
+            }
+          ]
+        }
+      ],
+      "stateTrigger": {
+        "subtype": "仙灵",
+        "count": 4,
+        "toFace": "ZHMSJZ02"
+      }
+    }
+  },
+  {
+    "id": "ZHMSJZ02",
+    "name": "凛冬王廷",
+    "source": {
+      "text": "准备步骤强制触发：每位玩家牺牲一个角色，然后若场上没有角色，转变。",
+      "type": "秘社",
+      "typeLine": "秘社-群体/仙灵",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "绿·仙灵",
+      "magic": "无",
+      "iconsDefense": ""
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "prepare": [
+        {
+          "kind": "sacrifice-character",
+          "player": "first"
+        },
+        {
+          "kind": "sacrifice-character",
+          "player": "second"
+        },
+        {
+          "kind": "transform-society",
+          "toFace": "MSJZ02",
+          "noCharacters": true
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSJZ03",
+    "name": "末日钟",
+    "source": {
+      "text": "不能作为初始秘社牌。\n持续：你不能打出或付费翻面非灾难类别的牌。\n持续：你不能获得分数。若你的计分区中有三个或更多毁灭标志，则你赢得本局游戏的胜利。\n行动，横置：在目标角色、附属或地区上放置一个时间标志，然后若该地区上有四个或更多时间标志，则毁灭该地区。\n行动，横置，弃一张【鸣钟教派】牌：在目标地区上生成一个钟摆祭司角色指示物。",
+      "type": "秘社",
+      "typeLine": "秘社-圣物/永恒意志",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "红·鸣钟教派",
+      "magic": "无",
+      "iconsDefense": ""
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "disasterOnly": true,
+      "noScore": true,
+      "destroyedVictory": 3,
+      "actions": [
+        {
+          "id": "time",
+          "label": "放置时间标志并检查毁灭",
+          "timing": "standard",
+          "cost": 0,
+          "tap": true,
+          "target": "role-attachment-or-district",
+          "ops": [
+            {
+              "kind": "time-and-destroy-region"
+            }
+          ]
+        },
+        {
+          "id": "priest",
+          "label": "生成钟摆祭司",
+          "timing": "standard",
+          "cost": 0,
+          "tap": true,
+          "discard": {
+            "count": 1,
+            "factionName": "鸣钟教派"
+          },
+          "target": "district",
+          "ops": [
+            {
+              "kind": "spawn-token",
+              "catalogId": "TK009"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSLC01",
+    "name": "联席会议观察员",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【黄】和【中立】派系的牌。\n行动2，横置：预测1。\n行动6，横置：若敌方角色数量大于本方角色，则从你的牌库中寻找一张名称包含防暴构装体的角色牌，将该牌放置进场并置于一个敌方角色数量最多的地区，然后洗牌。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-法师结社/机构",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "黄·帷幕守望",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "actions": [
+        {
+          "id": "observer-predict",
+          "label": "预测1",
+          "cost": 2,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "predict",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "id": "observer-construct",
+          "label": "敌方角色较多时寻找并放置防暴构装体",
+          "cost": 6,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "search-enter",
+              "ifMoreEnemyCharacters": true,
+              "filter": {
+                "type": "character",
+                "nameIncludes": "防暴构装体"
+              },
+              "mostEnemies": true,
+              "reveal": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSLC03",
+    "name": "洛杉矶警察局",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【灰】和【中立】派系的牌。\n持续：在游戏开始时，你获得1【名誉点】。\n行动，支付2【名誉点】或3，横置：选择目标城市地区，若该地区没有本方角色，则在该地区生成一个警察指示物角色。\n初始手牌：6",
+      "type": "秘社",
+      "typeLine": "秘社-机构",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "灰·国家机构",
+      "magic": "无",
+      "iconsDefense": "6"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "initialHonor": 1,
+      "actions": [
+        {
+          "id": "police-offline-honor",
+          "label": "招募警察 · 名誉点支付",
+          "cost": 0,
+          "honorCost": 2,
+          "tap": true,
+          "target": "city-district",
+          "ops": [
+            {
+              "kind": "spawn-token",
+              "catalogId": "TK003",
+              "ifEmptyOwnCharacters": true,
+              "ifCity": true
+            }
+          ]
+        },
+        {
+          "id": "police-offline-mana",
+          "label": "招募警察 · 费用支付",
+          "cost": 3,
+          "tap": true,
+          "target": "city-district",
+          "ops": [
+            {
+              "kind": "spawn-token",
+              "catalogId": "TK003",
+              "ifEmptyOwnCharacters": true,
+              "ifCity": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSBQ02",
+    "name": "修格斯",
+    "source": {
+      "text": "持续：构筑时选择一张副名为修格斯的角色牌作为你的核心角色。你的牌组中只能包含【灰】、【红】和【中立】派系的牌，并必须包含12张以上命令牌。\n强制触发：当你打出或付费翻面一张【红】牌时，在此秘社上放置一个失控标志。失控标志上限为三个。\n持续：若此秘社上有三个失控标志，核心角色牌获得混乱，且你只能打出核心角色牌和命令牌。\n快速行动，支付1【名誉点】：本回合中你下一张打出的命令牌的所需费用减少1。\n触发：当你赢得三张或更多任务牌时，你赢得本局游戏的胜利。\n核心 初始手牌：5",
+      "type": "秘社",
+      "typeLine": "秘社-神话生物/突变体",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "灰·国家机构",
+      "magic": "无",
+      "iconsDefense": "5"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "shoggoth": true,
+      "actions": [
+        {
+          "id": "command-discount",
+          "label": "命令减费",
+          "timing": "fast",
+          "cost": 0,
+          "honorCost": 1,
+          "ops": [
+            {
+              "kind": "next-command-discount"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "MSWM04",
+    "name": "梦魇主母",
+    "source": {
+      "text": "持续：构筑时你的牌组中只能包含【紫】派系的牌。\n持续：忽略所有本方卡牌上的所有【紫】忠诚需求。\n行动，横置：在本方秘社上放置一个复苏标志。\n行动0：从你手中打出一张印刷费用小于或等于X的牌，或令一个印刷费用小于或等于X的本方角色从暗藏者状态现身，你无需支付该牌费用，但需要满足其忠诚需求。X为本方秘社上的复苏标志数量。该能力每回合只能发动一次。\n行动，横置，从本方秘社上移除一个复苏标志：从你的牌库中寻找一张名为贝兰丹娜的牌，展示该牌后置于你的手中，然后洗牌。\n复苏标志上限：8\n初始手牌：2",
+      "type": "秘社",
+      "typeLine": "秘社-神话",
+      "cost": "-",
+      "printedCost": "-",
+      "faction": "紫·梦境行者",
+      "magic": "无",
+      "iconsDefense": "8/2"
+    },
+    "plan": {
+      "kind": "society",
+      "complete": true,
+      "ignorePurpleLoyalty": true,
+      "actions": [
+        {
+          "id": "revival-counter",
+          "label": "放置一个复苏标志",
+          "cost": 0,
+          "tap": true,
+          "ops": [
+            {
+              "kind": "society-counter",
+              "counter": "revival",
+              "amount": 1,
+              "max": 8
+            }
+          ]
+        },
+        {
+          "id": "revival-play",
+          "label": "打出手牌或令暗藏者现身",
+          "cost": 0,
+          "oncePerRound": true,
+          "ops": [
+            {
+              "kind": "mother-play"
+            }
+          ]
+        },
+        {
+          "id": "belandanna-search",
+          "label": "移除复苏标志寻找贝兰丹娜",
+          "cost": 0,
+          "tap": true,
+          "requireCounter": "revival",
+          "removeCounter": "revival",
+          "ops": [
+            {
+              "kind": "search",
+              "filter": {
+                "name": "贝兰丹娜"
+              },
+              "destination": "hand",
+              "reveal": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

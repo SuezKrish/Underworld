@@ -1,0 +1,4438 @@
+{
+  "schemaVersion": 1,
+  "totalXmlRecords": 738,
+  "pendingCount": 0,
+  "implementedCount": 738,
+  "categories": {},
+  "scopeNotes": [],
+  "records": [
+    {
+      "id": "BH01",
+      "name": "虚拟浪游者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH02",
+      "name": "天才玛格丽特",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH03",
+      "name": "玛格丽特的能量灌注",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH04",
+      "name": "幻灭实质",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH05",
+      "name": "计划：虚拟导师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH06",
+      "name": "水晶球",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH07",
+      "name": "拳击手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH08",
+      "name": "追踪高手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH09",
+      "name": "弦琴诗人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH10",
+      "name": "默契搭档",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH11",
+      "name": "窥秘灵能者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH12",
+      "name": "夜班员工",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH13",
+      "name": "星野的决意",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH14",
+      "name": "不动明王纹身",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH15",
+      "name": "野心学徒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH16",
+      "name": "堕落神父",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH17",
+      "name": "觅血者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH18",
+      "name": "异化鳄龟",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH19",
+      "name": "幽影少女阿黛尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH20",
+      "name": "计划：避世密约",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH21",
+      "name": "“发条”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH22",
+      "name": "修正者提嘉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH23",
+      "name": "雨果·劳伦斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH24",
+      "name": "雨果的时间流",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH25",
+      "name": "注定的危险",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH26",
+      "name": "雨果的溯时装置",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH27",
+      "name": "决绝的士官",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH28",
+      "name": "数据窃取者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH29",
+      "name": "异体支援组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH30",
+      "name": "引咎辞职",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH31",
+      "name": "水下作业",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH32",
+      "name": "计划：创世纪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH33",
+      "name": "物种管控中心",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH34",
+      "name": "思维同步仪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH35",
+      "name": "看护哈拉和林的乌都干",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH36",
+      "name": "赛伊拉，遮蔽者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH37",
+      "name": "赛伊拉的运势风暴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH38",
+      "name": "三个愿望",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH39",
+      "name": "运河畔的流浪儿",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH40",
+      "name": "西哈努克唤灵者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH41",
+      "name": "突变食尸鬼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH42",
+      "name": "威廉夫妇",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH43",
+      "name": "蒂亚戈",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH44",
+      "name": "免疫体样本",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH45",
+      "name": "走私船",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH46",
+      "name": "思绪水母",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH47",
+      "name": "失眠症患者互助组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH48",
+      "name": "桑狄亚姆吞忆怪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH49",
+      "name": "迷途老者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH50",
+      "name": "摩登女郎",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH51",
+      "name": "原初烈焰赠礼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH52",
+      "name": "头狼灰霜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH53",
+      "name": "晨光熹微",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH54",
+      "name": "阿黛尔的救赎",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH55",
+      "name": "名利场",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH56",
+      "name": "纠缠结构",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH57",
+      "name": "远古宿敌",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH58",
+      "name": "荒郊加油站",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BH59",
+      "name": "佩德罗的藏身处",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ001",
+      "name": "脑叶专家",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ002",
+      "name": "敏锐的猫头鹰",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ003",
+      "name": "领航员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ004",
+      "name": "奇兽设计师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ005",
+      "name": "多重梦境迷宫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ006",
+      "name": "梦境塑造师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ007",
+      "name": "塞西莉亚",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ008",
+      "name": "费南迪尔·哈里曼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ009",
+      "name": "精神锚点",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ010",
+      "name": "读心术",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ011",
+      "name": "藏于深层意识",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ012",
+      "name": "水镜占卜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ013",
+      "name": "召现雷霆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ014",
+      "name": "心灵拓扑学",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ015",
+      "name": "“愿景”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ016",
+      "name": "受困仙子",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ017",
+      "name": "星野葵",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ018",
+      "name": "仲夏欢宴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ019",
+      "name": "超越极限",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ020",
+      "name": "夜巡",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ021",
+      "name": "获取装备",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ022",
+      "name": "合金指虎",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ023",
+      "name": "私人军械库",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ024",
+      "name": "脊椎强殖装甲",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ025",
+      "name": "百变王牌",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ026",
+      "name": "吸血蝙蝠群",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ027",
+      "name": "血畜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ028",
+      "name": "水沟鼠群密探",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ029",
+      "name": "赤鳞近卫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ030",
+      "name": "裁定官",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ031",
+      "name": "雾羽千军",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ032",
+      "name": "宴会司仪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ033",
+      "name": "热夜之梦",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ034",
+      "name": "雾羽弥生",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ035",
+      "name": "幽冥骑士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ036",
+      "name": "菲尼克斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ037",
+      "name": "穿刺公弗拉德三世",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ038",
+      "name": "掠食时刻",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ039",
+      "name": "恫吓之瞳",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ040",
+      "name": "鲜血",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ041",
+      "name": "欢宴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ042",
+      "name": "矛盾体",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ043",
+      "name": "繁荣者伊森哈德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ044",
+      "name": "夷灭者厄贝尼亚",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ045",
+      "name": "追踪者赫卡忒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ046",
+      "name": "探巡者莫佳娜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ047",
+      "name": "灭世魔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ048",
+      "name": "位格压迫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ049",
+      "name": "吞噬蔓延",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ050",
+      "name": "破坏欲",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ051",
+      "name": "大暴走",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ052",
+      "name": "伊波·纳契的疯狂词典",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ053",
+      "name": "老看守",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ054",
+      "name": "沙地特种兵",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ055",
+      "name": "研究员戴维斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ056",
+      "name": "便衣警探",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ057",
+      "name": "皮特·冈萨雷斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ058",
+      "name": "控制小组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ059",
+      "name": "伊尔级战斗集群",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ060",
+      "name": "裂变",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ061",
+      "name": "钻研故纸堆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ062",
+      "name": "信息灌注",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ063",
+      "name": "神话威严",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ064",
+      "name": "提取样本",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ065",
+      "name": "计划：修格斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ066",
+      "name": "接头线人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ067",
+      "name": "拟态",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ068",
+      "name": "易洛魁遗族祭司",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ069",
+      "name": "忠心猎犬",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ070",
+      "name": "默温的无尽藏书",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ071",
+      "name": "老迈的考古学家",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ072",
+      "name": "卢锡安博士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ073",
+      "name": "安宁",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ074",
+      "name": "病理探究",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ075",
+      "name": "病理化验室",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ076",
+      "name": "心脑系统重塑实验室",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ077",
+      "name": "近海食人鱼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ078",
+      "name": "专业清理员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ079",
+      "name": "亡嚎食尸鬼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ080",
+      "name": "回收专员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ081",
+      "name": "凋零食腐怪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ082",
+      "name": "毒药专家塞巴斯蒂安",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ083",
+      "name": "索命骷髅",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ084",
+      "name": "战栗凶灵",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ085",
+      "name": "三号骸堆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ086",
+      "name": "雅加达的萨迪金",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ087",
+      "name": "赫雀瑟，黄金之蛇",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ088",
+      "name": "生化泄露",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ089",
+      "name": "生化改造手术",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ090",
+      "name": "淘汰弱者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ091",
+      "name": "废弃收容所",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ092",
+      "name": "巴哈马群岛基金中心",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ093",
+      "name": "样本陈列室",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ094",
+      "name": "费格马变量实验室",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ095",
+      "name": "圣甲虫药业集团总部",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ096",
+      "name": "烈焰宁芙妃卓拉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ097",
+      "name": "灰败",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ098",
+      "name": "达｀克哈",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ099",
+      "name": "幼年比蒙巨兽",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ100",
+      "name": "无垠宫殿",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ101",
+      "name": "漩涡体质",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ102",
+      "name": "心理阴影",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ103",
+      "name": "雪原狼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ104",
+      "name": "猎头顾问",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ105",
+      "name": "精算师爱娃",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ106",
+      "name": "若拉·雅罗文科大师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ107",
+      "name": "古语专家佩德罗",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ108",
+      "name": "山火",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ109",
+      "name": "基础测试",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ110",
+      "name": "M16步枪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ111",
+      "name": "生化防毒面具",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ112",
+      "name": "冰封古陵寝",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ113",
+      "name": "蝉屋",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ114",
+      "name": "冻原哨所",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ115",
+      "name": "水没镇区",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ116",
+      "name": "流浪者聚居地",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "BQ117",
+      "name": "失控的小镇",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ01",
+      "name": "导灵员裴恩熙",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ02",
+      "name": "本杰明·富兰克林",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ03",
+      "name": "空间转移术",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ04",
+      "name": "计划：诸界博物学",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ05",
+      "name": "换生灵马克西姆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ06",
+      "name": "麦布女王",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ07",
+      "name": "菲碧·π",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ08",
+      "name": "诡异三姐妹",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ09",
+      "name": "依莲娜·弗朗索瓦",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ10",
+      "name": "朱苏德拉·纳匹什提姆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ11",
+      "name": "暴乱煽动者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ12",
+      "name": "深渊惧影盖罗涅",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ13",
+      "name": "命定的薇儿丹迪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ14",
+      "name": "盖罗涅的召令",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ15",
+      "name": "元屠、阿鼻双剑",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ16",
+      "name": "前线士官",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ17",
+      "name": "绍朗中尉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ18",
+      "name": "任秋雨",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ19",
+      "name": "达摩克里斯之剑",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ20",
+      "name": "湖中夫人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ21",
+      "name": "舍生刃恭太郎",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ22",
+      "name": "费卢蒙德抄本",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ23",
+      "name": "断钢剑",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ24",
+      "name": "卡门",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ25",
+      "name": "伥虎",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ26",
+      "name": "暮天使莉芮尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ27",
+      "name": "骨根灵主",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ28",
+      "name": "咒欲之门",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ29",
+      "name": "妖僧拉斯普京",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ30",
+      "name": "疯狂之影刹奇拉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ31",
+      "name": "嗜杀怪客",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ32",
+      "name": "巡游的里戈莱托",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ33",
+      "name": "血肉之屋",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ34",
+      "name": "灵能海豚基森",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ35",
+      "name": "多功能人型作战平台",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ36",
+      "name": "防暴构装体，八",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ37",
+      "name": "尼古拉斯·勒梅大师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ38",
+      "name": "天之丛云",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "CQ39",
+      "name": "超元域",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ01",
+      "name": "沉没的废墟",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ02",
+      "name": "佛罗伦萨",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ03",
+      "name": "京都",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ04",
+      "name": "伦敦",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ05",
+      "name": "莫斯科",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ06",
+      "name": "纽约",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ07",
+      "name": "切尔诺贝利",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ08",
+      "name": "上海",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ09",
+      "name": "死者之城",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ10",
+      "name": "香港",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ11",
+      "name": "拉斯维加斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ12",
+      "name": "武陵源",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ13",
+      "name": "埃里伯斯山",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ14",
+      "name": "古城瓦莱塔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ15",
+      "name": "亚伯拉罕湖",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ16",
+      "name": "洛杉矶",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ17",
+      "name": "劣地巴德兰兹",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ18",
+      "name": "加州一号公路",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ19",
+      "name": "梦之回廊",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ20",
+      "name": "洛杉矶",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ21",
+      "name": "墨尔本",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ22",
+      "name": "集体潜意识之海",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ23",
+      "name": "巴塞罗那",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ24",
+      "name": "巴黎",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ25",
+      "name": "日月潭",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ26",
+      "name": "杭州",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ27",
+      "name": "失落的神庙",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ28",
+      "name": "长滩",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "DQ29",
+      "name": "华盛顿 D．C．",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC001",
+      "name": "通灵猫头鹰",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC002",
+      "name": "巨石阵看护人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC003",
+      "name": "帷幕护卫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC004",
+      "name": "力场法师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC005",
+      "name": "裂解术",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC006",
+      "name": "逆转异界之门",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC007",
+      "name": "常春藤派学者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC008",
+      "name": "灵能激发",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC009",
+      "name": "远东六号科研所",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC010",
+      "name": "青手费南迪尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC011",
+      "name": "德莫斯提尼，大魔法师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC012",
+      "name": "帷幕守望徽记",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC013",
+      "name": "貘",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC014",
+      "name": "公路骑士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC015",
+      "name": "驱魔人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC016",
+      "name": "执行部精锐",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC017",
+      "name": "除咒师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC018",
+      "name": "魔刃传人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC019",
+      "name": "弥尔顿的镇魔枪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC020",
+      "name": "隐蔽的飞刀",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC021",
+      "name": "狭路相逢",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC022",
+      "name": "引路仙子",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC023",
+      "name": "范·弥尔顿",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC024",
+      "name": "S．P．T．董事局",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC025",
+      "name": "猎手论坛徽记",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC026",
+      "name": "洛特尼科夫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC027",
+      "name": "花园地精像",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC028",
+      "name": "鲜血奴仆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC029",
+      "name": "新生血族",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC030",
+      "name": "巨型蝙蝠",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC031",
+      "name": "唤灵师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC032",
+      "name": "血族长老",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC033",
+      "name": "家族传承",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC034",
+      "name": "心兽之道",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC035",
+      "name": "传媒魔咒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC036",
+      "name": "初拥",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC037",
+      "name": "克里斯蒂娜·爱弗罗德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC038",
+      "name": "列恩·爱弗罗德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC039",
+      "name": "王座会徽记",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC040",
+      "name": "安普莎，冥府的侍女",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC041",
+      "name": "禁婆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC042",
+      "name": "末日信徒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC043",
+      "name": "纵火狂",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC044",
+      "name": "灾难使者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC045",
+      "name": "钟摆祭司",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC046",
+      "name": "无面屠戮者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC047",
+      "name": "烈火重围",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC048",
+      "name": "诅咒沙漏",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC049",
+      "name": "深渊细语",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC050",
+      "name": "丧钟回响",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC051",
+      "name": "诺恩纳格斯塔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC052",
+      "name": "终焉的诗寇蒂",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC053",
+      "name": "鸣钟教派徽记",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC054",
+      "name": "蒙古死亡蠕虫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC055",
+      "name": "安妮斯朵拉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC056",
+      "name": "地区警员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC057",
+      "name": "监控员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC058",
+      "name": "坚毅的刑警",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC059",
+      "name": "安全保卫部门",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC060",
+      "name": "神秘学顾问",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC061",
+      "name": "危机处理特派小组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC062",
+      "name": "调查档案",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC063",
+      "name": "警车追捕",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC064",
+      "name": "戒严",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC065",
+      "name": "审问嫌疑人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC066",
+      "name": "封魔瓶瑟琳娜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC067",
+      "name": "约翰·F·纳特里",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC068",
+      "name": "阿格斯IV",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC069",
+      "name": "警犬",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC070",
+      "name": "虔心修士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC071",
+      "name": "阿瓦隆隐士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC072",
+      "name": "博学的贤者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC073",
+      "name": "苏族捕梦网",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC074",
+      "name": "天空的教诲",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC075",
+      "name": "雪地救援队",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC076",
+      "name": "悟道僧人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC077",
+      "name": "庇佑圣灵",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC078",
+      "name": "光能盾",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC079",
+      "name": "圣婴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC080",
+      "name": "凯拉·歌迪亚教授",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC081",
+      "name": "亚洛尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC082",
+      "name": "索亚之书",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC083",
+      "name": "睿智的斯芬克司",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC084",
+      "name": "街头混混",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC085",
+      "name": "复生行尸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC086",
+      "name": "窃尸人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC087",
+      "name": "格鲁尼的走私客",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC088",
+      "name": "职业杀手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC089",
+      "name": "毒血诅咒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC090",
+      "name": "灵魂契约",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC091",
+      "name": "谋杀",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC092",
+      "name": "死灵召唤",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC093",
+      "name": "怨灵咒刃",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC094",
+      "name": "威达的汀巴巴迪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC095",
+      "name": "唐·格鲁尼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC096",
+      "name": "阿格里帕之犬",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC097",
+      "name": "阿斯旺",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC098",
+      "name": "陷入疯狂的人群",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC099",
+      "name": "徘徊的鬼魂",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC100",
+      "name": "尖牙幻象",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC101",
+      "name": "直视深渊",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC102",
+      "name": "妖火",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC103",
+      "name": "丧失理智的画家",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC104",
+      "name": "占卜师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC105",
+      "name": "噩梦领主",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC106",
+      "name": "酒神秘仪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC107",
+      "name": "崩塌的时空",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC108",
+      "name": "乔治·帕佐，织梦人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC109",
+      "name": "沉沦的巴德勒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC110",
+      "name": "闲人的绿地",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC111",
+      "name": "混沌蝴蝶",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC112",
+      "name": "黑猫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC113",
+      "name": "无形捣蛋精",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC114",
+      "name": "好奇的黑客",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC115",
+      "name": "备用资金",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC116",
+      "name": "柯尔特巨蟒左轮",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC117",
+      "name": "红眼航班",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC118",
+      "name": "停战协议",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC119",
+      "name": "守秘人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC120",
+      "name": "庄严圣像",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC121",
+      "name": "空鸣御守",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC122",
+      "name": "哈克·亚当斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC123",
+      "name": "饮魂者朱迪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC124",
+      "name": "尼古拉斯·勒梅",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC125",
+      "name": "无知路人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC126",
+      "name": "产业扩张",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC127",
+      "name": "终局",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC128",
+      "name": "替罪羊",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC129",
+      "name": "操控心智",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC130",
+      "name": "深入研究",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC131",
+      "name": "空投物资",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC132",
+      "name": "构筑静态障壁",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC133",
+      "name": "操控死尸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC134",
+      "name": "审判",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC135",
+      "name": "余震",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ01",
+      "name": "芙瑞雅·迪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ02",
+      "name": "西姆斯教授",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ03",
+      "name": "雪鸮信使",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ04",
+      "name": "传送门",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ05",
+      "name": "闪烁",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ06",
+      "name": "时空浪潮",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ07",
+      "name": "咒法古卷",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ08",
+      "name": "幸运新人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ09",
+      "name": "指挥官谢尔盖，“游隼”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ10",
+      "name": "“伯劳”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ11",
+      "name": "幸运兔脚",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ12",
+      "name": "贴心旅伴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ13",
+      "name": "迷梦窃贼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ14",
+      "name": "盛夏王廷传令官",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ15",
+      "name": "仙王奥伯龙",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ16",
+      "name": "仙后泰坦尼亚",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ17",
+      "name": "月华独角兽",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ18",
+      "name": "冬将军",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ19",
+      "name": "阿卡迪亚之桥",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ20",
+      "name": "秋日之歌",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ21",
+      "name": "仙子之翼刺青",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ22",
+      "name": "暗夜游掠者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ23",
+      "name": "血宴召集人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ24",
+      "name": "卡迪纳追迹人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ25",
+      "name": "卡迪纳猎杀者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ26",
+      "name": "袖中毒物",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ27",
+      "name": "哈达莎·爱弗罗德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ28",
+      "name": "霍瓦特·爱弗罗德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ29",
+      "name": "锐齿颈环",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ30",
+      "name": "末世论者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ31",
+      "name": "破茧者秘教线人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ32",
+      "name": "癫狂的先知",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ33",
+      "name": "蚀日星魔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ34",
+      "name": "主祭伊兹帕帕洛特",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ35",
+      "name": "思维湮灭",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ36",
+      "name": "血祭",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ37",
+      "name": "终焉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ38",
+      "name": "仪式雕像",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ39",
+      "name": "恶魔刺青",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ40",
+      "name": "蚀刻头骨",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ41",
+      "name": "衰败之环",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ42",
+      "name": "末日钟降临",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ43",
+      "name": "武装市民",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ44",
+      "name": "洛杉矶巡警",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ45",
+      "name": "警用直升机",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ46",
+      "name": "狴犴铜雕",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ47",
+      "name": "雷鸟",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ48",
+      "name": "街头劫匪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ49",
+      "name": "蹒跚行尸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ50",
+      "name": "墓穴食尸鬼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ51",
+      "name": "温迪戈",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ52",
+      "name": "大维齐尔迈哈穆德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ53",
+      "name": "尸舞舒拉密兹",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ54",
+      "name": "阿塔玛斯奉献仪式",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ55",
+      "name": "传奇落幕",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ56",
+      "name": "亡者之夜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ57",
+      "name": "骷髅纹身",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ58",
+      "name": "噩梦残像",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ59",
+      "name": "骇人畸变体",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ60",
+      "name": "失控宿主",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ61",
+      "name": "暗夜访客",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ62",
+      "name": "幻境之茧",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ63",
+      "name": "噬想兽",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ64",
+      "name": "幽灵鲸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ65",
+      "name": "葛丽特和汉塞尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ66",
+      "name": "沉眠的海拉忒密沃森",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ67",
+      "name": "失忆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ68",
+      "name": "潜行伏击者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ69",
+      "name": "失控的人潮",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ70",
+      "name": "弗朗西斯科",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ71",
+      "name": "土御门真知子",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ72",
+      "name": "稻荷神社童子",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ73",
+      "name": "道祖神",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ74",
+      "name": "意外事故",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ75",
+      "name": "群众歇斯底里",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JZ76",
+      "name": "大天狗纹身",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC01",
+      "name": "西比尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC02",
+      "name": "程安国，“黄雀”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC03",
+      "name": "希妲·克伦泽，“渡鸦”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC04",
+      "name": "卡德兰大王",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC05",
+      "name": "教堂执事",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC06",
+      "name": "瓦尔德修士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC07",
+      "name": "先人魂魄",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC08",
+      "name": "破除",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC09",
+      "name": "辟邪十字架",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC10",
+      "name": "圣公会教堂",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC11",
+      "name": "荒野长老",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC12",
+      "name": "阿瓦隆隐士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC13",
+      "name": "远古先祖的回应",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC14",
+      "name": "米达伦",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC15",
+      "name": "莲月合一",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC16",
+      "name": "江月",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC17",
+      "name": "江莲",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC18",
+      "name": "防暴构装体，九",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC19",
+      "name": "外科医生",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC20",
+      "name": "心理咨询师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC21",
+      "name": "称职的保镖",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC22",
+      "name": "退役军人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC23",
+      "name": "安格鲁，“荆棘”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC24",
+      "name": "林中女巫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC25",
+      "name": "白银匕首",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC26",
+      "name": "莫洛托夫鸡尾酒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC27",
+      "name": "狙击",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC28",
+      "name": "刑讯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC29",
+      "name": "组织营救",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "LC30",
+      "name": "J·罗伯茨，“海雕”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "JC125--2",
+      "name": "无知路人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSBQ01",
+      "name": "龙之欢宴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSBQ02",
+      "name": "修格斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSBQ03",
+      "name": "圣甲虫药业",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSBQ04",
+      "name": "天闻山庄",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSCQ01",
+      "name": "水月",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSCQ02",
+      "name": "诺尔维隐修会",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC01",
+      "name": "帷幕守望",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC02",
+      "name": "猎魔人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC03",
+      "name": "王座会",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC04",
+      "name": "鸣钟教派",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC05",
+      "name": "国家机构",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC06",
+      "name": "圣贤",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC07",
+      "name": "方碑序列",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC08",
+      "name": "梦境行者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC09",
+      "name": "秘社",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC10",
+      "name": "貘组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC11",
+      "name": "S．P．T．执行部",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC12",
+      "name": "爱弗罗德家族",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC13",
+      "name": "计时者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC14",
+      "name": "哨兵",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC15",
+      "name": "隐士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC16",
+      "name": "颂亡者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJC17",
+      "name": "梦魇族群",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJZ01",
+      "name": "猛禽战术小组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJZ02",
+      "name": "盛夏王廷",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJZ03",
+      "name": "末日钟",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSJZ04",
+      "name": "破茧者教团",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSLC01",
+      "name": "联席会议观察员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSLC02",
+      "name": "加利福尼亚猎团",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSLC03",
+      "name": "洛杉矶警察局",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSLC04",
+      "name": "圣公会",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSLC05",
+      "name": "劣地长老",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSLC06",
+      "name": "居民武装",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSWM01",
+      "name": "曼纽家族",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSWM02",
+      "name": "公众安全委员会",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSWM03",
+      "name": "冷山帮",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "MSWM04",
+      "name": "梦魇主母",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK001",
+      "name": "行尸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK002",
+      "name": "黄昏界域",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK003",
+      "name": "警察",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK004",
+      "name": "炼金巨像",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK005",
+      "name": "梦魇",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK006",
+      "name": "仙灵斗士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK008",
+      "name": "邪教徒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK009",
+      "name": "钟摆祭司",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK010",
+      "name": "触手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK011",
+      "name": "修格斯的核心区",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK012",
+      "name": "网站",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "TK013",
+      "name": "野狼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM001",
+      "name": "粗心学生",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM002",
+      "name": "联会观察员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM003",
+      "name": "千机庙离",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM004",
+      "name": "相位转化师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM005",
+      "name": "剑宫使节",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM006",
+      "name": "阿兰斯托曼v3．0",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM007",
+      "name": "天国之火",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM008",
+      "name": "扭曲命运",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM009",
+      "name": "尘归尘",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM010",
+      "name": "计划：萨尔贡之笛",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM011",
+      "name": "亚太区投资部主管",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM012",
+      "name": "皓月歌者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM013",
+      "name": "指挥车“鹫堡”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM014",
+      "name": "执行部特遣组",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM015",
+      "name": "神探雷蒙德·哈米特",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM016",
+      "name": "跟踪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM017",
+      "name": "砰！",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM018",
+      "name": "镇魂曲",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM019",
+      "name": "火力压制",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM020",
+      "name": "奥德修斯E型外骨骼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM021",
+      "name": "秘闻记录官",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM022",
+      "name": "阴影之子",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM023",
+      "name": "尽职的珍珠",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM024",
+      "name": "阿剌穆特杀手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM025",
+      "name": "安哥拉·曼纽",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM026",
+      "name": "古妮薇尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM027",
+      "name": "阴影之道",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM028",
+      "name": "曼纽的阴影厅堂",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM029",
+      "name": "被胁迫的政要",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM030",
+      "name": "狂热信众",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM031",
+      "name": "凌虐恶魔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM032",
+      "name": "扭曲的布道者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM033",
+      "name": "钟楼怪客",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM034",
+      "name": "消逝的乌尔德",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM035",
+      "name": "安东尼·布洛克",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM036",
+      "name": "烬归烬",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM037",
+      "name": "戴森的计谋",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM038",
+      "name": "信徒烙印",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM039",
+      "name": "P．S．C．精神分析师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM040",
+      "name": "心理审察委员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM041",
+      "name": "阿尔法先生",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM042",
+      "name": "新闻管控",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM043",
+      "name": "精准打击",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM044",
+      "name": "情报分析中心",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM045",
+      "name": "计划：新秩序",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM046",
+      "name": "计划：天眼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM047",
+      "name": "计划：贝奥武夫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM048",
+      "name": "凛冬之风英迪拉",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM049",
+      "name": "灯塔看护人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM050",
+      "name": "高文·卡尔森",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM051",
+      "name": "梦幻泡影",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM052",
+      "name": "隐居",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM053",
+      "name": "学术交流会议",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM054",
+      "name": "宗祠",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM055",
+      "name": "瓦伦丁的储存卡",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM056",
+      "name": "赃物贩子",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM057",
+      "name": "信息掮客",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM058",
+      "name": "“弹簧刀”钱斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM059",
+      "name": "雨夜屠夫",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM060",
+      "name": "多情达莉娅",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM061",
+      "name": "土归土",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM062",
+      "name": "跑路",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM063",
+      "name": "黑市",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM064",
+      "name": "巨蟒纹身",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM065",
+      "name": "诡辩家",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM066",
+      "name": "原初牧者贝拉斯克斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM067",
+      "name": "尖鸣突变体",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM068",
+      "name": "幽明生",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM069",
+      "name": "蠕动的灾祸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM070",
+      "name": "丝琪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM071",
+      "name": "贝兰丹娜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM072",
+      "name": "虚实翻转",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM073",
+      "name": "深渊的呼唤",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM074",
+      "name": "小径分叉的花园",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM075",
+      "name": "第六感",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM076",
+      "name": "卧底",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM077",
+      "name": "智囊团",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM078",
+      "name": "觅血猎犬",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM079",
+      "name": "张角",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM080",
+      "name": "米娅·格雷",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM081",
+      "name": "井中厉鬼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM082",
+      "name": "落单的麋鹿",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM083",
+      "name": "隐秘对抗",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM084",
+      "name": "命运无常",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM085",
+      "name": "冒失的召唤",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM086",
+      "name": "隔空御物",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM087",
+      "name": "羔羊之血",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM088",
+      "name": "现场调查",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM089",
+      "name": "未解之谜",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM090",
+      "name": "茶叶占卜法",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM091",
+      "name": "灌顶宝瓶",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM092",
+      "name": "计划：神秘学研究",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM093",
+      "name": "帷幕之后",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM094",
+      "name": "临时指挥部",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM095",
+      "name": "午夜电台",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM096",
+      "name": "琥珀囚笼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM097",
+      "name": "衰变计时器",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "WM098",
+      "name": "枯井",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG01",
+      "name": "银钥探求者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG02",
+      "name": "无瑕的索菲娅",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG03",
+      "name": "阿里阿德涅的魔咒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG04",
+      "name": "斩断因果",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG05",
+      "name": "德莫斯提尼的魔法立方",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG06",
+      "name": "磁欧石残片遗物",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG07",
+      "name": "余弦切",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG08",
+      "name": "杀意浸染",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG09",
+      "name": "第四千三百二十次尝试",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG10",
+      "name": "领地巡查使",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG11",
+      "name": "阴魂术士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG12",
+      "name": "兽形变化",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG13",
+      "name": "玛丽·林德博格",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG14",
+      "name": "朽灭者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG15",
+      "name": "雾涌海怪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG16",
+      "name": "计时人戴森·帕佐",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG17",
+      "name": "专家研讨会",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG18",
+      "name": "欧米伽小姐",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG19",
+      "name": "枪火谈判",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG20",
+      "name": "禁令",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG21",
+      "name": "计划：幻影英雄",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG22",
+      "name": "马图塔·帕度柯妮",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG23",
+      "name": "阿拜多斯的挽歌",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG24",
+      "name": "寂静的山谷",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG25",
+      "name": "伥鬼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG26",
+      "name": "看场打手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG27",
+      "name": "悍狼的怨灵",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG28",
+      "name": "违禁品临时收容所",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG29",
+      "name": "昔日阴影",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG30",
+      "name": "乔治·帕佐，幻象大师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG31",
+      "name": "谜之崔米拉奎亚",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG32",
+      "name": "贝兰丹娜的抚触",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG33",
+      "name": "精神折磨",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG34",
+      "name": "血中孕生",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG35",
+      "name": "痛苦的转变",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG36",
+      "name": "保留地猎人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG37",
+      "name": "玫之米歇尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG38",
+      "name": "缅因猫“高兴”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG39",
+      "name": "驻唱歌手",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG40",
+      "name": "海啸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG41",
+      "name": "余时清零",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG42",
+      "name": "连环爆炸",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG43",
+      "name": "暗夜密谋",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG44",
+      "name": "街垒",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG45",
+      "name": "头版头条",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG46",
+      "name": "星光俱乐部",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG47",
+      "name": "嗜睡症候群",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XG48",
+      "name": "铁笼拳击赛场",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ01",
+      "name": "联会禁音使",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ02",
+      "name": "轮回秘仪",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ03",
+      "name": "力场束缚",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ04",
+      "name": "抹除现实",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ05",
+      "name": "天火的捷列娃",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ06",
+      "name": "入梦的费南迪尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ07",
+      "name": "圣水",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ08",
+      "name": "银弹爆头",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ09",
+      "name": "临时征召",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ10",
+      "name": "邪物克星",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ11",
+      "name": "伊丽莎白，“知更鸟”",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ12",
+      "name": "暴躁血仆",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ13",
+      "name": "焚血之道",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ14",
+      "name": "鲜血",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ15",
+      "name": "爱弗罗德庄园",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ16",
+      "name": "法务部律师团",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ17",
+      "name": "祭品",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ18",
+      "name": "计时人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ19",
+      "name": "熵力化身",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ20",
+      "name": "灵魂通道",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ21",
+      "name": "臣服于命运",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ22",
+      "name": "州议员贝伦·希恩斯",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ23",
+      "name": "谨慎的办事员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ24",
+      "name": "防暴警察",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ25",
+      "name": "监控探头",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ26",
+      "name": "通缉令",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ27",
+      "name": "定点清除行动",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ28",
+      "name": "冥想者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ29",
+      "name": "阿塔科拉安魂师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ30",
+      "name": "阿瓦隆岛的迷雾",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ31",
+      "name": "莫兰大主教",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ32",
+      "name": "面壁苦修",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ33",
+      "name": "慈悲",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ34",
+      "name": "灵感",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ35",
+      "name": "白骨仆人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ36",
+      "name": "圣甲虫的清理员",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ37",
+      "name": "夜总会看门人",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ38",
+      "name": "金特·易卜拉欣",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ39",
+      "name": "方碑徽记",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ40",
+      "name": "催眠术表演者",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ41",
+      "name": "启迪之梦",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ42",
+      "name": "幻华",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ43",
+      "name": "具现化",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ44",
+      "name": "随风入梦",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ45",
+      "name": "破颅而出",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ46",
+      "name": "无名尸体",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ47",
+      "name": "防弹战术背心",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ48",
+      "name": "街头演说家",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ49",
+      "name": "葬礼",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ50",
+      "name": "电磁风暴",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ51",
+      "name": "凯特琳女士",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "XQ52",
+      "name": "无知路人（女）",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "ZHBH05",
+      "name": "计划：虚拟导师",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "ZHJZ65",
+      "name": "葛丽特和汉塞尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "ZHMSJZ02",
+      "name": "凛冬王廷",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "ZHWM026",
+      "name": "古妮薇尔",
+      "category": "已实现",
+      "implemented": true
+    },
+    {
+      "id": "ZHWM048",
+      "name": "凛冬之风英迪拉",
+      "category": "已实现",
+      "implemented": true
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "name": "黄白法术（Bot）",
+  "societyId": "MSJC01",
+  "cards": [
+    {
+      "cardId": "JC005",
+      "count": 3
+    },
+    {
+      "cardId": "BQ073",
+      "count": 3
+    },
+    {
+      "cardId": "JC006",
+      "count": 3
+    },
+    {
+      "cardId": "XG01",
+      "count": 3
+    },
+    {
+      "cardId": "BQ010",
+      "count": 3
+    },
+    {
+      "cardId": "BH03",
+      "count": 2
+    },
+    {
+      "cardId": "XG03",
+      "count": 3
+    },
+    {
+      "cardId": "BQ009",
+      "count": 3
+    },
+    {
+      "cardId": "JZ05",
+      "count": 3
+    },
+    {
+      "cardId": "WM008",
+      "count": 1
+    },
+    {
+      "cardId": "XQ04",
+      "count": 2
+    },
+    {
+      "cardId": "XQ02",
+      "count": 2
+    },
+    {
+      "cardId": "XQ28",
+      "count": 3
+    },
+    {
+      "cardId": "XG22",
+      "count": 3
+    },
+    {
+      "cardId": "JC078",
+      "count": 3
+    },
+    {
+      "cardId": "WM055",
+      "count": 3
+    },
+    {
+      "cardId": "XG06",
+      "count": 3
+    },
+    {
+      "cardId": "BH36",
+      "count": 2
+    },
+    {
+      "cardId": "XQ49",
+      "count": 2
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}

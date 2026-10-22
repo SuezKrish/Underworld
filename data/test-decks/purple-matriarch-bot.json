@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "纯紫主母（Bot）",
+  "societyId": "MSWM04",
+  "cards": [
+    {
+      "cardId": "BH46",
+      "count": 3
+    },
+    {
+      "cardId": "WM071",
+      "count": 2
+    },
+    {
+      "cardId": "WM067",
+      "count": 3
+    },
+    {
+      "cardId": "WM066",
+      "count": 3
+    },
+    {
+      "cardId": "JZ64",
+      "count": 3
+    },
+    {
+      "cardId": "JZ63",
+      "count": 3
+    },
+    {
+      "cardId": "JZ62",
+      "count": 3
+    },
+    {
+      "cardId": "XQ41",
+      "count": 3
+    },
+    {
+      "cardId": "XQ42",
+      "count": 3
+    },
+    {
+      "cardId": "XQ45",
+      "count": 3
+    },
+    {
+      "cardId": "XQ44",
+      "count": 3
+    },
+    {
+      "cardId": "LC17",
+      "count": 3
+    },
+    {
+      "cardId": "CQ32",
+      "count": 3
+    },
+    {
+      "cardId": "BH51",
+      "count": 3
+    },
+    {
+      "cardId": "WM069",
+      "count": 3
+    },
+    {
+      "cardId": "WM068",
+      "count": 3
+    },
+    {
+      "cardId": "CQ33",
+      "count": 3
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}

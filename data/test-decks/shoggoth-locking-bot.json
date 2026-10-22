@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "name": "锁定修格斯（Bot）",
+  "societyId": "MSBQ02",
+  "cards": [
+    {
+      "cardId": "BH29",
+      "count": 3
+    },
+    {
+      "cardId": "BH31",
+      "count": 3
+    },
+    {
+      "cardId": "BH27",
+      "count": 3
+    },
+    {
+      "cardId": "BQ058",
+      "count": 3
+    },
+    {
+      "cardId": "BQ066",
+      "count": 3
+    },
+    {
+      "cardId": "BQ064",
+      "count": 3
+    },
+    {
+      "cardId": "BQ061",
+      "count": 3
+    },
+    {
+      "cardId": "BQ050",
+      "count": 3
+    },
+    {
+      "cardId": "BQ048",
+      "count": 3
+    },
+    {
+      "cardId": "BQ049",
+      "count": 3
+    },
+    {
+      "cardId": "BQ052",
+      "count": 3
+    },
+    {
+      "cardId": "JC043",
+      "count": 3
+    },
+    {
+      "cardId": "BH59",
+      "count": 3
+    },
+    {
+      "cardId": "BQ112",
+      "count": 1
+    },
+    {
+      "cardId": "BQ114",
+      "count": 1
+    },
+    {
+      "cardId": "BQ109",
+      "count": 3
+    },
+    {
+      "cardId": "WM043",
+      "count": 3
+    },
+    {
+      "cardId": "CQ18",
+      "count": 3
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": "BQ045"
+  }
+}

@@ -1,0 +1,17 @@
+.offline-mode .account-controls,.offline-mode a[href^="/api/cards?"],.offline-mode a[href="/metadata"]{display:none!important}
+.offline-lobby textarea{box-sizing:border-box;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:inherit;padding:12px;resize:vertical;line-height:1.5;word-break:break-all}
+.offline-lobby .intro>p:not(.intro-text){color:var(--muted);max-width:480px;line-height:1.8;margin:20px 0}.offline-lobby .intro>.secondary{display:inline-flex;margin-top:4px}
+.offline-mode{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);-webkit-tap-highlight-color:transparent}
+@media(max-width:720px){.offline-mode .topbar{padding:12px}.offline-mode .topnav{gap:8px}.offline-lobby{display:flex;flex-direction:column;padding:22px 16px}.offline-lobby h1{font-size:38px}.offline-lobby .intro{padding-bottom:20px}.offline-lobby .intro-text{font-size:17px}.offline-mode .arena{padding:8px}.offline-mode .phase-bar{position:sticky;top:0;z-index:4}.offline-mode .table{min-width:0}.offline-mode .game-card{min-width:110px}.offline-mode .room-strip{gap:10px}.offline-mode .room-actions{gap:6px}.offline-mode .priority-window{max-width:calc(100vw - 16px)}.offline-mode .console-panel{max-width:calc(100vw - 16px)}}
+@media(max-width:999px){
+ .offline-mode .playing-layout{height:auto;min-height:100dvh;overflow:visible}
+ .offline-mode .playing-layout .topbar{height:auto;min-height:0;padding:12px;flex-direction:column;align-items:flex-start;gap:10px}
+ .offline-mode .playing-layout .topnav{flex-wrap:wrap;gap:6px 10px;line-height:1.5}
+ .offline-mode .playing-layout .arena,.offline-mode .playing-layout .table{height:auto;flex:none}
+ .offline-mode .playing-layout .districts{flex:none;grid-template-columns:repeat(3,minmax(220px,1fr));grid-auto-columns:minmax(220px,1fr);min-height:250px;max-height:440px;overflow-x:auto}
+ .offline-mode .playing-layout .district{min-height:240px}
+ .offline-mode .playing-layout .field-side{min-height:64px;max-height:150px}
+ .offline-mode .playing-layout .control-rail{padding-bottom:0}
+ .offline-mode .playing-layout .room-console{position:relative;right:auto;bottom:auto;width:100%!important;max-width:100%;margin-top:10px}
+ .offline-mode .playing-layout .rail-scroll{flex:none;max-height:60dvh}
+}

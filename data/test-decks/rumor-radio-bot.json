@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "name": "黑黄紫电台（Bot）",
+  "societyId": "MSJC09",
+  "cards": [
+    {
+      "cardId": "WM095",
+      "count": 3
+    },
+    {
+      "cardId": "XQ41",
+      "count": 3
+    },
+    {
+      "cardId": "WM066",
+      "count": 3
+    },
+    {
+      "cardId": "WM004",
+      "count": 3
+    },
+    {
+      "cardId": "JZ55",
+      "count": 3
+    },
+    {
+      "cardId": "JZ62",
+      "count": 3
+    },
+    {
+      "cardId": "WM063",
+      "count": 3
+    },
+    {
+      "cardId": "BQ091",
+      "count": 3
+    },
+    {
+      "cardId": "XQ04",
+      "count": 3
+    },
+    {
+      "cardId": "BH41",
+      "count": 3
+    },
+    {
+      "cardId": "XQ36",
+      "count": 3
+    },
+    {
+      "cardId": "XG28",
+      "count": 3
+    },
+    {
+      "cardId": "WM069",
+      "count": 3
+    },
+    {
+      "cardId": "CQ32",
+      "count": 3
+    },
+    {
+      "cardId": "WM001",
+      "count": 3
+    },
+    {
+      "cardId": "WM089",
+      "count": 3
+    },
+    {
+      "cardId": "CQ26",
+      "count": 2
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}

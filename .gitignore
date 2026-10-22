@@ -1,0 +1,14 @@
+node_modules
+offline/node_modules
+dist/
+offline/dist/
+.next/
+.vinext/
+.wrangler/
+.sites-runtime/
+.env*
+!.env.example
+.dev.vars*
+*.tsbuildinfo
+.DS_Store
+.public-export

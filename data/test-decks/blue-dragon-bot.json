@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "name": "纯蓝龙之欢宴（Bot）",
+  "societyId": "MSBQ01",
+  "cards": [
+    {
+      "cardId": "BQ030",
+      "count": 3
+    },
+    {
+      "cardId": "BQ031",
+      "count": 3
+    },
+    {
+      "cardId": "BQ027",
+      "count": 3
+    },
+    {
+      "cardId": "BQ026",
+      "count": 3
+    },
+    {
+      "cardId": "BQ034",
+      "count": 3
+    },
+    {
+      "cardId": "BQ039",
+      "count": 3
+    },
+    {
+      "cardId": "BQ040",
+      "count": 5
+    },
+    {
+      "cardId": "CQ07",
+      "count": 3
+    },
+    {
+      "cardId": "JC030",
+      "count": 3
+    },
+    {
+      "cardId": "JC034",
+      "count": 3
+    },
+    {
+      "cardId": "WM021",
+      "count": 3
+    },
+    {
+      "cardId": "BH16",
+      "count": 3
+    },
+    {
+      "cardId": "XG10",
+      "count": 3
+    },
+    {
+      "cardId": "JC036",
+      "count": 3
+    },
+    {
+      "cardId": "BQ036",
+      "count": 3
+    },
+    {
+      "cardId": "BQ035",
+      "count": 3
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}

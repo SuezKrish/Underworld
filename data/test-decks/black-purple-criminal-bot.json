@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "name": "黑紫罪犯（Bot）",
+  "societyId": "MSWM03",
+  "cards": [
+    {
+      "cardId": "WM063",
+      "count": 1
+    },
+    {
+      "cardId": "CQ31",
+      "count": 3
+    },
+    {
+      "cardId": "BQ082",
+      "count": 3
+    },
+    {
+      "cardId": "WM060",
+      "count": 3
+    },
+    {
+      "cardId": "JZ55",
+      "count": 3
+    },
+    {
+      "cardId": "CQ32",
+      "count": 3
+    },
+    {
+      "cardId": "WM089",
+      "count": 3
+    },
+    {
+      "cardId": "BH41",
+      "count": 3
+    },
+    {
+      "cardId": "BQ091",
+      "count": 3
+    },
+    {
+      "cardId": "CQ24",
+      "count": 2
+    },
+    {
+      "cardId": "XG28",
+      "count": 3
+    },
+    {
+      "cardId": "CQ26",
+      "count": 2
+    },
+    {
+      "cardId": "JZ63",
+      "count": 3
+    },
+    {
+      "cardId": "JC084",
+      "count": 3
+    },
+    {
+      "cardId": "JC086",
+      "count": 3
+    },
+    {
+      "cardId": "XQ36",
+      "count": 3
+    },
+    {
+      "cardId": "BQ087",
+      "count": 3
+    },
+    {
+      "cardId": "BQ086",
+      "count": 3
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "name": "纯红隐修会（Bot）",
+  "societyId": "MSCQ02",
+  "cards": [
+    {
+      "cardId": "XG14",
+      "count": 3
+    },
+    {
+      "cardId": "JZ42",
+      "count": 1
+    },
+    {
+      "cardId": "WM033",
+      "count": 3
+    },
+    {
+      "cardId": "JZ32",
+      "count": 3
+    },
+    {
+      "cardId": "JZ33",
+      "count": 3
+    },
+    {
+      "cardId": "JC044",
+      "count": 3
+    },
+    {
+      "cardId": "JC045",
+      "count": 3
+    },
+    {
+      "cardId": "JC043",
+      "count": 3
+    },
+    {
+      "cardId": "JC042",
+      "count": 3
+    },
+    {
+      "cardId": "BQ047",
+      "count": 3
+    },
+    {
+      "cardId": "BH23",
+      "count": 3
+    },
+    {
+      "cardId": "BH24",
+      "count": 3
+    },
+    {
+      "cardId": "BH25",
+      "count": 3
+    },
+    {
+      "cardId": "CQ12",
+      "count": 3
+    },
+    {
+      "cardId": "XG36",
+      "count": 3
+    },
+    {
+      "cardId": "WM082",
+      "count": 3
+    },
+    {
+      "cardId": "BQ108",
+      "count": 2
+    },
+    {
+      "cardId": "WM037",
+      "count": 2
+    }
+  ],
+  "choices": {
+    "color": "黄",
+    "anchorNames": [],
+    "coreId": ""
+  }
+}
