@@ -15,7 +15,7 @@ function attachmentFuel(v) {
     const m = v.players[v.seat], soon = m.assets.length + 1;
     const fromHand = m.hand.filter(c => characterAttachment(c) && (v.castingCosts?.[c.id] ?? c.printedCost ?? 0) <= soon && (c.catalogId !== 'JC036' || (v.spellTargets?.[c.id] ?? []).some(o => v.players[1 - v.seat].play.some(x => x.id === o.id)))).length;
     const bats = m.hand.filter(c => c.catalogId === 'BQ026').length + own(v).filter(c => c.catalogId === 'BQ026' && !c.attachedTo).length;
-    const drink = bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027' || c.catalogId === 'XG10' && !c.tapped);
+    const drink = own(v).some(c => (c.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027' || c.catalogId === 'XG10' && !c.tapped);
     return fromHand + bats + Number(!!drink);
 }
 export function blueSecretDeployAllowed(v, c) {
@@ -94,7 +94,7 @@ export function blueMulligan(v, h) {
 }
 function stagedEngine(v, h) {
     const m = v.players[v.seat], futureMana = h.pool(v) + (!m.actionsUsed?.asset && m.hand.some(c => !c.nonAssetNow) ? 1 : 0);
-    const fuel = informed(v) ? attachmentFuel(v) : m.hand.some(characterAttachment) || own(v).some(c => c.catalogId === 'BQ026' && !c.attachedTo) || bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027');
+    const fuel = informed(v) ? attachmentFuel(v) : m.hand.some(characterAttachment) || own(v).some(c => c.catalogId === 'BQ026' && !c.attachedTo || (c.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027');
     return m.play.filter(c => c.faceDown && !c.paidRevealBlocked && h.loyalty(v, c) && (v.revealCosts?.[c.id] ?? c.printedCost ?? 0) <= futureMana).filter(c => c.catalogId === 'BQ030' && !arbiters(v).length && fuel || c.catalogId === 'BQ036' && !own(v).some(c => c.catalogId === 'BQ036') && (informed(v) || m.hand.length <= 3 || arbiters(v).length && m.hand.filter(c => c.attachment).length < 2)).sort((a, b) => Number(a.catalogId !== 'BQ030') - Number(b.catalogId !== 'BQ030'))[0];
 }
 export function blueRevealReserve(v, h) {
@@ -252,9 +252,10 @@ export function blueDistrictBonus(v, c, d, h) {
     return d === goal ? -22 : 0;
 }
 export function blueBloodSacrifice(v, source, options, h) {
-    if (!blueBot(v) || source.catalogId !== 'BQ027')
+    const selfBlood = (source.availableActions ?? []).some(a => a.operation === 'slave-blood-return');
+    if (!blueBot(v) || source.catalogId !== 'BQ027' && !selfBlood || h.keyword(source, '永恒'))
         return null;
-    const available = bloodSources(v).length || own(v).some(a => a.name === '鲜血' && a.attachedTo === source.id);
+    const available = selfBlood || bloodSources(v).length || own(v).some(a => a.name === '鲜血' && a.attachedTo === source.id);
     if (!available)
         return null;
     const targets = options.map(o => h.lookup(v, o.id)).filter(c => c?.controller === v.seat && c.id !== source.id && c.subtypes?.includes('吸血鬼'));
@@ -266,9 +267,24 @@ export function blueBloodSacrifice(v, source, options, h) {
     const income = attachmentIncome(v, h);
     // Wait through preparation. Strip the fresh draw before the opponent can
     // spend it; when several cards remain, the opponent still chooses the discard.
-    if (!(afterDraw && !v.flow.stack.length && discarders.length && enemyCards > 0) && !emergency)
+    const refill = selfBlood && income > 0 && v.players[v.seat].hand.length < (v.players[v.seat].handLimit ?? 7) && !discarders.length &&
+        (v.turn.phase === 'end' || v.turn.standardAllowed && v.flow.stepOwner === v.seat && !v.flow.stack.length);
+    if (!(afterDraw && !v.flow.stack.length && discarders.length && enemyCards > 0) && !emergency && !refill)
         return null;
     const target = targets.sort((a, b) => blueAttachmentScore(v, { catalogId: 'BQ040' }, b, h) - blueAttachmentScore(v, { catalogId: 'BQ040' }, a, h) || a.id.localeCompare(b.id))[0];
+    // Moving one knife to the recipient must not sacrifice a winning battle or
+    // the source district. This applies even when the attachment draws a card.
+    if (refill && !emergency) {
+        const d = source.district, battleLoss = source.tapped ? 0 : (source.effectiveIcons ?? source.icons)?.battle ?? 0, starLoss = source.tapped ? 0 : (source.effectiveIcons ?? source.icons)?.influence ?? 0;
+        const before = h.total(v, v.seat, d, 'battle'), after = before - battleLoss + Number(target.district === d && !target.tapped);
+        if (h.contestPending(v, d, 'battle') && before > h.total(v, 1 - v.seat, d, 'battle') && after <= h.total(v, 1 - v.seat, d, 'battle'))
+            return null;
+        if (starLoss > 0 && h.contestPending(v, d, 'influence'))
+            return null;
+        const region = v.districts[target.district];
+        if (region?.pendingWinner !== null && region?.pendingWinner !== undefined)
+            return null;
+    }
     const denial = afterDraw && discarders.length && enemyCards > 0;
     return { targetId: target.id, score: denial ? 94 + income * 5 + (enemyCards <= discarders.length ? 24 : 8) : 30 + h.value(target) + income * 4 };
 }

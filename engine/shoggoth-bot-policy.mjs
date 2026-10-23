@@ -331,14 +331,14 @@ export function lockingTactics(v, h, add) {
                 add({ ...base, mode: 'lock', targetIds: [] }, 25 + watery.length * (8 + sp.length * 5));
             const x = core(v);
             if (x && h.lethalBattleRisk(v, x, x.district))
-                add({ ...base, mode: 'protect', targetIds: [x.id] }, 55);
+                add({ ...base, mode: 'protect', targetIds: [] }, 55);
         }
         if (c.catalogId === 'BQ048') {
             if (combo)
                 add({ ...base, mode: 'core', targetIds: [] }, 34 + lockPayoff);
             const x = core(v);
             if (x?.tapped)
-                add({ ...base, mode: 'reset', targetIds: [x.id] }, 36 + h.districtScore(v, x.district, x));
+                add({ ...base, mode: 'reset', targetIds: [] }, 36 + h.districtScore(v, x.district, x));
             for (const o of targets('damage')) {
                 const x = h.lookup(v, o.id);
                 if (x?.controller === 1 - p && (x.effectiveDefense ?? x.defense ?? 1) - (x.damage ?? 0) <= 1 && !h.targetedByUs(v, o.id))

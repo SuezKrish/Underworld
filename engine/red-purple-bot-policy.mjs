@@ -10,10 +10,20 @@ const active = v => redBot(v) || purpleBot(v), me = v => v.players[v.seat], foe 
 const front = v => me(v).play.filter(c => !c.faceDown), live = (v, id) => front(v).filter(c => c.catalogId === id && !c.printedTextBlank && !c.abilitiesSuppressed), has = (v, id) => live(v, id).length > 0;
 const seals = (v, id) => (v.sealed ?? []).filter(c => c.hostId === id);
 const revival = v => v.societies?.[v.seat]?.counters?.revival ?? 0;
+// The draw step precedes this turn's available revival-counter action.
+// Forecast it for acquisition only; casting still uses actual counters.
+export function motherAcquisitionCurve(v) {
+    const soc = v.societies?.[v.seat], now = revival(v), counter = soc?.actions?.find(a => a.id === 'revival-counter');
+    const pending = (v.flow?.stack ?? []).some(a => a.controller === v.seat && a.ops?.some(o => o.kind === 'society-counter' && o.counter === 'revival' && o.amount > 0));
+    const ahead = ['setup', 'start', 'action'].includes(v.turn?.phase);
+    return Math.min(8, now + Number(!!(pending || ahead && counter && !counter.used && !soc.tapped)));
+}
 const role = c => hasCardType(c, 'character');
+const sameHeld = (v, c) => me(v).hand.some(x => x.catalogId === c.catalogId);
 const timing = v => v.turn.standardAllowed && v.flow.stepOwner === v.seat && !v.flow.stack.length;
 const price = (v, c, h) => v.castingCosts?.[c.id] ?? h.cost(c);
 const destroyed = v => (v.districts ?? []).filter(d => d?.destroyed).length + v.players.reduce((n, p) => n + (p.scoreCards ?? []).filter(c => c.destroyed).length, 0);
+const activeDestruction = v => (v.districts ?? []).filter(d => d?.destroyed).length;
 const capturedDestruction = v => (me(v).scoreCards ?? []).reduce((n, c) => n + (c.destroyed ?? 0), 0);
 // BB359AN5: a disaster can claim the final destroyed region before the
 // society-switch spell resolves. Only count active, already-present Witherers.
@@ -59,28 +69,63 @@ export function redPurpleLibraryBonus(v, c, context) {
         return 0;
     const missing = code => !has(v, code) && !me(v).hand.some(x => x.catalogId === code) && !me(v).play.some(x => x.faceDown && x.catalogId === code);
     if (redBot(v)) {
+        if (v.societies?.[v.seat]?.plan?.disasterOnly) {
+            // After the switch only disasters can be cast. A forbidden character is
+            // useful as an asset or priest fuel, not as a future field engine.
+            if (!c.subtypes?.includes('灾难')) {
+                const priest = v.societies[v.seat].actions?.find(a => a.id === 'priest');
+                const fuel = c.faction?.includes(priest?.discard?.factionName ?? '鸣钟教派');
+                return fuel && !priest?.discardOptions?.length && !v.societies[v.seat].tapped ? 25 : -100;
+            }
+            const copies = front(v).filter(x => x.catalogId === c.catalogId).length;
+            const cost = Math.max(0, (c.printedCost ?? 0) - activeDestruction(v) * (c.automation?.destroyedPlayDiscount ?? 0));
+            const funds = Math.max((me(v).costPool ?? 0) + me(v).assets.filter(a => !a.tapped).length, me(v).assets.length + Number(!me(v).actionsUsed?.asset));
+            if (cost > funds + 1)
+                return -30;
+            if (c.catalogId === 'BQ047' && foe(v).assets.length >= 4)
+                return sameHeld(v, c) ? 10 : 125;
+            if (c.catalogId === 'XG14')
+                return sameHeld(v, c) ? 15 : Math.max(45, 115 - copies * 25);
+            return sameHeld(v, c) ? 0 : 55;
+        }
         if (v.round === 2 && c.catalogId === 'XG36' && missing('XG36'))
             return 230;
         if (v.round <= 2 && c.catalogId === 'JC042' && missing('JC042'))
             return 110;
         if (v.round <= 3 && c.catalogId === 'XG36' && missing('XG36'))
             return 75;
-        if (c.catalogId === 'BH24' && missing('BH24') && destroyed(v) < 2 && front(v).length)
-            return 60;
-        if (c.catalogId === 'XG14' && missing('XG14') && destroyed(v) >= 2 && (me(v).loyalty?.factions?.红 ?? 0) >= 3)
+        if (c.catalogId === 'JZ42' && missing('JZ42') && !v.societies?.[v.seat]?.plan?.disasterOnly && v.round >= 4 && destroyed(v) >= 2)
+            return capturedDestruction(v) >= 2 ? 180 : 110;
+        const futureRed = (me(v).loyalty?.factions?.红 ?? 0) + Number(!me(v).actionsUsed?.asset && me(v).hand.some(x => x.id !== c.id && !x.nonAssetNow && x.faction?.startsWith('红')));
+        if (c.catalogId === 'XG14' && missing('XG14') && activeDestruction(v) >= 1 && futureRed >= 3 && v.round >= 3)
+            return 135;
+        if (c.catalogId === 'JZ32' && missing('JZ32') && activeDestruction(v) >= 1 && v.round >= 3)
+            return 95;
+        if (c.catalogId === 'BH23' && missing('BH23') && activeDestruction(v) < 3 && front(v).length && v.round >= 4)
+            return 70;
+        if (c.catalogId === 'WM033' && missing('WM033') && v.round >= 3)
+            return 75;
+        if (c.catalogId === 'BH24' && missing('BH24') && activeDestruction(v) < 3 && front(v).length && v.round <= 5)
+            return 70;
+        if (c.catalogId === 'XG14' && missing('XG14') && activeDestruction(v) >= 2 && (me(v).loyalty?.factions?.红 ?? 0) >= 3)
             return 60;
         return 0;
     }
-    if (revival(v) <= 1 && missing('BH46') && missing('XQ42') && ['BH46', 'XQ42'].includes(c.catalogId))
+    const curve = motherAcquisitionCurve(v);
+    if (curve <= 1 && missing('BH46') && missing('XQ42') && ['BH46', 'XQ42'].includes(c.catalogId))
         return c.catalogId === 'BH46' ? 120 : 110;
-    if (revival(v) <= 2 && ['XQ44', 'WM067'].includes(c.catalogId) && missing(c.catalogId))
-        return c.catalogId === 'XQ44' ? 70 : 60;
-    if (revival(v) === 3 && ['JZ62', 'JZ63'].includes(c.catalogId) && missing(c.catalogId))
-        return 65;
-    if (revival(v) >= 5 && c.catalogId === 'JZ64' && missing('JZ64'))
-        return 65;
-    if (c.catalogId === 'WM066' && missing('WM066') && has(v, 'JZ64'))
-        return 60;
+    if (curve === 2 && ['XQ44', 'WM067'].includes(c.catalogId) && missing(c.catalogId))
+        return c.catalogId === 'XQ44' ? 90 : 70;
+    if (curve >= 3 && curve <= 4 && c.catalogId === 'JZ62' && missing('JZ62'))
+        return 135;
+    if (curve === 3 && c.catalogId === 'JZ63' && missing('JZ63') && !has(v, 'JZ62'))
+        return 75;
+    if (curve >= 5 && c.catalogId === 'JZ64' && missing('JZ64'))
+        return 100;
+    if (c.catalogId === 'WM066' && missing('WM066') && (has(v, 'JZ64') || curve >= 3 && (has(v, 'BH46') || has(v, 'JZ62'))))
+        return 95;
+    if (curve >= 3 && c.catalogId === 'BH51' && missing('BH51') && !(me(v).effectiveMarkers ?? me(v).markers).hidden && has(v, 'WM066'))
+        return 105;
     return 0;
 }
 function earlyBonus(v, c) {
@@ -92,6 +137,8 @@ function earlyBonus(v, c) {
         return has(v, 'JC045') ? 0 : 16;
     if (c.catalogId === 'JC042')
         return has(v, 'JC042') ? 0 : 12;
+    if (c.catalogId === 'JZ32' && activeDestruction(v) > 0)
+        return has(v, 'JZ32') ? 0 : 18;
     if (c.catalogId === 'BH24')
         return (me(v).effectiveMarkers ?? me(v).markers).hidden ? 8 : 20;
     return 0;
@@ -108,7 +155,7 @@ export function redPurpleHiddenScore(v, c, h) {
     if (!redBot(v) || v.hidden?.cardBonus?.faction !== '红')
         return undefined;
     const points = redHiddenPoints(v, c, h);
-    const imminentDiscount = c.catalogId === 'XG14' && destroyed(v) >= 1 ? 25 : 0;
+    const imminentDiscount = c.catalogId === 'XG14' && activeDestruction(v) >= 1 ? 25 : 0;
     return (points >= 6 ? 100 : points * 5) - h.handValue(v, c) * 0.8 - points * 0.1 - imminentDiscount;
 }
 function canTakePoint(v, c, h) {
@@ -167,11 +214,13 @@ function motherValue(v, c, h) {
     if (c.catalogId === 'JZ64')
         n += (has(v, 'JZ64') ? 8 : 28) + (has(v, 'WM066') || me(v).hand.some(x => x.catalogId === 'WM066') ? 18 : 0);
     if (c.catalogId === 'WM066')
-        n += (has(v, 'WM066') ? 0 : 8) + (has(v, 'JZ64') ? 20 : 0);
+        n += (has(v, 'WM066') ? 0 : 8) + (has(v, 'JZ64') ? 20 : !has(v, 'WM066') && curve >= 3 && (has(v, 'BH46') || has(v, 'JZ62')) ? 28 : 0);
     if (c.catalogId === 'BH46' && me(v).play.some(x => x.id === c.id && x.faceDown))
         n += 20 + (has(v, 'JZ64') ? 16 : 0) + (has(v, 'WM066') ? 16 : 0);
     if (c.catalogId === 'WM069' && !has(v, 'WM069'))
         n += 12;
+    if (c.catalogId === 'BH51' && !(me(v).effectiveMarkers ?? me(v).markers).hidden && has(v, 'WM066'))
+        n += 70;
     return n + (c.catalogId === 'XQ42' ? 24 : 0);
 }
 function waterFirst(v, h) {
@@ -186,22 +235,47 @@ function waterFirst(v, h) {
 export function redPurpleHandBonus(v, c) {
     if (!active(v))
         return 0;
-    return engineBonus(v, c) + earlyBonus(v, c) + (purpleBot(v) && ['XQ42', 'BH46'].includes(c.catalogId) ? 8 : 0) + (redBot(v) && c.catalogId === 'JZ42' && destroyed(v) < 3 ? -10 : 0);
+    if (redBot(v) && v.societies?.[v.seat]?.plan?.disasterOnly && !c.subtypes?.includes('灾难'))
+        return -12;
+    const bidReserve = redBot(v) && v.hidden?.cardBonus?.faction === '红' && c.automation?.destroyedPlayDiscount && me(v).hand.some(x => x.id === c.id) &&
+        (v.castingCosts?.[c.id] ?? c.printedCost ?? 0) <= (me(v).costPool ?? 0) + me(v).assets.filter(a => !a.tapped).length ? 70 : 0;
+    return bidReserve + engineBonus(v, c) + earlyBonus(v, c) + (purpleBot(v) && ['XQ42', 'BH46'].includes(c.catalogId) ? 8 : 0) + (redBot(v) && c.catalogId === 'JZ42' && !v.societies?.[v.seat]?.plan?.disasterOnly ? 35 : 0) + (redBot(v) && c.catalogId === 'BH23' && !has(v, 'BH23') && v.round >= 3 && activeDestruction(v) < 3 ? 20 : 0);
+}
+export function redPurpleAssetReserve(v, c) {
+    if (!active(v))
+        return 0;
+    const other = [...front(v), ...me(v).hand, ...me(v).play.filter(x => x.faceDown)].some(x => x.id !== c.id && x.catalogId === c.catalogId);
+    if (redBot(v) && c.catalogId === 'JZ42' && !v.societies?.[v.seat]?.plan?.disasterOnly)
+        return other ? 0 : 260;
+    if (!purpleBot(v) || other)
+        return 0;
+    const curve = motherAcquisitionCurve(v);
+    if (c.catalogId === 'JZ62' && curve <= 4)
+        return 80;
+    if (c.catalogId === 'WM066' && (has(v, 'JZ64') || curve >= 3 && (has(v, 'BH46') || has(v, 'JZ62'))))
+        return 85;
+    if (c.catalogId === 'JZ64' && curve >= 4)
+        return 90;
+    return 0;
 }
 export function redPurpleAssetBonus(v, c) {
     if (!active(v))
         return 0;
+    if (redBot(v) && v.societies?.[v.seat]?.plan?.disasterOnly && !c.subtypes?.includes('灾难'))
+        return -35;
     let n = engineBonus(v, c) * 2 + earlyBonus(v, c);
     if (redBot(v)) {
-        if (c.faction?.startsWith('红') && (me(v).loyalty?.factions?.红 ?? 0) < 3)
-            n -= 75 - 10 * (me(v).loyalty?.factions?.红 ?? 0);
-        if (c.catalogId === 'JZ42' && destroyed(v) < 3)
-            n -= 14;
+        const switchPlan = !v.societies?.[v.seat]?.plan?.disasterOnly && (v.round >= 4 || me(v).hand.some(x => x.catalogId === 'JZ42'));
+        const red = me(v).loyalty?.factions?.红 ?? 0;
+        if (c.faction?.startsWith('红') && red < (switchPlan ? 5 : 3))
+            n -= (switchPlan ? 110 : 75) - 10 * Math.min(3, red);
+        if (c.catalogId === 'JZ42' && !v.societies?.[v.seat]?.plan?.disasterOnly)
+            n += 100;
         if (c.catalogId === 'JC042' && !front(v).some(x => x.catalogId === 'JC042') && me(v).hand.some(x => x.id !== c.id && role(x) && Number(x.printedCost) >= 3 && x.faction?.startsWith('红')))
             n += 28;
     }
     else {
-        if (!(me(v).loyalty?.factions?.紫 > 0) && c.faction?.startsWith('紫'))
+        if (!v.societies?.[v.seat]?.plan?.ignorePurpleLoyalty && !(me(v).loyalty?.factions?.紫 > 0) && c.faction?.startsWith('紫'))
             n -= 80;
         for (const [domain, count] of Object.entries({ 心灵: 1, 鲜血: 2, 星辰: 1 }))
             if (c.magicDomains?.includes(domain) && (me(v).loyalty?.domains?.[domain] ?? 0) < count)
@@ -210,6 +284,7 @@ export function redPurpleAssetBonus(v, c) {
             n -= 6;
         if (v.round <= 2 && ['BH46', 'XQ42'].includes(c.catalogId) && !me(v).play.length && !me(v).hand.some(x => x.id !== c.id && x.catalogId === c.catalogId))
             n += 80;
+        n += redPurpleAssetReserve(v, c);
     }
     return n;
 }
@@ -265,7 +340,7 @@ export function redPurplePreferHidden(v, c) {
     if (!active(v) || c.publicNow)
         return false;
     if (redBot(v))
-        return c.catalogId === 'BH23' && (v.castingCosts?.[c.id] ?? Number(c.printedCost)) > 2 || c.catalogId === 'CQ12' || c.catalogId === 'WM082' && v.round < 3;
+        return c.catalogId === 'BH23' && (v.castingCosts?.[c.id] ?? Number(c.printedCost)) > 2 || c.catalogId === 'WM082' && v.round < 3;
     if (c.catalogId === 'BH46')
         return true;
     return ['JZ64', 'WM071', 'LC17', 'CQ33'].includes(c.catalogId) && Number(c.printedCost) > Math.max(2, me(v).assets.length - 1);
@@ -397,7 +472,7 @@ export function redPurpleChoice(v, a, h, type = 'effect-choice') {
         return h.sorted(cards, c => payloadScore(v, c, h, host) + (c.catalogId === 'JZ63' ? 10 : 0)).map(c => ({ ...b, cardId: c.id })).concat(a.canFail ? [{ ...b, fail: true }] : []);
     }
     if (a.kind === 'entropy-recover')
-        return h.sorted(cards, c => c.catalogId === 'BH24' && destroyed(v) < 2 && h.pool(v) >= 2 && me(v).hand.some(x => x.faction?.startsWith('红') && h.hiddenStrength(x, v) + 3 >= 6) ? 65 : c.catalogId === 'WM037' ? 35 : c.catalogId === 'BQ108' ? has(v, 'XG14') ? 30 : 8 : h.handValue(v, c)).map(c => ({ ...b, cardId: c.id }));
+        return h.sorted(cards, c => c.catalogId === 'BH24' && activeDestruction(v) < 3 && h.pool(v) >= 2 && me(v).hand.some(x => x.faction?.startsWith('红') && h.hiddenStrength(x, v) + 3 >= 6) ? 65 : c.catalogId === 'WM037' ? 35 : c.catalogId === 'BQ108' ? has(v, 'XG14') ? 30 : 8 : h.handValue(v, c)).map(c => ({ ...b, cardId: c.id }));
     if (['discard', 'sacrifice', 'shoggoth-assets', 'entropy-assets'].includes(a.kind)) {
         const least = h.sorted(cards, c => h.handValue(v, c) + (role(c) ? engineBonus(v, c) * 2 : 0) - (c.token ? 12 : 0) - (a.kind === 'sacrifice' ? investigationRelief(v, h.lookup(v, c.id) ?? c, h) : 0), false);
         if (a.kind === 'entropy-assets')
@@ -493,18 +568,91 @@ function doomSwitch(v, h) {
     const devourer = me(v).hand.find(c => c.catalogId === 'BQ047' && c.castAllowed !== false && h.loyalty(v, c)) ??
         me(v).play.find(c => c.catalogId === 'BQ047' && c.faceDown && h.loyalty(v, h.faceUp(v, c)));
     const followCost = devourer ? price(v, devourer, h) : Infinity, followNow = available >= followCost;
-    const budget = Math.min(3, Math.max(0, available - (followNow ? followCost : 0))), pay = doomTimePayment(v, Math.max(0, cost - budget), followNow ? 4 : 1);
+    // Capturing a destroyed region removes its active casting discount. Spend
+    // slightly more now when that public discount is about to disappear.
+    const discountAtRisk = (v.districts ?? []).some((d, i) => d?.destroyed && ((d.pendingWinner !== null && d.pendingWinner !== undefined) || [0, 1].some(p => (d.influence[p] ?? 0) + Math.max(0, h.total(v, p, i, 'influence') - h.total(v, 1 - p, i, 'influence') - (d.influence[1 - p] ?? 0)) >= d.threshold - 1)));
+    const budget = Math.min(discountAtRisk ? 5 : 3, Math.max(0, available - (followNow ? followCost : 0))), pay = doomTimePayment(v, Math.max(0, cost - budget), followNow ? 4 : 1);
     if (!pay)
         return null;
     const staged = me(v).play.filter(c => c.faceDown && !c.subtypes?.includes('灾难')).length;
     const preparation = me(v).hand.filter(c => c.id !== doom.id && !c.subtypes?.includes('灾难') && role(c) && engineBonus(v, c) > 0).length;
-    const score = followNow ? 145 : 58 + (devourer ? 14 : 0) + (capturedDestruction(v) >= 2 ? 10 : 0) - Math.min(28, staged * 18 + preparation * 6);
+    const score = followNow ? 145 : (discountAtRisk ? 120 : 58) + (devourer ? 14 : 0) + (capturedDestruction(v) >= 2 ? 10 : 0) - Math.min(28, staged * 18 + preparation * 6);
     return { doom, pay, score };
+}
+// Compare the complete discount sequence, not only the next card's body.
+function timeFlowPreparation(v, h) {
+    if (!redBot(v) || v.societies?.[v.seat]?.plan?.disasterOnly || activeDestruction(v) >= 3)
+        return null;
+    const flow = me(v).hand.find(c => c.catalogId === 'BH24' && c.castAllowed !== false && h.loyalty(v, c));
+    if (!flow || !me(v).hand.some(c => c.id !== flow.id && redHiddenPoints(v, c, h) + 3 * Number(c.faction?.startsWith('红')) >= 6))
+        return null;
+    const cultist = front(v).find(c => c.catalogId === 'JC042' && !c.printedTextBlank && !c.abilitiesSuppressed);
+    const cost = price(v, flow, h), sacrifice = cost >= 2 && cultist && front(v).some(c => c.id !== cultist.id);
+    const pay = Math.max(0, cost - (sacrifice ? 2 : 0));
+    if (pay > h.pool(v))
+        return null;
+    const follow = me(v).hand.filter(c => c.id !== flow.id && c.castAllowed !== false && h.loyalty(v, c) && c.automation?.destroyedPlayDiscount && (price(v, c, h) > 0 || cost === 0 && (c.printedCost ?? 0) > activeDestruction(v) * c.automation.destroyedPlayDiscount) &&
+        Math.max(0, price(v, c, h) - c.automation.destroyedPlayDiscount) <= h.pool(v) - pay &&
+        me(v).hand.some(b => b.id !== c.id && b.id !== flow.id && redHiddenPoints(v, b, h) + 3 * Number(b.faction?.startsWith('红')) >= 6));
+    return follow.length && playOptions(v, flow, h).length ? { flow, cultist: sacrifice ? cultist : null } : null;
+}
+function doomSocietyActions(v, h, add) {
+    const p = v.seat, soc = v.societies?.[p];
+    if (!redBot(v) || !soc?.plan?.disasterOnly || soc.tapped)
+        return;
+    const cards = v.players.flatMap(p => p.play), ownPriests = front(v).filter(c => ['JC045', 'TK009'].includes(c.catalogId));
+    const token = { id: 'doom-priest-preview', type: 'character', catalogId: 'TK009', controller: p, printedCost: 4, defense: 2, effectiveDefense: 2, icons: { battle: 2, investigation: 1, influence: 0 }, effectiveIcons: { battle: 2, investigation: 1, influence: 0 }, keywords: [] };
+    for (const a of soc.actions ?? []) {
+        if (a.used || a.botDisabled || (a.cost ?? 0) > h.pool(v))
+            continue;
+        if (a.id === 'priest') {
+            const fuel = h.sorted((a.discardOptions ?? []).map(o => h.lookup(v, o.id)).filter(Boolean), c => h.handValue(v, c) + (c.subtypes?.includes('灾难') ? 45 : 0), false)[0];
+            if (!fuel)
+                continue;
+            for (const o of a.targetOptions ?? []) {
+                const d = Number(o.id.slice(9));
+                if (!v.districts[d] || lethalRisk(v, token, d, h))
+                    continue;
+                add({ type: 'society-action', abilityId: a.id, discardIds: [fuel.id], targetIds: [o.id] }, 62 + h.districtScore(v, d, token) - Math.max(0, h.handValue(v, fuel)) * 0.6 + (front(v).length < 2 ? 18 : 0));
+            }
+        }
+        if (a.id === 'time')
+            for (const o of a.targetOptions ?? []) {
+                const object = h.lookup(v, o.id), d = o.id.startsWith('district:') ? Number(o.id.slice(9)) : object?.district, r = v.districts[d];
+                if (!r || object && object.controller !== p)
+                    continue;
+                const marks = (r.counters?.time ?? 0) + cards.filter(c => c.district === d).reduce((n, c) => n + (c.markers ?? 0), 0);
+                let score = 0;
+                if (!r.destroyed) {
+                    const ours = h.total(v, p, d, 'influence'), theirs = h.total(v, 1 - p, d, 'influence');
+                    score = marks >= 3 ? 70 + (ours > theirs ? 20 : 0) + (capturedDestruction(v) >= 2 ? 25 : 0) : 4 + marks * 3;
+                }
+                if (object && ownPriests.some(c => c.id === object.id)) {
+                    const before = h.total(v, p, d, 'influence') - h.total(v, 1 - p, d, 'influence'), wins = (r.influence[p] ?? 0) + Math.max(0, before + 1 - (r.influence[1 - p] ?? 0)) >= r.threshold;
+                    score += 22 + (!object.tapped ? 10 : 0) + (wins && !object.tapped ? 35 : 0) + (wins && r.destroyed && capturedDestruction(v) >= 2 ? 100 : 0);
+                }
+                if (object?.catalogId === 'BH23' && (object.markers ?? 0) === 3)
+                    score += 38;
+                if (object?.catalogId === 'WM033' && !(object.markers > 0) && me(v).graveyard.some(c => c.subtypes?.some(t => ['法术', '灾难'].includes(t))))
+                    score += 35;
+                if (score > 0)
+                    add({ type: 'society-action', abilityId: a.id, targetIds: [o.id] }, score);
+            }
+    }
 }
 export function redPurpleTactics(v, h, add) {
     if (!active(v))
         return;
     const p = v.seat, standard = timing(v), available = h.pool(v), soc = v.societies?.[p];
+    if (standard) {
+        doomSocietyActions(v, h, add);
+        const sequence = timeFlowPreparation(v, h);
+        if (sequence?.cultist)
+            add({ type: 'activate', cardId: sequence.cultist.id, actionIndex: 0, targetIds: [] }, 126);
+        else if (sequence)
+            for (const op of playOptions(v, sequence.flow, h))
+                add(op, 116);
+    }
     if (purpleBot(v) && standard && soc) {
         const jelly = waterFirst(v, h);
         for (const a of soc.actions ?? []) {
@@ -575,7 +723,7 @@ export function redPurpleTactics(v, h, add) {
                 if (gain > 3 && (lethal || contest))
                     modes.push('damage');
                 const discountNow = standard && me(v).hand.some(x => x.automation?.destroyedPlayDiscount && (price(v, x, h) > available || price(v, x, h) > 0) && h.loyalty(v, x));
-                if (!v.districts[c.district]?.destroyed && destroyed(v) < 3 && (discountNow || lethal || contest && gain > 3 || v.turn.phase === 'end'))
+                if (!v.districts[c.district]?.destroyed && activeDestruction(v) < 3 && (discountNow || lethal || contest && gain > 3 || v.turn.phase === 'end'))
                     modes.push('destroy');
                 if (modes.length)
                     add({ ...b, modes: modes.slice(0, 2), timePayments: pay }, lethal ? 140 : 55 + Math.max(0, gain));
@@ -602,6 +750,17 @@ export function redPurpleTactics(v, h, add) {
                 for (const d of h.districts(v, up))
                     if (!lethalRisk(v, up, d, h))
                         add({ type: 'play', cardId: c.id, district: d }, 88 + h.districtScore(v, d, up));
+            if (c.catalogId === 'JZ32')
+                for (const d of h.districts(v, up))
+                    if (v.districts[d]?.destroyed) {
+                        const projected = { ...up, effectiveIcons: { ...up.effectiveIcons, influence: (up.effectiveIcons?.influence ?? 0) + 2 } };
+                        if (!lethalRisk(v, projected, d, h))
+                            add({ type: 'play', cardId: c.id, district: d }, 90 + h.districtScore(v, d, projected) - need);
+                    }
+            if (c.catalogId === 'BH23' && me(v).hand.some(x => x.catalogId === 'JZ42') && !has(v, 'BH23'))
+                for (const d of h.districts(v, up))
+                    if (!lethalRisk(v, up, d, h))
+                        add({ type: 'play', cardId: c.id, district: d }, 86 + h.districtScore(v, d, up) - need);
             if (c.catalogId === 'XG14' && v.round <= 4 && need <= 2)
                 for (const d of h.districts(v, up))
                     if (!lethalRisk(v, up, d, h))
@@ -649,7 +808,7 @@ export function redPurpleTactics(v, h, add) {
         if (c.catalogId === 'BH25')
             for (const op of ops)
                 add(op, 28 + h.value(h.lookup(v, op.targetIds[0])));
-        if (c.catalogId === 'BH24' && destroyed(v) < 3 && me(v).hand.length >= 2 && me(v).hand.some(x => x.id !== c.id && h.hiddenStrength(x, v) + (x.faction?.startsWith('红') ? 3 : 0) >= 6))
+        if (c.catalogId === 'BH24' && activeDestruction(v) < 3 && me(v).hand.length >= 2 && me(v).hand.some(x => x.id !== c.id && h.hiddenStrength(x, v) + (x.faction?.startsWith('红') ? 3 : 0) >= 6))
             for (const op of ops) {
                 const target = h.lookup(v, op.targetIds[0]);
                 add(op, (v.round <= 3 ? 76 : 50) + (target?.catalogId === 'BH23' && (target.markers ?? 0) < 4 ? 20 : 0));

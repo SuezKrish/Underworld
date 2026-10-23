@@ -1,3 +1,4 @@
+import { projectionRead } from './projection-read-cache.mjs';
 import { statusSources } from './veiled-status-rules.mjs';
 import { effectiveSocietyMarkers } from './secrecy-counts.mjs';
 import { printedRulesCard, allAbilitiesLost } from './printed-rules.mjs';
@@ -6,6 +7,11 @@ export function transactionsBlocked(s) {
     return s.players.flatMap(p => p.play).some(id => { const l = s.locations[id]; return l?.zone === 'play' && !l.faceDown && !l.tapped && printedRulesCard(s, id).automation?.static === 'untapped-no-transactions'; });
 }
 export function abilitiesSuppressed(s, id, loc = s.locations[id]) {
+    if (loc === s.locations[id] && s.cards[id])
+        return projectionRead(s, 'suppressed:' + id, () => computeAbilitiesSuppressed(s, id, loc));
+    return computeAbilitiesSuppressed(s, id, loc);
+}
+function computeAbilitiesSuppressed(s, id, loc) {
     if (allAbilitiesLost(s, id, loc))
         return true;
     if (loc?.zone !== 'play' || loc.faceDown || !hasCardType(s.cards[id], 'character'))

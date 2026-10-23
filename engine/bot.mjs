@@ -1,5 +1,6 @@
 import { recordReplayStep, transferReplayUndo } from './replay.mjs';
-import { command, viewFor } from './match.mjs';
+import { command } from './match.mjs';
+import { cachedViewFor as viewFor } from './cached-view.mjs';
 import { hardBotView, hardBotCommands, hardLibraryWeights } from './hard-bot-policy.mjs';
 import { hardBot, installHardLibraryScorer } from './hard-bot-library.mjs';
 import { botCommands } from './bot-policy.mjs';

@@ -1,3 +1,4 @@
+import { projectionRead } from './projection-read-cache.mjs';
 import { exchangedPrintedCard } from './printed-exchange.mjs';
 import { nisosSources } from './green-black-rules.mjs';
 import { inGrave } from './graveyard-rules.mjs';
@@ -14,6 +15,11 @@ export function abilityLossSources(s, id, loc = s.locations[id], seen = new Set(
 }
 export function allAbilitiesLost(s, id, loc = s.locations[id]) { return abilityLossSources(s, id, loc).length > 0; }
 export function printedRulesBlank(s, id, loc = s.locations[id], seen = new Set()) {
+    if (!seen.size && loc === s.locations[id] && s.cards[id])
+        return projectionRead(s, 'printed-blank:' + id, () => computePrintedRulesBlank(s, id, loc, seen));
+    return computePrintedRulesBlank(s, id, loc, seen);
+}
+function computePrintedRulesBlank(s, id, loc, seen) {
     if (abilityLossSources(s, id, loc, seen).length)
         return true;
     if (realityCard(s, id) === false || nisosSources(s, id).length)

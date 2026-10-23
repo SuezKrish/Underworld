@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {fixture,cmd,approve,put,resolve} from './test-fixture.mjs';
+import {fixture,cmd,approve,put,resolve,fire} from './test-fixture.mjs';
 import {parseCatalog} from './catalog.mjs';
 import {compileSupported} from './automation.mjs';
 import {compileEnvironment} from './environment-definitions.mjs';
@@ -69,7 +69,7 @@ for(const automatic of [false,true])test(`雾羽弥生饮血选择无快速窗�
  for(let i=0;i<12;i++){if(automatic)cmd(s,0,{type:'manual-request',operation:'add-mana',count:1});else approve(s,0,'add-mana',{count:1});}
  const id=put(s,'BQ034'),blood=put(s,'BQ040',0,'graveyard');
  s.players[0].ignoreLoyalty=true;cmd(s,0,{type:'play',cardId:id,district:0});resolve(s);
- const a=s.triggerChoices.find(a=>a.cardId===id);assert.ok(a);cmd(s,0,{type:'trigger-choice',triggerId:a.id,fire:true});resolve(s);
+ fire(s,id);
  assert.equal(s.effectChoice.kind,'discard-deck-drink');assert.equal(s.flow.locked,true);
  s=deserializeRoomState(serializeRoomState(s));undo();assert.equal(s.effectChoice,null);
  assert.ok(s.flow.stack.some(a=>a.cardId===id));

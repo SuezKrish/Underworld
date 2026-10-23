@@ -1,5 +1,5 @@
-import {pendingGraveyardUse} from './bot-graveyard-uses.mjs';
-import {upcomingContest} from './contest-timing.mjs';
+import { pendingGraveyardUse } from './bot-graveyard-uses.mjs';
+import { upcomingContest } from './contest-timing.mjs';
 import { nightPatrolMoves, greenCarmenTactics, greenEmployeeSetup, greenEmployeeScore, greenEmployeeRevealHold, greenOpeningMulligan } from './green-black-tactics.mjs';
 import { blueBot, blueHandBonus, bluePlayBonus, blueDistrictBonus, blueAttachmentScore, blueBatAttachTargets, blueBatMobility, blueBloodSacrifice, bluePhoenixContest, blueMobilityRevealScore, blueRevealReserve, blueEngineRevealScore, blueBattleDiscards, blueBattleDistrictBonus, blueHeartPathPlayScore, blueMulligan, blueSecretDeployAllowed, blueHiddenDistrictBonus, blueBloodSearch } from './blue-dragon-bot-policy.mjs';
 import { actionEffectForecast } from './bot-effect-forecast.mjs';
@@ -16,12 +16,14 @@ import { uniqueIdentity, matchesCardNameFilter } from './card-names.mjs';
 import { botLibraryHasName } from './bot-library-information.mjs';
 import { responsePlan, ambushRevealScore, secretDeploymentPrice } from './bot-response-planning.mjs';
 import { secretDeploymentAssessment } from './bot-deployment-planning.mjs';
+import { openingBlackBladeRisk } from './bot-opening-safety.mjs';
 import { recurringEngine, libraryReserve, libraryUse, libraryBudget, optionalRefillUseful, resourcePriorities, regionRewardUtility, regionTriggerUseful, lakeShouldShuffle, secrecyReward, districtConcession, handCommitmentPenalty, assetPreservesHand, districtAttachmentTenure, earlyEngineTenurePenalty, removalEngineTempoBonus } from './bot-resource-planning.mjs';
 import { spellFuel, spellCombatReserve, spellCombatPump, spellProtectionReserve, spellBlinkHold, spellSilverRescue } from './spell-bot-planning.mjs';
 import { spellFuneralScore, spellRelicDomain, spellRelicRebuild, wheelOpponentScore, wheelDisruptionKey, wheelDisruptionPending, wheelRecoveryDraw, wheelRefillKey, wheelPrice, wantsStarRelic } from './spell-graveyard-planning.mjs';
 import { matutaBonus, engineCopyBonus, enginePlayBonus, blackHandBonus, greenHandBonus, greenAssetBonus, yallorBonus, rumorHandBonus, engineCanStart, needsCurveAsset } from './bot-dynamic-planning.mjs';
 import { rumorTriggerChoices } from './bot-rumor-planning.mjs';
 import { assetComboReserve, assetLoyaltyBenefit, assetCommitmentPenalty } from './bot-card-purpose.mjs';
+import { characterSacrificePlays } from './bot-character-payments.mjs';
 // Normal BOTs receive only their ordinary seat view. The opt-in hard policy
 // supplies a separate server-only view; player views never gain these details.
 const cost = c => Number(c?.printedCost) || 0;
@@ -641,11 +643,25 @@ function damage(v, a) {
     }
     return { type: 'assign-damage', allocations };
 }
+const triggerLibraryUse = (v, a) => Math.max(libraryUse(a, v.seat), criminalLibraryUse(v, a), purpleLibraryUse(v, a));
+function triggerLibraryBudget(v, abilities = []) {
+    const budget = Math.min(libraryBudget(v, policyHelpers), criminalBot(v) ? criminalLibraryBudget(v, policyHelpers) : purpleBot(v) ? purpleLibraryBudget(v, policyHelpers) : Infinity);
+    const queued = new Set((v.flow?.stack ?? []).map(a => a.id).filter(Boolean)), reserved = new Map();
+    // Event-time activations may have paid and chosen targets without entering
+    // the stack yet. Every entry point must reserve those draws, together with
+    // this batch's mandatory draws, before selecting any optional ones.
+    for (const a of [...v.pendingTriggers ?? [], ...abilities.filter(a => a.pending || a.mandatory)]) {
+        if (a.controller !== v.seat || a.id && queued.has(a.id))
+            continue;
+        reserved.set(a.id ?? a, triggerLibraryUse(v, a));
+    }
+    return Math.max(0, budget - [...reserved.values()].reduce((n, use) => n + use, 0));
+}
 function triggers(v) {
     const candidates = [];
     for (const a of v.triggerChoices ?? []) {
         const base = { type: 'trigger-choice', triggerId: a.id }, plan = a.plan;
-        if (!a.mandatory && !a.pending && !optionalRefillUseful(v, a, policyHelpers)) {
+        if (!a.mandatory && !a.pending && (triggerLibraryUse(v, a) > triggerLibraryBudget(v) || !optionalRefillUseful(v, a, policyHelpers))) {
             candidates.push({ ...base, fire: false });
             continue;
         }
@@ -726,12 +742,15 @@ function triggers(v) {
     }
     return candidates;
 }
-function tactical(v,mode='normal'){
- if(mode==='normal'){
-  const next=upcomingContest(v);
-  if(next){const projected={...v,turn:{...v.turn,...next,step:'contest-before'}},seen=new Set();return [...tactical(v,'scores'),...tactical(projected,'scores')].sort((a,b)=>b.score-a.score).filter(x=>{const key=JSON.stringify(x.command);if(seen.has(key))return false;seen.add(key);return true;}).map(x=>x.command);}
- }
-
+function tactical(v, mode = 'normal') {
+    if (mode === 'normal') {
+        const next = upcomingContest(v);
+        if (next) {
+            const projected = { ...v, turn: { ...v.turn, ...next, step: 'contest-before' } }, seen = new Set();
+            return [...tactical(v, 'scores'), ...tactical(projected, 'scores')].sort((a, b) => b.score - a.score).filter(x => { const key = JSON.stringify(x.command); if (seen.has(key))
+                return false; seen.add(key); return true; }).map(x => x.command);
+        }
+    }
     const choices = [], p = v.seat, available = pool(v), standard = v.turn?.standardAllowed && v.flow.stepOwner === p && !v.flow.stack.length;
     const responses = responsePlan(v, policyHelpers), revealBudget = Math.max(reservedReveal(v), responses.ambushMana), shieldBudget = Math.max(shieldReserve(v), responses.responseMana), untapped = mine(v).assets.filter(a => !a.tapped).length, reserve = Math.max(wheelRecoveryDraw(v) ? wheelPrice(v) : 0, revealBudget + (revealBudget + shieldBudget <= untapped ? shieldBudget : Math.max(0, shieldBudget - revealBudget))), spare = Math.max(0, available - reserve);
     const add = (command, score, key, defensiveRescue = false) => {
@@ -762,6 +781,9 @@ function tactical(v,mode='normal'){
             return;
         if (command.type === 'play' && !lockingCommandAllowed(v, lookup(v, command.cardId), command.mode))
             return;
+        // Specialized tactics also generate reveals; all routes share this check.
+        if (command.type === 'reveal' && v.flow.stack.some(a => a.kind === 'reveal-character' && a.cardId === command.cardId))
+            return;
         if (command.type === 'play')
             score -= lockingCommandPenalty(v, source, command, policyHelpers);
         // A proactive engine removal may use its own response budget, but should
@@ -774,7 +796,7 @@ function tactical(v,mode='normal'){
             const card = lookup(v, command.cardId);
             let spending = 0;
             if (command.type === 'play' && card)
-                spending = Math.max(0, (v.castingCosts?.[card.id] ?? cost(card)) - (command.revealIds?.length ?? 0) - (command.tapIds?.length ?? 0) - (plan?.timeCastingDiscount ? (command.timePayments ?? []).reduce((n, x) => n + x.count, 0) : 0));
+                spending = Math.max(0, (v.castingCosts?.[card.id] ?? cost(card)) - (command.revealIds?.length ?? 0) - (command.tapIds?.length ?? 0) - (command.costIds ?? []).reduce((n, id) => n + (v.characterCosts?.[card.id]?.payments?.[id]?.reduction ?? 0), 0) - (plan?.timeCastingDiscount ? (command.timePayments ?? []).reduce((n, x) => n + x.count, 0) : 0));
             if (command.type === 'secret-deploy')
                 spending = secretDeploymentPrice(v, command.district);
             if (command.type === 'activate')
@@ -863,7 +885,7 @@ function tactical(v,mode='normal'){
                     if (contest)
                         add({ ...base, costCardId: contest.costCardId }, contest.score, hiddenKey);
                 }
-                if (c.catalogId === 'BQ027') {
+                if (c.catalogId === 'BQ027' || a.operation === 'slave-blood-return') {
                     const drink = blueBloodSacrifice(v, c, opts, policyHelpers);
                     if (drink)
                         add({ ...base, targetIds: [drink.targetId] }, drink.score);
@@ -905,7 +927,7 @@ function tactical(v,mode='normal'){
                 continue;
             const rescue = spellSilverRescue(v, c, v.spellTargets?.[c.id] ?? [], policyHelpers);
             const urgentHand = imminentHandLoss(v, c), urgentProtection = (v.spellTargets?.[c.id] ?? []).some(o => actionEffectForecast(v, c, plan, [o.id], policyHelpers, { isCard: true }).urgent), urgentDefense = rescue.length > 0 || ['WM008', 'XQ04', 'JZ05'].includes(c.catalogId) && v.flow.stack.some(a => a.controller !== p && a.targetIds?.some(id => keyRole(lookup(v, id)) && lookup(v, id)?.controller === p)), urgentRefill = spells(v) && c.catalogId === 'XQ02' && standard && (mine(v).deckCount <= 6 || wheelDisruptionPending(v)), rescueWheel = spells(v) && c.catalogId === 'XG03' && standard && !wheelInHand(v) && !wheelInDeck(v) && mine(v).assets.some(a => a.catalogId === 'XQ02');
-            const urgentGrave=spells(v)&&plan.effect==='grave-bottom-draw'&&(v.spellTargets?.[c.id]??[]).some(o=>pendingGraveyardUse(v,o.id)&&spellFuneralScore(v,c,lookup(v,o.id),policyHelpers)!==null);
+            const urgentGrave = spells(v) && plan.effect === 'grave-bottom-draw' && (v.spellTargets?.[c.id] ?? []).some(o => pendingGraveyardUse(v, o.id) && spellFuneralScore(v, c, lookup(v, o.id), policyHelpers) !== null);
             if ((standard || revealBudget > 0 || shieldBudget > 0) && required - tapCount > spare && !responses.responseIds.has(c.id) && !(c.catalogId === 'JC078' && shieldBudget) && !urgentHand && !urgentProtection && !urgentDefense && !urgentRefill && !rescueWheel && !urgentGrave)
                 continue;
             const tapIds = sorted(taps, x => value(x), false).slice(0, tapCount).map(x => x.id), opts = v.spellTargets?.[c.id] ?? [], base = { type: 'play', cardId: c.id, tapIds };
@@ -1126,6 +1148,9 @@ function tactical(v,mode='normal'){
         }
         if (!hasCardType(c, 'character') || !radioDeployAllowed(v, c) || !criminalDeployAllowed(v, c))
             continue;
+        if (standard && loyalty(v, c) && !c.concealedOnlyNow)
+            for (const x of characterSacrificePlays(v, c, policyHelpers, spare))
+                add(x.command, x.score);
         if (spells(v) && c.catalogId === 'XG01' && !silver && hiddenSilvers(v).length)
             continue;
         const revealIds = c.automation?.revealHandDiscount ? mine(v).hand.filter(x => x.id !== c.id && (x.faction?.split('·')[1] === '圣贤' || x.magicDomains?.includes('神圣'))).map(x => x.id) : [], price = Math.max(0, (v.castingCosts?.[c.id] ?? cost(c)) - revealIds.length);
@@ -1133,7 +1158,7 @@ function tactical(v,mode='normal'){
         const deployments = districts(v, { ...c, faceDown: true, effectiveIcons: undefined }).map(d => secretDeploymentAssessment(v, c, d, policyHelpers, { ambush: plannedAmbush }));
         const revealPayoff = deployments.some(a => a.allowed && a.revealBenefit && a.wait <= 1);
         const employeeSetup = green(v) && districts(v, { ...c, faceDown: true, effectiveIcons: undefined }).some(d => greenEmployeeSetup(v, c, policyHelpers, d));
-        const preferHidden = employeeSetup || plannedAmbush || revealPayoff || (matutaSetup ? !mine(v).markers.hidden && v.turn.firstPlayer === p && v.round === 1 : redPurplePreferHidden(v, c) || criminalPreferHidden(v, c) || radioPreferHidden(v, c) || silverSetup || blue(v) && c.catalogId === 'BQ036' || activeIcons === 0 && reputation(up));
+        const preferHidden = employeeSetup || plannedAmbush || revealPayoff || (matutaSetup ? !mine(v).markers.hidden && openingBlackBladeRisk(v) : redPurplePreferHidden(v, c) || criminalPreferHidden(v, c) || radioPreferHidden(v, c) || silverSetup || blue(v) && c.catalogId === 'BQ036' || activeIcons === 0 && reputation(up));
         // Additional engines should amplify an available spell chain, rather than
         // consume the last mana and hand card while the first engine sits idle.
         if (spells(v) && c.catalogId === 'XG01' && silver > 0 && !mine(v).hand.some(x => x.id !== c.id && spellFuel(x) && loyalty(v, x) && (v.castingCosts?.[x.id] ?? cost(x)) <= Math.max(0, spare - price)))
@@ -1184,7 +1209,7 @@ function tactical(v,mode='normal'){
                     add({ type: 'play', cardId: c.id, district: d }, 85 + bonus + districtScore(v, d, faceUp(v, c)));
         }
     anglicanInfluenceTactics(v, policyHelpers, add, { reservedMana: reserve, candidates: choices.map(x => x.command) });
-    return mode==='scores'?choices:choices.sort((a,b)=>b.score-a.score).map(x=>x.command);
+    return mode === 'scores' ? choices : choices.sort((a, b) => b.score - a.score).map(x => x.command);
 }
 function paidTriggerDraft(v, a, c, used = new Set()) {
     if (!c?.fire)
@@ -1206,17 +1231,36 @@ function paidTriggerDraft(v, a, c, used = new Set()) {
         used.add(id);
     return out;
 }
+function triggerCostBatchCommands(v, a) {
+    if (a.controller !== v.seat)
+        return [];
+    if (a.abilities.every(x => x.event === 'mobility'))
+        return triggerRoundCommands({ ...v, triggerRound: { id: a.id, controller: v.seat, abilities: a.abilities } }).map(c => ({ ...c, type: 'trigger-cost-batch-choice', choiceId: a.id }));
+    const enabled = defaultTriggerEnabled(a.abilities), used = new Set();
+    let available = a.available, drawBudget = triggerLibraryBudget(v, a.abilities);
+    const decisions = a.abilities.map(x => {
+        const use = triggerLibraryUse(v, x), cost = x.plan?.cost ?? 0;
+        const candidate = enabled[x.id] && (x.mandatory || use <= drawBudget) && cost <= available ? triggers({ ...v, triggerChoices: [x] }).find(c => c.fire) : null;
+        const d = paidTriggerDraft(v, x, candidate, used);
+        if (d.fire) {
+            available -= cost;
+            if (!x.mandatory)
+                drawBudget -= use;
+        }
+        return d;
+    });
+    return [{ type: 'trigger-cost-batch-choice', choiceId: a.id, decisions, abilityIds: decisions.filter(d => d.fire).map(d => d.triggerId) }];
+}
 function triggerRoundCommands(v) {
     const r = v.triggerRound;
     if (r.controller !== v.seat)
         return [];
-    let available = pool(v), drawBudget = Math.min(libraryBudget(v, { contestPending }), criminalBot(v) ? criminalLibraryBudget(v, policyHelpers) : purpleBot(v) ? purpleLibraryBudget(v, policyHelpers) : Infinity);
+    let available = pool(v), drawBudget = triggerLibraryBudget(v, r.abilities);
     const used = new Set(), decisions = [];
     const mobilityView = blue(v) ? { ...v, players: v.players.map(p => ({ ...p, play: p.play.map(c => ({ ...c })) })) } : v, plannedMoves = new Map();
     // Plan hosts before their attached bats, then retain the ordinary reverse
     // stack ordering below. Other movers see already planned icon distributions.
     const planning = blue(v) ? [...r.abilities].sort((a, b) => Number(a.event === 'mobility' && lookup(v, a.cardId)?.catalogId === 'BQ026' && !!lookup(v, a.cardId)?.attachedTo) - Number(b.event === 'mobility' && lookup(v, b.cardId)?.catalogId === 'BQ026' && !!lookup(v, b.cardId)?.attachedTo)) : r.abilities;
-    drawBudget = Math.max(0, drawBudget - r.abilities.filter(a => a.pending || a.mandatory).reduce((n, a) => n + Math.max(libraryUse(a), criminalLibraryUse(v, a), purpleLibraryUse(v, a)), 0));
     for (const a of planning) {
         if (a.pending)
             continue;
@@ -1240,7 +1284,7 @@ function triggerRoundCommands(v) {
         else
             candidate = triggers({ ...((blue(v) && a.event === 'mobility') ? mobilityView : v), triggerChoices: [a] }).find(c => c.fire) || { triggerId: a.id, fire: false };
         const cost = a.plan?.cost ?? v.environmentTriggers?.find(x => x.id === a.id)?.cost ?? 0, key = a.plan?.oncePerRound ? a.plan.usageKey : null;
-        const optionalDraw = !a.mandatory && Math.max(libraryUse(a), criminalLibraryUse(v, a), purpleLibraryUse(v, a));
+        const optionalDraw = !a.mandatory && triggerLibraryUse(v, a);
         if (optionalDraw && optionalDraw > drawBudget)
             candidate = { triggerId: a.id, fire: false };
         if (!a.mandatory && (cost > available || key && used.has(key)))
@@ -1295,24 +1339,8 @@ export function botCommands(v) {
         ;
         if (a.kind === 'mage-tap-cost')
             return a.controller === p ? [{ type: 'continuous-choice', choiceId: a.id, cardIds: a.cards.slice(0, a.max).map(c => c.id) }] : [];
-        ;
-        ;
-        if (a.kind === 'trigger-cost-batch') {
-            if (a.controller !== p)
-                return [];if(a.abilities.every(x=>x.event==='mobility'))return triggerRoundCommands({...v,triggerRound:{id:a.id,controller:p,abilities:a.abilities}}).map(c=>({...c,type:'trigger-cost-batch-choice',choiceId:a.id}));
-            const enabled = defaultTriggerEnabled(a.abilities), used = new Set();
-            let available = a.available, drawBudget = libraryBudget(v, policyHelpers);
-            const decisions = a.abilities.map(x => {
-                const use = libraryUse(x, p), candidate = enabled[x.id] && use <= drawBudget && (x.plan.cost ?? 0) <= available ? triggers({ ...v, triggerChoices: [x] }).find(c => c.fire) : null;
-                const d = paidTriggerDraft(v, x, candidate, used);
-                if (d.fire) {
-                    available -= x.plan.cost ?? 0;
-                    drawBudget -= use;
-                }
-                return d;
-            });
-            return [{ type: 'trigger-cost-batch-choice', choiceId: a.id, decisions, abilityIds: decisions.filter(d => d.fire).map(d => d.triggerId) }];
-        }
+        if (a.kind === 'trigger-cost-batch')
+            return triggerCostBatchCommands(v, a);
         if (a.kind === 'trigger-cost') {
             if (a.controller !== p)
                 return [];
@@ -1324,7 +1352,7 @@ export function botCommands(v) {
                 }
                 if (x.kind !== 'environment-ability')
                     return triggers({ ...v, triggerChoices: [x] }).map(c => ({ ...c, type: 'trigger-cost-choice', choiceId: a.id }));
-                return [{ type: 'trigger-cost-choice', choiceId: a.id, fire: regionTriggerUseful(v,x,policyHelpers) && a.available >= (x.cost ?? 0) && (!x.claimMobileTarget || a.targetOptions.length > 0), targetIds: a.targetOptions.length ? [a.targetOptions[0].id] : [] }];
+                return [{ type: 'trigger-cost-choice', choiceId: a.id, fire: regionTriggerUseful(v, x, policyHelpers) && a.available >= (x.cost ?? 0) && (!x.claimMobileTarget || a.targetOptions.length > 0), targetIds: a.targetOptions.length ? [a.targetOptions[0].id] : [] }];
             }
             return triggers({ ...v, triggerChoices: [a.ability] }).map(c => ({ ...paidTriggerDraft(v, a.ability, c), type: 'trigger-cost-choice', choiceId: a.id }));
         }

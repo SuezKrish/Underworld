@@ -1,7 +1,7 @@
-import {responseFilter} from './response-effect-semantics.mjs';
-import {hiddenContestReady} from './bot-graveyard-uses.mjs';
+import { responseFilter } from './response-effect-semantics.mjs';
+import { hiddenContestReady } from './bot-graveyard-uses.mjs';
 import { hasCardType } from './card-types.mjs';
-import { activeRumor,graveyardPurposeValue } from './bot-card-purpose.mjs';
+import { activeRumor, graveyardPurposeValue } from './bot-card-purpose.mjs';
 const mine = v => v.players[v.seat];
 const field = v => mine(v).play.filter(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed);
 const grave = v => [...mine(v).graveyard, ...mine(v).headquarters ?? []];
@@ -19,7 +19,7 @@ export function canFund(v, c, amount = v.castingCosts?.[c.id] ?? c.printedCost ?
     if (mine(v).ignoreLoyalty)
         return true;
     const domains = { 心: '心灵', 圣: '神圣', 星: '星辰', 死: '死亡', 血: '鲜血' }, m = mine(v);
-    const missing = asset => Object.entries(c.loyalty ?? {}).every(([symbol, n]) => symbol === '核' ? !!m.coreArea : ((domains[symbol] ? m.loyalty?.domains?.[domains[symbol]] : m.loyalty?.factions?.[symbol]) ?? 0) + Number(!!asset && (domains[symbol] ? asset.magicDomains?.includes(domains[symbol]) : asset.faction?.split('·')[0] === symbol)) >= n);
+    const missing = asset => Object.entries(c.loyalty ?? {}).every(([symbol, n]) => symbol === '紫' && v.societies?.[v.seat]?.plan?.ignorePurpleLoyalty && c.owner === v.seat ? true : symbol === '核' ? !!m.coreArea : ((domains[symbol] ? m.loyalty?.domains?.[domains[symbol]] : m.loyalty?.factions?.[symbol]) ?? 0) + Number(!!asset && (domains[symbol] ? asset.magicDomains?.includes(domains[symbol]) : asset.faction?.split('·')[0] === symbol)) >= n);
     return missing(null) || !m.actionsUsed?.asset && m.hand.some(x => x.id !== c.id && !x.nonAssetNow && missing(x));
 }
 // Count established/staged copies and earlier copies in this selection. A
@@ -51,7 +51,7 @@ export function engineCanStart(v, c) {
     if (is(c, 'BQ030')) {
         const host = hasCardType(c, 'character') || field(v).some(x => hasCardType(x, 'character'));
         const blood = [...grave(v), ...(v.sealed ?? []).filter(x => x.hostId === `society:${v.seat}`)].some(x => x.name === '鲜血');
-        const free = host && (field(v).some(x => is(x, 'BQ026') && !x.attachedTo) || blood && field(v).some(x => is(x, 'BQ027') || is(x, 'XG10') && !x.tapped));
+        const free = host && (field(v).some(x => is(x, 'BQ026') && !x.attachedTo || (x.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || blood && field(v).some(x => is(x, 'BQ027') || is(x, 'XG10') && !x.tapped));
         return free || m.hand.some(x => x.id !== c.id && (x.attachment?.effect === 'attach' && host && is(x, 'JC036') === false || is(x, 'BQ026')) && canFund(v, x) && (v.castingCosts?.[x.id] ?? x.printedCost ?? 0) <= mana - cost);
     }
     return false;

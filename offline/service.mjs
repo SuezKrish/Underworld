@@ -8,7 +8,8 @@ import { prepareMatchDeck, prepareCodeDeck } from '../engine/match-deck.mjs';
 import { BOT_PROFILES, getBotProfile } from '../engine/bot-deck.mjs';
 import { botOpeningFirstPlayer } from '../engine/opening-order.mjs';
 import { DEFAULT_TRIGGER_TIMING } from '../engine/trigger-timing.mjs';
-import { createRoomState, joinSeat, command, viewFor } from '../engine/match.mjs';
+import { createRoomState, joinSeat, command } from '../engine/match.mjs';
+import { cachedViewFor as viewFor } from '../engine/cached-view.mjs';
 import { runBot } from '../engine/bot.mjs';
 import { serializeRoomState, deserializeRoomState } from '../engine/room-storage.mjs';
 import { roomRecord } from '../engine/match-record.mjs';
@@ -31,8 +32,19 @@ export function offlineContext(xml) {
 // All persistence is injected: IndexedDB on devices, a memory store in tests.
 // The same engine and BOT policies run locally; no API calls leave the device.
 export class OfflineService {
-    constructor(xml, store) { this.ctx = offlineContext(xml); this.store = store; this.queue = Promise.resolve(); }
+    constructor(xml, store) { this.ctx = offlineContext(xml); this.store = store; this.queue = Promise.resolve(); this.staticReplies = new Map(); this.roomReplies = new Map(); }
     request(path, method = 'GET', body = {}, headers = {}) { const run = () => this.handle(path, method, body, headers).catch(e => reply({ error: e.message ?? '离线操作失败' }, 400)); const job = this.queue.then(run, run); this.queue = job.then(() => { }); return job; }
+    roomReply(row, s) {
+        let cached = this.roomReplies.get(row.id);
+        if (!cached || cached.revision !== row.revision || cached.state !== row.state) {
+            cached = { revision: row.revision, state: row.state, body: JSON.stringify({ room: viewFor(s, 0, row.revision, row.id) }) };
+            this.roomReplies.delete(row.id);
+            this.roomReplies.set(row.id, cached);
+            if (this.roomReplies.size > 2)
+                this.roomReplies.delete(this.roomReplies.keys().next().value);
+        }
+        return new Response(cached.body, { headers: { 'Content-Type': 'application/json' } });
+    }
     deckRecord(row) { const validation = validateDeck(row.deck, this.ctx.cards, this.ctx.implemented); return { id: row.id, revision: row.revision, createdAt: row.createdAt, updatedAt: row.updatedAt, ...validation.deck, validation }; }
     async handle(path, method, body, headers) {
         const url = new URL(path, 'https://offline.underworld.local'), route = url.pathname;
@@ -43,12 +55,19 @@ export class OfflineService {
         if (route === '/api/cards') {
             if (method !== 'GET')
                 return reply({ error: '离线卡池不可修改' }, 403);
+            if (this.staticReplies.has(route))
+                return new Response(this.staticReplies.get(route), { headers: { 'Content-Type': 'application/json' } });
             const data = auditCatalog(this.ctx.sourceCards, this.ctx.sourceCards);
             data.cards = data.cards.map(offlineCardVariant);
-            return reply({ ...data, canManagePool: false, sets: [...new Set(this.ctx.cards.flatMap(c => c.sets.map(s => s.name)))], revision, poolRevision: revision, worldCardCount: this.ctx.cards.filter(c => c.type === '地区').length, metadataSummary: { matchedCards: this.ctx.cards.length, uniqueCards: this.ctx.cards.filter(c => c.unique).length, subtitles: this.ctx.cards.filter(c => c.subtitle).length, flavors: this.ctx.cards.filter(c => c.flavorText).length }, removed: [], offline: true });
+            const result = { ...data, canManagePool: false, sets: [...new Set(this.ctx.cards.flatMap(c => c.sets.map(s => s.name)))], revision, poolRevision: revision, worldCardCount: this.ctx.cards.filter(c => c.type === '地区').length, metadataSummary: { matchedCards: this.ctx.cards.length, uniqueCards: this.ctx.cards.filter(c => c.unique).length, subtitles: this.ctx.cards.filter(c => c.subtitle).length, flavors: this.ctx.cards.filter(c => c.flavorText).length }, removed: [], offline: true };
+            this.staticReplies.set(route, JSON.stringify(result));
+            return reply(result);
         }
-        if (route === '/api/card-revisions')
-            return reply({ ...offlineRevisionHistory(cardRevisionHistory(this.ctx.cards), this.ctx.cards), catalogRevision: revision });
+        if (route === '/api/card-revisions') {
+            if (!this.staticReplies.has(route))
+                this.staticReplies.set(route, JSON.stringify({ ...offlineRevisionHistory(cardRevisionHistory(this.ctx.cards), this.ctx.cards), catalogRevision: revision }));
+            return new Response(this.staticReplies.get(route), { headers: { 'Content-Type': 'application/json' } });
+        }
         if (route === '/api/offline-saves') {
             if (method === 'GET')
                 return reply({ saves: (await this.store.list('saves')).sort((a, b) => b.savedAt - a.savedAt).map(saveSummary) });
@@ -159,16 +178,20 @@ export class OfflineService {
                 return reply({ error: '对局不存在' }, 404);
             if (new Headers(headers).get('authorization') !== `Bearer ${row.token}`)
                 return reply({ error: '本机座位凭证无效' }, 403);
+            const cached = this.roomReplies.get(code);
+            if (method === 'GET' && url.searchParams.get('record') !== '1' && cached?.revision === row.revision && cached.state === row.state)
+                return this.roomReply(row);
             const s = deserializeRoomState(row.state);
             if (method === 'GET') {
                 if (url.searchParams.get('record') === '1')
                     return reply({ ...roomRecord(s, code, row.createdAt), ...(s.status === 'finished' ? { replay: { version: 1, chunks: (await replayRows(this.store, code)).map(r => r.document) } } : {}) });
-                return reply({ room: viewFor(s, 0, row.revision, code) });
+                return this.roomReply(row, s);
             }
             if (method === 'DELETE') {
                 if (s.status !== 'finished')
                     return reply({ error: '请先结束对局' }, 400);
                 await this.store.delete('rooms', code);
+                this.roomReplies.delete(code);
                 for (const r of await replayRows(this.store, code))
                     await this.store.delete('replays', r.id);
                 return reply({ deleted: true });
@@ -178,14 +201,11 @@ export class OfflineService {
             if (body.type === 'join')
                 return reply({ error: '离线版不支持其他玩家加入' }, 403);
             if (s.recentCommands.includes(body.id))
-                return reply({ room: viewFor(s, 0, row.revision, code) });
+                return this.roomReply(row, s);
             if (body.revision !== row.revision)
                 return reply({ error: '对局已更新，请重试' }, 409);
-            const { frames } = captureReplay(s, () => {
-                if (body.type !== 'bot-tick')
-                    command(s, 0, body);
-                runBot(s);
-            });
+            const { frames } = captureReplay(s, () => { if (body.type !== 'bot-tick')
+                command(s, 0, body); runBot(s, { maxActions: body.type === 'bot-tick' ? 3 : 0 }); });
             s.recentCommands = [...s.recentCommands, body.id].slice(-128);
             row.revision++;
             row.state = serializeRoomState(s);
@@ -193,7 +213,7 @@ export class OfflineService {
             const document = packReplayFrames(frames);
             if (document)
                 await this.store.put('replays', { id: `${code}:${row.revision}`, code, revision: row.revision, document });
-            return reply({ room: viewFor(s, 0, row.revision, code) });
+            return this.roomReply(row, s);
         }
         return reply({ error: '离线版没有此功能' }, 404);
     }

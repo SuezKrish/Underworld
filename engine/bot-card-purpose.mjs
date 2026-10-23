@@ -1,5 +1,6 @@
-import {rumorHosts} from './bot-rumor-planning.mjs';
+import { rumorHosts } from './bot-rumor-planning.mjs';
 import { hasCardType } from './card-types.mjs';
+import { redPurpleAssetReserve } from './red-purple-bot-policy.mjs';
 const mine = v => v.players[v.seat];
 const grave = v => [...mine(v).graveyard, ...mine(v).headquarters ?? []];
 const domains = { 心: '心灵', 圣: '神圣', 星: '星辰', 死: '死亡', 血: '鲜血' };
@@ -9,7 +10,7 @@ const mana = v => (mine(v).costPool ?? 0) + mine(v).assets.filter(c => !c.tapped
 // the asset zone. All three monsters are fuel; one graveyard payload suffices.
 export function assetComboReserve(v, c) {
     if (v.bot?.id !== 'black-purple-criminals')
-        return 0;
+        return redPurpleAssetReserve(v, c);
     const wanted = c.catalogId === 'CQ31' ? 3 : ['WM060', 'BQ086'].includes(c.catalogId) ? 1 : 0;
     if (!wanted)
         return 0;

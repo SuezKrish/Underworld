@@ -5,9 +5,7 @@ import Cards from '../app/cards/page';
 import Decks from '../app/decks/page';
 import Revisions from '../app/card-revisions/page';
 import { BackgroundProvider } from '../app/background-settings';
-import { OfflineService } from './service.mjs';
-import { deviceStorage } from './storage.mjs';
-import xml from '../data/Card.xml?raw';
+import { createServiceClient } from './service-client.mjs';
 import '../app/globals.css';
 import './offline.css';
 import '../app/mobile.css';
@@ -16,14 +14,14 @@ document.body.classList.add('offline-mode');
 if ((window as any).OfflineDevice)
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (text: string) => (window as any).OfflineDevice.copyText(text) } });
 async function start() {
-    const service = new OfflineService(xml, await deviceStorage()), original = window.fetch.bind(window);
+    const service = createServiceClient(new Worker(new URL('./service-worker.mjs', import.meta.url), { type: 'module' })), original = window.fetch.bind(window);
     window.fetch = async (input, init) => {
         const request = input instanceof Request ? input : null, url = new URL(typeof input === 'string' ? input : input instanceof URL ? input.href : input.url, location.href);
         if (url.origin !== location.origin)
             return Response.json({ error: '离线版不连接外部服务' }, { status: 403 });
         if (url.pathname.startsWith('/api/') || url.pathname === '/__local-test-accounts') {
             const body = init?.body ? JSON.parse(String(init.body)) : request && request.method !== 'GET' ? await request.json() : {};
-            return service.request(url.pathname + url.search, init?.method ?? request?.method ?? 'GET', body, init?.headers ?? request?.headers ?? {});
+            return service.request(url.pathname + url.search, init?.method ?? request?.method ?? 'GET', body, init?.headers ?? request?.headers ?? {}, init?.signal ?? request?.signal);
         }
         return original(input, init);
     };

@@ -151,58 +151,44 @@ export default function Home() {
     const [consoleSize, setConsoleSize] = useState({ width: 300, height: 220 }), [assetView, setAssetView] = useState<number | null>(null), railRef = useRef<HTMLDivElement>(null);
     const [credential, setCredential] = useState<Credential | null>(null), [room, setRoom] = useState<any>(null), [name, setName] = useState(offline ? '玩家' : ''), [join, setJoin] = useState(''), [saved, setSaved] = useState<Credential[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState(false), [connected, setConnected] = useState(true), [selected, setSelected] = useState<string | null>(null), [district, setDistrict] = useState(0), [copied, setCopied] = useState(false), [mode, setMode] = useState('constructed-play'), [deckId, setDeckId] = useState(''), [deckCode, setDeckCode] = useState(''), [manualWithoutConsent, setManualWithoutConsent] = useState(false), [botManualWithoutConsent, setBotManualWithoutConsent] = useState(true), [societyId, setSocietyId] = useState('MSJC09'), [availableSocieties, setAvailableSocieties] = useState<any[]>([]), [availableCores, setAvailableCores] = useState<any[]>([]), [coreId, setCoreId] = useState('BQ043');
     useEffect(() => { railRef.current?.scrollTo({ top: 0 }); }, [room?.triggerRound?.id, room?.triggerRound?.controller, room?.effectChoice?.id, room?.triggerOrderChoice?.id, room?.deathCostChoice?.id, room?.environmentChoice?.id, room?.ruleChoice?.id, room?.roundChoice?.id, room?.keeperChoice?.id, room?.damageChoice?.id, room?.hidden?.id, room?.triggerChoices?.map((a: any) => a.id).join(',')]);
-    useEffect(() => {
-        const refresh = () => {
-            fetch('/api/cards?scope=play', { cache: 'no-store' }).then(async (r) => {
-                if (!r.ok)
-                    return;
-                const d = await r.json() as any;
-                setAvailableCores(d.cards.filter((c: any) => c.subtitle === '修格斯' && c.type === '角色' && c.audit?.implemented));
-                setAvailableSocieties(d.cards.filter((c: any) => c.type === '秘社' && !c.id.startsWith('ZH') && !c.text.includes('不能作为初始秘社牌') && /初始手牌[：:]\s*\d+/.test(c.text.replace(/\*\*/g, ''))));
-            }).catch(() => { });
-        };
-        refresh();
-        const timer = setInterval(refresh, 15000);
-        return () => clearInterval(timer);
-    }, []);
-    useEffect(() => {
-        if (availableSocieties.length && !availableSocieties.some(s => s.id === societyId))
-            setSocietyId(availableSocieties[0].id);
-    }, [availableSocieties, societyId]);
+    useEffect(() => { const refresh = () => { fetch('/api/cards?scope=play', { cache: 'no-store' }).then(async (r) => { if (!r.ok)
+        return; const d = await r.json() as any; setAvailableCores(d.cards.filter((c: any) => c.subtitle === '修格斯' && c.type === '角色' && c.audit?.implemented)); setAvailableSocieties(d.cards.filter((c: any) => c.type === '秘社' && !c.id.startsWith('ZH') && !c.text.includes('不能作为初始秘社牌') && /初始手牌[：:]\s*\d+/.test(c.text.replace(/\*\*/g, '')))); }).catch(() => { }); }; refresh(); if (offline)
+        return; const timer = setInterval(refresh, 15000); return () => clearInterval(timer); }, []);
+    useEffect(() => { if (availableSocieties.length && !availableSocieties.some(s => s.id === societyId))
+        setSocietyId(availableSocieties[0].id); }, [availableSocieties, societyId]);
     const roomRef = useRef<any>(null), credRef = useRef<Credential | null>(null), mounted = useRef(true), logRef = useRef<HTMLDivElement>(null);
-    function applyRoom(r: any) {
-        if (credRef.current && r.code !== credRef.current.code)
-            return;
-        if (!roomRef.current || r.code !== roomRef.current.code || r.revision >= roomRef.current.revision) {
-            roomRef.current = r;
-            setRoom(r);
+    function applyRoom(r: any) { if (credRef.current && r.code !== credRef.current.code)
+        return; if (!roomRef.current || r.code !== roomRef.current.code || r.revision > roomRef.current.revision) {
+        roomRef.current = r;
+        setRoom(r);
+        if (offline && r.bot?.pending)
+            window.dispatchEvent(new Event('underworld-offline-room-update'));
+    } }
+    useEffect(() => { mounted.current = true; const query = new URLSearchParams(location.search).get('join'); if (query)
+        setJoin(query.toUpperCase()); try {
+        setSaved(JSON.parse(localStorage.getItem(seatsKey) || '[]'));
+        const seat = JSON.parse(sessionStorage.getItem(currentKey) || 'null');
+        if (seat && !query) {
+            setCredential(seat);
+            credRef.current = seat;
         }
     }
-    useEffect(() => {
-        mounted.current = true;
-        const query = new URLSearchParams(location.search).get('join');
-        if (query)
-            setJoin(query.toUpperCase());
-        try {
-            setSaved(JSON.parse(localStorage.getItem(seatsKey) || '[]'));
-            const seat = JSON.parse(sessionStorage.getItem(currentKey) || 'null');
-            if (seat && !query) {
-                setCredential(seat);
-                credRef.current = seat;
-            }
-        }
-        catch { }
-        return () => { mounted.current = false; };
-    }, []);
+    catch { } return () => { mounted.current = false; }; }, []);
     useEffect(() => {
         if (!credential)
             return;
-        let active = true, controller: AbortController | null = null;
+        let active = true, inFlight = false, controller: AbortController | null = null, timer: ReturnType<typeof setTimeout> | undefined;
+        function wake() { if (active && !inFlight) {
+            clearTimeout(timer);
+            timer = setTimeout(sync, 0);
+        } }
         async function sync() {
+            if (!active || inFlight)
+                return;
+            inFlight = true;
             controller = new AbortController();
             try {
-                const res = await fetch(`/api/rooms/${credential!.code}`, { headers: { Authorization: `Bearer ${credential!.token}` }, signal: controller.signal, cache: 'no-store' });
-                const data = await res.json() as any;
+                const res = await fetch(`/api/rooms/${credential!.code}`, { headers: { Authorization: `Bearer ${credential!.token}` }, signal: controller.signal, cache: 'no-store' }), data = await res.json() as any;
                 if (!active)
                     return;
                 if (!res.ok) {
@@ -219,9 +205,9 @@ export default function Home() {
                 setConnected(true);
                 applyRoom(data.room);
                 if (data.room.bot?.pending) {
-                    const botResponse = await fetch(`/api/rooms/${credential!.code}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${credential!.token}` }, body: JSON.stringify({ type: 'bot-tick', id: crypto.randomUUID(), revision: data.room.revision }), signal: controller.signal });
-                    if (botResponse.ok) {
-                        const updated = await botResponse.json() as any;
+                    const response = await fetch(`/api/rooms/${credential!.code}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${credential!.token}` }, body: JSON.stringify({ type: 'bot-tick', id: crypto.randomUUID(), revision: data.room.revision }), signal: controller.signal });
+                    if (response.ok) {
+                        const updated = await response.json() as any;
                         if (active)
                             applyRoom(updated.room);
                     }
@@ -231,10 +217,16 @@ export default function Home() {
                 if (active && (e as Error).name !== 'AbortError')
                     setConnected(false);
             }
+            finally {
+                inFlight = false;
+                if (active)
+                    timer = setTimeout(sync, offline && roomRef.current?.bot?.pending ? 0 : 1800);
+            }
         }
+        if (offline)
+            window.addEventListener('underworld-offline-room-update', wake);
         sync();
-        const id = setInterval(sync, 1800);
-        return () => { active = false; controller?.abort(); clearInterval(id); };
+        return () => { active = false; controller?.abort(); clearTimeout(timer); window.removeEventListener('underworld-offline-room-update', wake); };
     }, [credential]);
     useEffect(() => { logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' }); }, [room?.logs?.length]);
     const { panel: mobilePanel, setPanel: setMobilePanel, needsChoice } = useMobileBattlePanel(room, selected), districtsRef = useRef<HTMLDivElement>(null);
@@ -251,7 +243,7 @@ export default function Home() {
             const code = join.replace(/\s/g, '').toUpperCase();
             if (kind === 'join' && !/^[A-Z2-9]{8}$/.test(code))
                 throw Error('邀请码为8位字母或数字');
-            const res = await fetch(kind !== 'join' ? '/api/rooms' : `/api/rooms/${code}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, triggerTiming:readTriggerTimingPreference(), type: 'join', opponentBot: kind === 'bot' ? botId : undefined, botDifficulty: kind === 'bot' ? botDifficulty : undefined, botOpeningOrder: kind === 'bot' ? botOpeningOrder : undefined, mode: kind === 'bot' ? 'constructed-play' : mode, societyId, coreId, manualWithoutConsent: kind === 'bot' ? botManualWithoutConsent : manualWithoutConsent, deckId: mode === 'round-play' && kind !== 'bot' ? undefined : deckId, deckCode: mode === 'round-play' && kind !== 'bot' ? undefined : deckCode }) });
+            const res = await fetch(kind !== 'join' ? '/api/rooms' : `/api/rooms/${code}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, triggerTiming: readTriggerTimingPreference(), type: 'join', opponentBot: kind === 'bot' ? botId : undefined, botDifficulty: kind === 'bot' ? botDifficulty : undefined, botOpeningOrder: kind === 'bot' ? botOpeningOrder : undefined, mode: kind === 'bot' ? 'constructed-play' : mode, societyId, coreId, manualWithoutConsent: kind === 'bot' ? botManualWithoutConsent : manualWithoutConsent, deckId: mode === 'round-play' && kind !== 'bot' ? undefined : deckId, deckCode: mode === 'round-play' && kind !== 'bot' ? undefined : deckCode }) });
             const data = await res.json() as any;
             if (!res.ok)
                 throw Error(data.error);

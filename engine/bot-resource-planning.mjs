@@ -1,6 +1,7 @@
 import { hasCardType } from './card-types.mjs';
 import { wheelRecoveryDraw } from './spell-graveyard-planning.mjs';
 import { claimRecyclingBot, libraryRunway } from './bot-library-safety.mjs';
+import { responseFilter } from './response-effect-semantics.mjs';
 // Reserve this round's possible investigations, the next round's districts
 // and normal draws. The floor also protects against a small opposing mill.
 export function libraryReserve(v, h = {}) {
@@ -20,26 +21,31 @@ export function endHandForecast(v, h = {}) {
     if (actionAhead) {
         let mana = (m.costPool ?? 0) + (m.assets ?? []).filter(c => !c.tapped).length;
         const remaining = [...hand];
-        if (!m.actionsUsed?.asset && remaining.length) {
+        const material = remaining.findLastIndex(c => !c.nonAssetNow && !c.keywords?.includes('非资产'));
+        if (!m.actionsUsed?.asset && m.assets.length < 8 && material >= 0) {
             spend++;
-            remaining.pop();
+            remaining.splice(material, 1);
             mana++;
         }
         if (!m.actionsUsed?.secret && !m.secretDeploymentBlocked && mana >= 1) {
-            const i = remaining.findIndex(c => hasCardType(c, 'character'));
+            const i = remaining.findIndex(c => hasCardType(c, 'character') && !c.publicNow && !c.keywords?.includes('公开') && !c.automation?.noPaidReveal &&
+                (v.deploymentRevealCosts?.[c.id] ?? v.revealCosts?.[c.id] ?? c.printedCost ?? 0) <= Math.max(mana - 1, m.assets.length + 1) &&
+                (c.concealedOnlyNow || c.automation?.reveal));
             if (i >= 0) {
                 spend++;
                 remaining.splice(i, 1);
                 mana--;
             }
         }
-        const playable = remaining.filter(c => c.castAllowed !== false && (!h.loyalty || h.loyalty(v, c))).map(c => ({ c, cost: v.castingCosts?.[c.id] ?? (Number(c.printedCost) || 0) })).sort((a, b) => a.cost - b.cost);
+        const playable = remaining.filter(c => c.castAllowed !== false && !c.concealedOnlyNow && (!h.loyalty || h.loyalty(v, c)) && (!h.duplicate || !h.duplicate(v, c)) &&
+            (!(c.spell ?? c.attachment)?.target || ['none', 'own-society'].includes((c.spell ?? c.attachment).target) || !v.spellTargets || v.spellTargets[c.id]?.length))
+            .map(c => ({ c, cost: Math.max(0, (v.castingCosts?.[c.id] ?? (Number(c.printedCost) || 0)) - (c.automation?.revealHandDiscount ? remaining.filter(x => x.id !== c.id && (x.faction?.split('·')[1] === '圣贤' || x.magicDomains?.includes('神圣'))).length : 0)) })).sort((a, b) => a.cost - b.cost);
         let casts = 0;
         for (const { c, cost } of playable)
             if (casts < 3 && cost <= mana) {
                 mana -= cost;
                 spend++;
-                income += drawIncome(c.spell ?? c.automation?.entry ?? c.attachment?.entry);
+                income += castRefill(v, c);
                 casts++;
             }
     }
@@ -59,6 +65,12 @@ function drawIncome(plan) {
     if (!plan || typeof plan !== 'object')
         return 0;
     return (['draw', 'bottom-to-hand'].includes(plan.effect) ? plan.count ?? 1 : 0) + (plan.steps ?? []).reduce((n, p) => n + drawIncome(p), 0);
+}
+function castRefill(v, c) {
+    const entry = drawIncome(c.spell ?? c.automation?.entry ?? c.attachment?.entry);
+    const watches = v.players[v.seat].play.filter(x => !x.faceDown && !x.printedTextBlank && !x.abilitiesSuppressed).flatMap(x => x.automation?.watch ?? []);
+    return entry + watches.reduce((n, w) => n + (w.event === 'cast' && w.own && w.effect === 'draw' &&
+        responseFilter(c, w.filter) && !w.limitPerRound ? (w.count ?? 1) : 0), 0);
 }
 // Count cards actually removed from our library, rather than all cards merely
 // inspected. Top-select-hand also mills its unchosen cards. Environment modes
@@ -314,8 +326,7 @@ export function districtConcession(v, d, h) {
     const r = v.districts?.[d], p = v.seat, q = 1 - p;
     if (!r || !h.contestPending(v, d, 'influence'))
         return 0;
-    if (resourcePriorities(v, h).race)
-        return 0;
+    const racing = resourcePriorities(v, h).race;
     const points = Math.max(0, (r.points ?? 0) - (r.destroyed ?? 0));
     if ((v.players[q].score ?? 0) + points >= (v.players[q].victoryThreshold ?? 8) || (v.players[p].score ?? 0) + points >= (v.players[p].victoryThreshold ?? 8))
         return 0;
@@ -323,7 +334,7 @@ export function districtConcession(v, d, h) {
     if (stars <= 0 || (r.influence[q] ?? 0) + stars - (r.influence[p] ?? 0) < r.threshold)
         return 0;
     const weight = seat => v.players[seat].play.filter(c => c.district === d).reduce((n, c) => n + engineWeight(v, c, h), 0);
-    const lead = weight(q) - weight(p), scoreRisk = points * 4 + Math.max(0, (v.players[q].score ?? 0) - 3) * 2;
+    const lead = weight(q) - weight(p), scoreRisk = points * (racing ? 6 : 4) + Math.max(0, (v.players[q].score ?? 0) - 3) * 2;
     return Math.max(0, Math.min(30, lead - scoreRisk));
 }
 export function handCommitmentPenalty(v, command, h) {
