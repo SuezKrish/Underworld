@@ -8,7 +8,7 @@ export function openingBlackBladeRisk(v) {
     const q = 1 - v.seat;
     if (v.round !== 1 || v.turn?.phase !== 'action' || v.turn.firstPlayer !== v.seat)
         return false;
-    if (v.bot?.difficulty === 'hard' && v.hardInfo) {
+    if (v.hardInfo) {
         return (v.players[q].hand ?? []).some(c => hasCardType(c, 'character') && Number(c.printedCost) <= 1 && (c.icons?.battle ?? 0) > 0 && c.castAllowed !== false && !c.concealedOnlyNow && !keyword(c, '迟缓'));
     }
     const society = v.societies?.[q] ?? v.deckSelections?.[q]?.society;

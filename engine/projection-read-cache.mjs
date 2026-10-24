@@ -12,21 +12,36 @@ export function withProjectionReads(fn) {
         projection = null;
     }
 }
+function entryFor(s) {
+    let entry = projection.get(s);
+    if (!entry) {
+        entry = { values: new Map(), layer: 'ordinary' };
+        projection.set(s, entry);
+    }
+    return entry;
+}
+// Nisos evaluates defense with its own silence temporarily excluded. Those
+// results belong to a separate projection layer and must never escape into
+// the ordinary text/keyword evaluation, or vice versa.
+export function withProjectionDefenseLayer(s, fn) {
+    if (!projection)
+        return fn();
+    const entry = entryFor(s), previous = entry.layer;
+    entry.layer = 'defense';
+    try {
+        return fn();
+    }
+    finally {
+        entry.layer = previous;
+    }
+}
 export function projectionRead(s, key, compute) {
     if (!projection)
         return compute();
-    let entry = projection.get(s);
-    if (!entry) {
-        // Nisos reads a separate, recursive defense layer. Its context must remain
-        // uncached, including nested queries made while projecting that layer.
-        entry = { values: new Map(), allowed: !s.players.some(p => p.play.some(id => !s.locations[id]?.faceDown && s.cards[id]?.automation?.static === 'nisos-silence')) };
-        projection.set(s, entry);
-    }
-    if (!entry.allowed)
-        return compute();
-    if (entry.values.has(key))
-        return entry.values.get(key);
+    const entry = entryFor(s), layerKey = entry.layer + ':' + key;
+    if (entry.values.has(layerKey))
+        return entry.values.get(layerKey);
     const value = compute();
-    entry.values.set(key, value);
+    entry.values.set(layerKey, value);
     return value;
 }

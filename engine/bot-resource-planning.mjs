@@ -1,3 +1,6 @@
+import { nonDrawLockActive, nonDrawEffectBlocked, onlyDrawEffect } from './bot-draw-lock-planning.mjs';
+import { projectedClaimOutcome } from './bot-claim-outcome.mjs';
+import { knownMillOutcome } from './bot-library-outlook.mjs';
 import { hasCardType } from './card-types.mjs';
 import { wheelRecoveryDraw } from './spell-graveyard-planning.mjs';
 import { claimRecyclingBot, libraryRunway } from './bot-library-safety.mjs';
@@ -7,8 +10,8 @@ import { responseFilter } from './response-effect-semantics.mjs';
 export function libraryReserve(v, h = {}) {
     if (wheelRecoveryDraw(v))
         return 0;
-    const districts = (v.districts ?? []).filter(Boolean).length;
-    const pending = (v.districts ?? []).filter((d, i) => d && (h.contestPending ? h.contestPending(v, i, 'investigation') : ['setup', 'start', 'action', 'contest'].includes(v.turn?.phase))).length;
+    const blocked = nonDrawLockActive(v), districts = blocked ? 0 : (v.districts ?? []).filter(Boolean).length;
+    const pending = blocked ? 0 : (v.districts ?? []).filter((d, i) => d && (h.contestPending ? h.contestPending(v, i, 'investigation') : ['setup', 'start', 'action', 'contest'].includes(v.turn?.phase))).length;
     return Math.max(6, 2 + districts + pending, claimRecyclingBot(v) ? libraryRunway(v, h).reserve : 0);
 }
 // Forecast cards left after the remaining ordinary actions and visible
@@ -16,7 +19,7 @@ export function libraryReserve(v, h = {}) {
 // recovery. Unknown opposing hands and future draws are never inspected.
 export function endHandForecast(v, h = {}) {
     const p = v.seat, m = v.players[p], turn = v.turn ?? {}, hand = m.hand ?? [], limit = m.handLimit ?? 7;
-    let income = (v.flow?.stack ?? []).filter(a => a.controller === p).reduce((n, a) => n + (a.responseEffect?.handGain ?? drawIncome(a.plan)), 0), spend = 0;
+    let income = (v.flow?.stack ?? []).filter(a => a.controller === p).reduce((n, a) => n + Math.max(0, (a.responseEffect?.handGain ?? drawIncome(a.plan)) - (nonDrawEffectBlocked(v) ? drawIncome(a.plan) - drawIncome(a.plan, true) : 0)), 0), spend = 0;
     const actionAhead = ['setup', 'start'].includes(turn.phase) || turn.phase === 'action' && (v.flow?.stepOwner === p || turn.firstPlayer !== p && turn.step === 'first-action');
     if (actionAhead) {
         let mana = (m.costPool ?? 0) + (m.assets ?? []).filter(c => !c.tapped).length;
@@ -50,7 +53,7 @@ export function endHandForecast(v, h = {}) {
             }
     }
     const budget = Math.max(0, (m.deckCount ?? 50) - libraryReserve(v, h));
-    if (h.total && h.contestPending)
+    if (!nonDrawLockActive(v) && h.total && h.contestPending)
         for (let d = 0; d < (v.districts ?? []).length; d++)
             if (v.districts[d] && h.contestPending(v, d, 'investigation') && h.total(v, p, d, 'investigation') > h.total(v, 1 - p, d, 'investigation'))
                 income++;
@@ -59,28 +62,29 @@ export function endHandForecast(v, h = {}) {
 export function resourcePriorities(v, h = {}) {
     const p = v.players[v.seat], forecast = endHandForecast(v, h), reserve = libraryReserve(v, h), critical = (p.deckCount ?? 50) <= reserve;
     const stocked = forecast.projected >= forecast.limit, race = critical || libraryRunway(v, h).pressure || v.round >= 6 && stocked || v.round >= 4 && forecast.projected >= forecast.limit + 2;
-    return { ...forecast, reserve, critical, stocked, race, investigation: critical ? -14 : race ? 1 : stocked ? 4 : 12, battle: stocked ? 7 : 0, influence: race ? 12 : stocked ? 6 : 2 };
+    return { ...forecast, reserve, critical, stocked, race, investigation: critical ? -14 : nonDrawLockActive(v) ? 1 : race ? 1 : stocked ? 4 : 12, battle: stocked ? 7 : 0, influence: race ? 12 : stocked ? 6 : 2 };
 }
-function drawIncome(plan) {
+function drawIncome(plan, blocked = false) {
     if (!plan || typeof plan !== 'object')
         return 0;
-    return (['draw', 'bottom-to-hand'].includes(plan.effect) ? plan.count ?? 1 : 0) + (plan.steps ?? []).reduce((n, p) => n + drawIncome(p), 0);
+    return ((plan.effect === 'bottom-to-hand' || plan.effect === 'draw' && !blocked) ? plan.count ?? 1 : 0) + (plan.steps ?? []).reduce((n, p) => n + drawIncome(p, blocked), 0);
 }
 function castRefill(v, c) {
-    const entry = drawIncome(c.spell ?? c.automation?.entry ?? c.attachment?.entry);
+    const entry = drawIncome(c.spell ?? c.automation?.entry ?? c.attachment?.entry, nonDrawLockActive(v));
     const watches = v.players[v.seat].play.filter(x => !x.faceDown && !x.printedTextBlank && !x.abilitiesSuppressed).flatMap(x => x.automation?.watch ?? []);
-    return entry + watches.reduce((n, w) => n + (w.event === 'cast' && w.own && w.effect === 'draw' &&
+    return entry + watches.reduce((n, w) => n + (!nonDrawLockActive(v) && w.event === 'cast' && w.own && w.effect === 'draw' &&
         responseFilter(c, w.filter) && !w.limitPerRound ? (w.count ?? 1) : 0), 0);
 }
 // Count cards actually removed from our library, rather than all cards merely
 // inspected. Top-select-hand also mills its unchosen cards. Environment modes
 // are alternatives; they are evaluated when the mode is selected.
-export function libraryUse(a, seat = a.controller) {
+export function libraryUse(a, seat = a.controller, v) {
+    const blocked = v && nonDrawEffectBlocked(v);
     function count(plan) {
         if (!plan || typeof plan !== 'object')
             return 0;
         const player = plan.player, ours = player === undefined || player === 'self' || player === 'winner' || player === seat;
-        let n = ['draw', 'bottom-to-hand', 'seal-top', 'seal-search', 'mill-self-one', 'top-select-hand'].includes(plan.effect) ? plan.count ?? 1 : plan.operation === 'liliel-discard' ? 1 : (plan.kind === 'draw' && ours || plan.kind === 'draw-both') ? plan.count ?? 1 : 0;
+        let n = blocked && (plan.effect === 'draw' || plan.kind === 'draw' || plan.kind === 'draw-both') ? 0 : ['draw', 'bottom-to-hand', 'seal-top', 'seal-search', 'mill-self-one', 'top-select-hand'].includes(plan.effect) ? plan.count ?? 1 : plan.operation === 'liliel-discard' ? 1 : (plan.kind === 'draw' && ours || plan.kind === 'draw-both') ? plan.count ?? 1 : 0;
         for (const child of plan.steps ?? [])
             n += count(child);
         for (const child of plan.ops ?? [])
@@ -90,12 +94,18 @@ export function libraryUse(a, seat = a.controller) {
     return a.plan ? count(a.plan) : a.ops ? a.ops.reduce((n, p) => n + count(p), 0) : a.responseEffect?.libraryUse ?? 0;
 }
 export function libraryBudget(v, h = {}) {
-    const queued = (v.flow?.stack ?? []).filter(a => a.controller === v.seat).reduce((n, a) => n + libraryUse(a, v.seat), 0);
+    const queued = (v.flow?.stack ?? []).filter(a => a.controller === v.seat).reduce((n, a) => n + libraryUse(a, v.seat, v), 0);
     return Math.max(0, (v.players[v.seat].deckCount ?? 50) - libraryReserve(v, h) - queued);
 }
 export function optionalRefillUseful(v, a, h = {}) {
-    const plan = a.plan ?? {}, state = resourcePriorities(v, h);
-    if (libraryUse(a, v.seat) > libraryBudget(v, h))
+    const plan = a.plan ?? {};
+    if (nonDrawEffectBlocked(v) && onlyDrawEffect(plan))
+        return false;
+    const state = resourcePriorities(v, h);
+    if (libraryUse(a, v.seat, v) > libraryBudget(v, h))
+        return false;
+    const mill = knownMillOutcome(v, plan, h, a.targetIds ?? []);
+    if (plan.effect === 'mill-self-one' && mill && mill.utility < 0)
         return false;
     if (wheelRecoveryDraw(v))
         return true;
@@ -127,9 +137,13 @@ export function regionRewardUtility(v, ops, h = {}) {
             return score({ kind: 'draw', player: p, count: o.count }) + score({ kind: 'draw', player: q, count: o.count });
         if (o.kind === 'simultaneous-search' && o.destination === 'hand')
             return score({ kind: 'search', player: p, destination: 'hand' }) + score({ kind: 'search', player: q, destination: 'hand' });
-        if (o.kind === 'search' && o.destination === 'hand')
-            return score({ kind: 'draw', player: o.player, count: 1 }) * 1.1;
+        if (o.kind === 'search' && o.destination === 'hand') {
+            const seat = o.player === 'other' ? q : o.player === 'first' ? v.turn.firstPlayer : o.player === 'second' ? 1 - v.turn.firstPlayer : Number.isInteger(o.player) ? o.player : p;
+            return handDelta(v, seat, 1) * (seat === p ? 1 : -0.95) * 1.1;
+        }
         if (['draw', 'discard'].includes(o.kind)) {
+            if (o.kind === 'draw' && nonDrawEffectBlocked(v))
+                return 0;
             const seat = o.player === 'other' ? q : o.player === 'first' ? v.turn.firstPlayer : o.player === 'second' ? 1 - v.turn.firstPlayer : Number.isInteger(o.player) ? o.player : p;
             const n = o.count ?? 1, delta = o.kind === 'draw' ? n : -Math.min(n, handCount(v.players[seat]));
             let utility = handDelta(v, seat, delta);
@@ -213,7 +227,7 @@ export function removalEngineTempoBonus(v, c, h) {
         const net = r.influence[0] - r.influence[1] + h.total(v, 0, c.district, 'influence') - h.total(v, 1, c.district, 'influence');
         const winner = net > 0 ? 0 : 1, points = Math.max(0, (r.points ?? 0) - (r.destroyed ?? 0));
         if (h.contestPending(v, c.district, 'influence') && Math.abs(net) >= r.threshold &&
-            (v.players[winner].score ?? 0) + points < (v.players[winner].victoryThreshold ?? 8))
+            !projectedClaimOutcome(v, winner, c.district, h).wins)
             return 0;
     }
     const white = (c.effectiveTemporaryIcons ?? c.temporaryIcons)?.investigation ?? 0;
@@ -328,7 +342,7 @@ export function districtConcession(v, d, h) {
         return 0;
     const racing = resourcePriorities(v, h).race;
     const points = Math.max(0, (r.points ?? 0) - (r.destroyed ?? 0));
-    if ((v.players[q].score ?? 0) + points >= (v.players[q].victoryThreshold ?? 8) || (v.players[p].score ?? 0) + points >= (v.players[p].victoryThreshold ?? 8))
+    if (projectedClaimOutcome(v, q, d, h).wins || projectedClaimOutcome(v, p, d, h).wins)
         return 0;
     const stars = h.total(v, q, d, 'influence') - h.total(v, p, d, 'influence');
     if (stars <= 0 || (r.influence[q] ?? 0) + stars - (r.influence[p] ?? 0) < r.threshold)

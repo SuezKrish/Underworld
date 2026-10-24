@@ -1,7 +1,8 @@
-import { responseFilter } from './response-effect-semantics.mjs';
-import { hiddenContestReady } from './bot-graveyard-uses.mjs';
+import { blockedDrawInvestment } from './bot-draw-lock-planning.mjs';
 import { hasCardType } from './card-types.mjs';
 import { activeRumor, graveyardPurposeValue } from './bot-card-purpose.mjs';
+import { hiddenContestReady } from './bot-graveyard-uses.mjs';
+import { responseFilter } from './response-effect-semantics.mjs';
 const mine = v => v.players[v.seat];
 const field = v => mine(v).play.filter(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed);
 const grave = v => [...mine(v).graveyard, ...mine(v).headquarters ?? []];
@@ -41,6 +42,8 @@ export function matutaBonus(v, c) {
     return grave(v).some(x => is(x, 'XG22')) && (shields ?? 0) >= 2 ? 85 : v.round <= 3 ? 32 : 16;
 }
 export function engineCanStart(v, c) {
+    if (blockedDrawInvestment(v, c) > 0)
+        return false;
     const m = mine(v), mana = turnMana(v, c.id), cost = v.castingCosts?.[c.id] ?? c.printedCost ?? 0;
     if (!canFund(v, c, cost))
         return false;
@@ -52,7 +55,7 @@ export function engineCanStart(v, c) {
         const host = hasCardType(c, 'character') || field(v).some(x => hasCardType(x, 'character'));
         const blood = [...grave(v), ...(v.sealed ?? []).filter(x => x.hostId === `society:${v.seat}`)].some(x => x.name === '鲜血');
         const free = host && (field(v).some(x => is(x, 'BQ026') && !x.attachedTo || (x.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || blood && field(v).some(x => is(x, 'BQ027') || is(x, 'XG10') && !x.tapped));
-        return free || m.hand.some(x => x.id !== c.id && (x.attachment?.effect === 'attach' && host && is(x, 'JC036') === false || is(x, 'BQ026')) && canFund(v, x) && (v.castingCosts?.[x.id] ?? x.printedCost ?? 0) <= mana - cost);
+        return free || m.hand.some(x => x.id !== c.id && (x.attachment?.effect === 'attach' && host && is(x, 'JC036') === false || is(x, 'BQ026') || host && x.automation?.action?.operation === 'slave-blood-return') && canFund(v, x) && (v.castingCosts?.[x.id] ?? x.printedCost ?? 0) <= mana - cost);
     }
     return false;
 }

@@ -1,3 +1,4 @@
+import { graveInterruptionThreat } from './bot-matchup-planning.mjs';
 import { hasCardType } from './card-types.mjs';
 export function secretDeploymentPrice(v, d) { return (v.players[v.seat].secretDeploymentBaseCost ?? 1) + v.players.flatMap(p => p.play).filter(c => !c.faceDown && !c.tapped && c.district === d && c.automation?.static === 'secret-deploy-tax').length; }
 // Commit untapped assets, rather than mana which expires at the next step.
@@ -46,6 +47,16 @@ export function responsePlan(v, h) {
             if (best.key)
                 actionKeys.add(best.key);
             responseMana = best.cost;
+        }
+    }
+    // Preserve a real untapped asset for a known graveyard entry/recovery,
+    // even before its target is announced. Re-evaluate as cards or mana change.
+    if (active && graveInterruptionThreat(v, h).score >= 18) {
+        const answer = mine.hand.filter(c => c.spell?.timing === 'fast' && c.spell.effect === 'grave-bottom-draw' && c.castAllowed !== false && h.loyalty(v, c))
+            .map(c => ({ c, cost: v.castingCosts?.[c.id] ?? h.cost(c) })).filter(x => x.cost <= assets).sort((a, b) => a.cost - b.cost)[0];
+        if (answer) {
+            responseIds.add(answer.c.id);
+            responseMana = Math.max(responseMana, answer.cost);
         }
     }
     return { ambush, responseIds, actionKeys, responseMana, ambushMana: Math.max(0, ...ambush.map(a => a.cost)) };

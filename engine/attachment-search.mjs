@@ -3,7 +3,7 @@ import { graveCards, inGrave } from './graveyard-rules.mjs';
 import { librarySearchBlocked } from './library-search.mjs';
 import { hasCardType } from './card-types.mjs';
 import { effectiveSubtypes, enterTapped, graveyardLocked } from './derived.mjs';
-import { sealHost } from './sealing.mjs';
+import { attachmentHostReference } from './attachment-host-reference.mjs';
 import { RuleError } from './core.mjs';
 const need = (value, message) => {
     if (!value)
@@ -63,7 +63,7 @@ export function createAttachmentSearch(ctx) {
             complete(s, a, zone);
             return;
         }
-        const host = target.kind === 'host' ? target.ref : target.kind === 'district' ? sealHost(s, `district-host:${target.cardId}`) : sealHost(s, target.cardId);
+        const host = attachmentHostReference(s, target);
         const district = target.kind === 'district' ? target.district : target.kind === 'card' ? s.locations[target.cardId].district : undefined;
         if (move(s, id, 'play', { controller: a.controller, tapped: enterTapped(s, id, district), attachedTo: host.hostId, hostVersion: target.kind === 'card' ? target.zoneVersion : host.version, ...(district !== undefined ? { district } : {}) })) {
             log(s, `${s.cards[id].name}从${zone === 'deck' ? '牌库' : '墓地'}放置进场，结附于${host.name}。`);

@@ -1,5 +1,6 @@
-import {passPriorityLabel} from '../engine/pass-label.mjs';
+import { passPriorityLabel } from '../engine/pass-label.mjs';
 'use client';
+import { priorityStatusLabel } from '../engine/priority-status.mjs';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, GripHorizontal, RotateCcw } from 'lucide-react';
 import { AutoPassControls } from './asset-ui';
@@ -20,7 +21,7 @@ export function PriorityWindow({ room, busy, locked, act }: {
         origin: Point;
     } | null>(null), positionRef = useRef<Point | null>(null);
     const [position, setPosition] = useState<Point | null>(null), [dragging, setDragging] = useState(false);
-    const myPriority = room.flow.priority === room.seat;
+    const myPriority = room.flow.priority === room.seat, statusLabel = priorityStatusLabel(room, { locked, busy });
     const claimResume = room.turn?.claimResume, claimWindow = ['claim-before', 'claim-after'].includes(room.turn?.step);
     function place(point: Point) {
         const rect = panel.current?.getBoundingClientRect();
@@ -96,7 +97,7 @@ export function PriorityWindow({ room, busy, locked, act }: {
             catch { }
         }}><RotateCcw size={14}/></button>
   </div>
-  <div className='priority-body'><div className='turn-indicator'><span className={myPriority ? 'live-dot' : 'idle-dot'}/>{room.status === 'finished' ? '对局结束' : locked ? '请完成当前步骤的选择' : myPriority ? '轮到你行动' : '等待对方行动'}</div>
+  <div className='priority-body'><div className='turn-indicator'><span className={myPriority && statusLabel.startsWith('当前优先权') ? 'live-dot' : 'idle-dot'}/>{statusLabel}</div>
    {claimWindow && claimResume && <p className='claim-resume-note'>地区赢取{room.turn.step === 'claim-before' ? '前' : '后'}快速行动窗口。双方让过并完成结算后，返回{claimResume.stepLabel}。</p>}
    <button className='primary wide' disabled={busy || room.status !== 'playing' || !myPriority || locked || room.pendingChoiceCount > 0} onClick={() => act({ type: 'pass' })}>{passPriorityLabel(room)}<ArrowRight size={15}/></button>
    <AutoPassControls room={room} busy={busy} act={act}/>

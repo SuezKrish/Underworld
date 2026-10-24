@@ -207,7 +207,19 @@ export function lockingChoice(v, a, h) {
     if (a.kind === 'shoggoth-core-hand')
         return cards.map(c => ({ ...b, cardId: c.id })).concat({ ...b, skip: true });
     if (a.kind === 'shoggoth-mission-move')
-        return cards.filter(c => !h.lethalBattleRisk(v, c, a.destination)).map(c => ({ ...b, cardId: c.id })).concat({ ...b, skip: true });
+        return cards.filter(card => {
+            const c = h.lookup(v, card.id) ?? card, from = c.district, to = a.destination;
+            if (h.lethalBattleRisk(v, c, to))
+                return false;
+            if (from === to || !task(v.districts[from]) || !h.contestPending(v, from, 'influence') || h.lethalBattleRisk(v, c, from))
+                return true;
+            const stars = c.tapped ? 0 : h.icons(v, c, 'influence'), net = h.total(v, v.seat, from, 'influence') - h.total(v, 1 - v.seat, from, 'influence');
+            const closes = net >= markNeed(v, from), without = net - stars;
+            const contact = own(v).filter(x => x.catalogId === 'BQ066').length;
+            const next = h.total(v, v.seat, to, 'influence') + stars - h.total(v, 1 - v.seat, to, 'influence') + contact;
+            // Do not abandon a claim this turn merely to start another mission.
+            return !(closes && without < markNeed(v, from) && next < markNeed(v, to));
+        }).map(c => ({ ...b, cardId: c.id })).concat({ ...b, skip: true });
     if (a.kind === 'shoggoth-execution')
         return h.sorted(cards, c => { const x = h.lookup(v, c.id) ?? c; return (x.controller === v.seat ? -1 : 1) * h.value(x); }).map(c => ({ ...b, cardId: c.id }));
     if (a.kind === 'shoggoth-claim-move') {

@@ -1,3 +1,4 @@
+import { nonDrawEffectBlocked } from './bot-draw-lock-planning.mjs';
 import { hasCardType } from './card-types.mjs';
 import { districtConcession } from './bot-resource-planning.mjs';
 import { investigationRelief } from './bot-library-safety.mjs';
@@ -15,7 +16,7 @@ const millSources = v => own(v).filter(c => ['BQ091', 'XG28'].includes(c.catalog
 export function criminalLibraryUse(v, a) {
     if (!criminalBot(v))
         return 0;
-    const count = plan => !plan ? 0 : plan.effect === 'sequence' ? (plan.steps ?? []).reduce((n, p) => n + count(p), 0) : ['draw', 'mill-self-one'].includes(plan.effect) ? plan.count ?? 1 : plan.operation === 'liliel-discard' ? 1 : 0;
+    const count = plan => !plan || nonDrawEffectBlocked(v) && plan.effect === 'draw' ? 0 : plan.effect === 'sequence' ? (plan.steps ?? []).reduce((n, p) => n + count(p), 0) : ['draw', 'mill-self-one'].includes(plan.effect) ? plan.count ?? 1 : plan.operation === 'liliel-discard' ? 1 : 0;
     return count(a.plan);
 }
 export function criminalLibraryBudget(v, h) {
@@ -251,6 +252,24 @@ export function criminalReserve(v) {
     // The fifth asset is free to establish during our action step. Do not
     // spend two of the four existing assets just before that reveal turn.
     return d && !live(v, 'WM060') && v.round >= 3 && mine(v).assets.length + nextAsset >= price ? Math.min(price, mine(v).assets.length) : 0;
+}
+// A staged resurrection needs both its reveal mana and a card to display.
+// Spending the last usable display card can silently cancel the entire line.
+export function criminalCommitmentPenalty(v, command, h) {
+    if (!criminalBot(v) || !['start', 'action'].includes(v.turn.phase) || !fuel(v).length)
+        return 0;
+    const source = mine(v).play.find(c => c.faceDown && c.catalogId === 'BQ082' && !c.paidRevealBlocked);
+    if (!source || h.pool(v) < (v.revealCosts?.[source.id] ?? source.printedCost ?? 4))
+        return 0;
+    const removed = new Set([...(command.discardIds ?? []), ...(['play', 'secret-deploy', 'build-asset'].includes(command.type) ? [command.cardId] : [])]);
+    if (!removed.size)
+        return 0;
+    const bids = mine(v).hand.filter(c => bidStrength(v, c, h, { amount: 2 }) >= 6);
+    if (!bids.length || bids.some(c => !removed.has(c.id)))
+        return 0;
+    // Keep emergency responses and decisive scoring available when their
+    // evaluated benefit outweighs preserving the resurrection engine.
+    return 100;
 }
 export function criminalMulligan(v, h) {
     if (!criminalBot(v))

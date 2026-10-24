@@ -1,5 +1,5 @@
+import { graveSealPayoff } from './bot-grave-seal-planning.mjs';
 import { rumorHosts } from './bot-rumor-planning.mjs';
-import { hasCardType } from './card-types.mjs';
 import { redPurpleAssetReserve } from './red-purple-bot-policy.mjs';
 const mine = v => v.players[v.seat];
 const grave = v => [...mine(v).graveyard, ...mine(v).headquarters ?? []];
@@ -9,9 +9,14 @@ const mana = v => (mine(v).costPool ?? 0) + mine(v).assets.filter(c => !c.tapped
 // Hand/discard value is not the cost of losing a combo piece permanently to
 // the asset zone. All three monsters are fuel; one graveyard payload suffices.
 export function assetComboReserve(v, c) {
+    // Native graveyard return is a reusable destination, independent of the
+    // preset deck or card name. A low hand value is not permission to exile it
+    // into the asset zone, where that return ability cannot work.
+    if (c.automation?.graveHiddenWin && !c.printedTextBlank && !c.abilitiesSuppressed)
+        return 140;
     if (v.bot?.id !== 'black-purple-criminals')
         return redPurpleAssetReserve(v, c);
-    const wanted = c.catalogId === 'CQ31' ? 3 : ['WM060', 'BQ086'].includes(c.catalogId) ? 1 : 0;
+    const wanted = ['WM060', 'BQ086'].includes(c.catalogId) ? 1 : 0;
     if (!wanted)
         return 0;
     const established = [...grave(v), ...mine(v).play].filter(x => x.id !== c.id && x.catalogId === c.catalogId).length;
@@ -76,7 +81,9 @@ export function assetAcquisitionValue(v, c, assetValue, needed = needsAssetMater
         ...(v.hardInfo ? { hardInfo: { ...v.hardInfo, ownDeck: v.hardInfo.ownDeck.filter(x => x.id !== c.id) } } : {}) };
     // Take an expendable color source when the hand otherwise consists of
     // important pieces, rather than fetch another engine and asset that engine.
-    return 65 + assetLoyaltyBenefit(draft, c) - Math.max(0, assetValue(draft, c)) * 0.8;
+    // Use the same commitment cost as the subsequent build-asset decision.
+    // Loyalty supplied by a reserved component does not make it disposable.
+    return 65 + assetLoyaltyBenefit(draft, c) - Math.max(0, assetValue(draft, c)) * 0.8 - assetCommitmentPenalty(draft, c);
 }
 export function activeRumor(v, c) {
     const m = mine(v), hidden = (m.effectiveMarkers ?? m.markers)?.hidden > 0;
@@ -93,7 +100,7 @@ export function graveyardPurposeValue(v, c, handValue, planning) {
         return planning?.hiddenReady ? 155 : 35;
     // Transfer to the graveyard is a loss of access unless an actual recovery
     // plan supplies a use there. Printed cost/death magic alone is not a payoff.
-    let value = (planning?.values.get(c.id) ?? 0) - Math.max(0, handValue(v, c));
+    let value = Math.max(planning?.values.get(c.id) ?? 0, graveSealPayoff(v, c)) - Math.max(0, handValue(v, c));
     if (c.automation?.reincarnates || c.keywords?.includes('转生'))
         value -= 45;
     if (v.bot?.id === 'shoggoth-locking' && c.catalogId === 'BH59')

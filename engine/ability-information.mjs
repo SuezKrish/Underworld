@@ -270,7 +270,13 @@ export function abilityInformation(s, id) {
         if (source)
             grantedAbilities.push({ text: '只能在自己的行动步骤付费翻面。', source: sourceInfo(s, source, '持续现身限制') });
     }
-    return { keywordStates, grantedAbilities };
+    const triggerUseCounts = field ? Object.fromEntries((c.automation?.watch ?? []).flatMap((w, i) => {
+        if (!w.oncePerRound)
+            return [];
+        const use = s.abilityUses?.[`${id}:${l.zoneVersion}:watch:${i}`];
+        return [[i, use?.round === s.round ? use.count : 0]];
+    })) : undefined;
+    return { keywordStates, grantedAbilities, ...(triggerUseCounts ? { triggerUseCounts } : {}) };
 }
 export function recordEffectSources(s, before, sourceId, abilityText) {
     if (!sourceId)

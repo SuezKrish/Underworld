@@ -1,22 +1,24 @@
+import { nonDrawEffectBlocked } from './bot-draw-lock-planning.mjs';
 import { hasCardType } from './card-types.mjs';
 import { libraryBudget, resourcePriorities } from './bot-resource-planning.mjs';
 const own = v => v.players[v.seat].play.filter(c => !c.faceDown && !c.abilitiesSuppressed);
 const handCount = (v, p) => v.players[p].handCount ?? v.players[p].hand?.length ?? 0;
 const engine = c => ['BQ030', 'BQ036', 'BQ034', 'BQ031', 'BQ035', 'CQ07'].includes(c.catalogId) || c.catalogId === 'BH16';
 export const blueBot = v => v.bot?.id === 'blue-dragon-feast';
-const informed = v => v.bot?.difficulty === 'hard';
-const arbiters = v => own(v).filter(c => c.catalogId === 'BQ030' && !c.printedTextBlank);
+const informed = v => !!v.hardInfo || v.bot?.difficulty === 'hard';
+const arbiters = v => nonDrawEffectBlocked(v) ? [] : own(v).filter(c => c.catalogId === 'BQ030' && !c.printedTextBlank);
 const bloodSources = v => [...v.players[v.seat].graveyard, ...(v.players[v.seat].headquarters ?? []), ...(v.sealed ?? []).filter(c => c.hostId === `society:${v.seat}`)].filter(c => c.name === '鲜血');
 const heartPath = v => own(v).some(c => c.catalogId === 'JC034' && !c.printedTextBlank);
 const characterAttachment = c => c.attachment?.effect === 'attach';
 const firstCopy = (v, c) => !v.players[v.seat].hand.some(x => x.catalogId === c.catalogId) || v.players[v.seat].hand.find(x => x.catalogId === c.catalogId)?.id === c.id;
+const bloodSlave = c => !c.printedTextBlank && !c.abilitiesSuppressed && [...c.availableActions ?? [], ...c.automation?.actions ?? [], ...(c.automation?.action ? [c.automation.action] : [])].some(a => a.operation === 'slave-blood-return');
 const blades = c => c.tapped ? 0 : c.effectiveIcons?.battle ?? c.icons?.battle ?? 0;
 function attachmentFuel(v) {
     const m = v.players[v.seat], soon = m.assets.length + 1;
     const fromHand = m.hand.filter(c => characterAttachment(c) && (v.castingCosts?.[c.id] ?? c.printedCost ?? 0) <= soon && (c.catalogId !== 'JC036' || (v.spellTargets?.[c.id] ?? []).some(o => v.players[1 - v.seat].play.some(x => x.id === o.id)))).length;
     const bats = m.hand.filter(c => c.catalogId === 'BQ026').length + own(v).filter(c => c.catalogId === 'BQ026' && !c.attachedTo).length;
     const drink = own(v).some(c => (c.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027' || c.catalogId === 'XG10' && !c.tapped);
-    return fromHand + bats + Number(!!drink);
+    return fromHand + bats + Number(!!drink) + m.hand.filter(c => bloodSlave(c) && (v.castingCosts?.[c.id] ?? c.printedCost ?? 0) <= soon).length;
 }
 export function blueSecretDeployAllowed(v, c) {
     if (!blueBot(v) || !informed(v))
@@ -94,7 +96,7 @@ export function blueMulligan(v, h) {
 }
 function stagedEngine(v, h) {
     const m = v.players[v.seat], futureMana = h.pool(v) + (!m.actionsUsed?.asset && m.hand.some(c => !c.nonAssetNow) ? 1 : 0);
-    const fuel = informed(v) ? attachmentFuel(v) : m.hand.some(characterAttachment) || own(v).some(c => c.catalogId === 'BQ026' && !c.attachedTo || (c.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027');
+    const fuel = informed(v) ? attachmentFuel(v) : m.hand.some(c => characterAttachment(c) || bloodSlave(c)) || own(v).some(c => c.catalogId === 'BQ026' && !c.attachedTo || (c.availableActions ?? []).some(a => a.operation === 'slave-blood-return')) || bloodSources(v).length && own(v).some(c => c.catalogId === 'BQ027');
     return m.play.filter(c => c.faceDown && !c.paidRevealBlocked && h.loyalty(v, c) && (v.revealCosts?.[c.id] ?? c.printedCost ?? 0) <= futureMana).filter(c => c.catalogId === 'BQ030' && !arbiters(v).length && fuel || c.catalogId === 'BQ036' && !own(v).some(c => c.catalogId === 'BQ036') && (informed(v) || m.hand.length <= 3 || arbiters(v).length && m.hand.filter(c => c.attachment).length < 2)).sort((a, b) => Number(a.catalogId !== 'BQ030') - Number(b.catalogId !== 'BQ030'))[0];
 }
 export function blueRevealReserve(v, h) {
@@ -113,7 +115,7 @@ export function blueEngineRevealScore(v, c, h) {
         return 106;
     if (informed(v) && c.catalogId === 'BQ036' && (v.turn.standardAllowed && v.flow.stepOwner === v.seat && !v.flow.stack.length || v.turn.phase === 'contest' && v.turn.step === 'contest-before' && v.turn.kind === 'investigation' && v.turn.district === c.district))
         return 108;
-    const m = v.players[v.seat], combo = m.hand.some(a => characterAttachment(a) && (v.castingCosts?.[a.id] ?? a.printedCost ?? 0) <= after) || own(v).some(a => a.catalogId === 'BQ026' && !a.attachedTo && a.district !== c.district) || bloodSources(v).length && own(v).some(a => a.catalogId === 'BQ027');
+    const m = v.players[v.seat], combo = m.hand.some(a => (characterAttachment(a) || bloodSlave(a)) && (v.castingCosts?.[a.id] ?? a.printedCost ?? 0) <= after) || own(v).some(a => a.catalogId === 'BQ026' && !a.attachedTo && a.district !== c.district || bloodSlave(a)) || bloodSources(v).length && own(v).some(a => a.catalogId === 'BQ027');
     if (v.turn.standardAllowed && v.flow.stepOwner === v.seat && !v.flow.stack.length && (combo || m.costPool >= price))
         return 106;
     return undefined;
@@ -128,6 +130,20 @@ export function blueReadyDiscarders(v) {
     });
 }
 function attachmentIncome(v, h) { return Math.min(arbiters(v).length, libraryBudget(v, h)); }
+// A slave is both a cheap body and a held, zero-mana attachment response.
+// Price the first available copy against live or affordable engine partners;
+// later copies retain replenishment value without crowding out those engines.
+function slaveSynergy(v, c, h) {
+    if (!bloodSlave(c))
+        return 0;
+    const m = v.players[v.seat], field = own(v).filter(x => !x.printedTextBlank), soon = m.assets.length + 1;
+    const ready = code => field.some(x => x.catalogId === code), planned = code => m.hand.some(x => x.catalogId === code && (v.castingCosts?.[x.id] ?? x.printedCost ?? 0) <= soon) || m.play.some(x => x.faceDown && x.catalogId === code && (v.revealCosts?.[x.id] ?? x.printedCost ?? 0) <= soon);
+    const income = libraryBudget(v, h) > 0 ? (ready('BQ030') ? 14 : planned('BQ030') ? 8 : 0) : 0;
+    const denial = handCount(v, 1 - v.seat) > 0 ? (ready('BQ031') ? 14 : planned('BQ031') ? 6 : 0) : 0;
+    const protection = ready('BQ034') ? 14 : planned('BQ034') ? 6 : 0;
+    const spare = field.some(x => x.id !== c.id && bloodSlave(x)) || !firstCopy(v, c);
+    return Math.round((income + denial + protection) * (spare ? 0.4 : 1));
+}
 export function blueHandBonus(v, c, h) {
     if (!blueBot(v))
         return 0;
@@ -145,6 +161,7 @@ export function blueHandBonus(v, c, h) {
         n += 5;
     if (c.catalogId === 'WM021' && !own(v).some(c => c.catalogId === 'WM021') && v.players[v.seat].hand.some(x => x.id !== c.id && x.subtypes?.includes('吸血鬼')))
         n += 5;
+    n += slaveSynergy(v, c, h);
     if (c.catalogId === 'BQ027' && blueReadyDiscarders(v).length && bloodSources(v).length)
         n += 8;
     if (c.catalogId === 'BQ035' && !own(v).some(c => c.catalogId === 'BQ035') && own(v).some(a => a.name === '鲜血'))
@@ -160,6 +177,8 @@ export function blueHandBonus(v, c, h) {
 export function bluePlayBonus(v, c, h) {
     if (!blueBot(v))
         return 0;
+    if (bloodSlave(c))
+        return slaveSynergy(v, c, h);
     if (informed(v) && c.catalogId === 'BQ026' && arbiters(v).length)
         return 16;
     if (informed(v) && ['BH16', 'JC030', 'BQ031'].includes(c.catalogId) && !own(v).some(x => hasCardType(x, 'character') && blades(x) > 0))
@@ -168,7 +187,7 @@ export function bluePlayBonus(v, c, h) {
         return 8 + Math.min(3, own(v).filter(a => a.name === '鲜血').length) * 5;
     if (c.catalogId !== 'BQ030' || resourcePriorities(v, h).critical)
         return 0;
-    const fuel = informed(v) ? attachmentFuel(v) : v.players[v.seat].hand.filter(x => x.id !== c.id && characterAttachment(x)).length + own(v).filter(x => x.catalogId === 'BQ026' && !x.attachedTo).length + bloodSources(v).length;
+    const fuel = informed(v) ? attachmentFuel(v) : v.players[v.seat].hand.filter(x => x.id !== c.id && (characterAttachment(x) || bloodSlave(x))).length + own(v).filter(x => x.catalogId === 'BQ026' && !x.attachedTo).length + bloodSources(v).length;
     if (!arbiters(v).length)
         return fuel ? 30 : 10;
     const after = h.pool(v) - (v.castingCosts?.[c.id] ?? c.printedCost ?? 0);
@@ -261,6 +280,22 @@ export function blueBloodSacrifice(v, source, options, h) {
     const targets = options.map(o => h.lookup(v, o.id)).filter(c => c?.controller === v.seat && c.id !== source.id && c.subtypes?.includes('吸血鬼'));
     if (!targets.length)
         return null;
+    // Yayoi chooses the attachment on resolution, so a bare vampire is a
+    // valid protected subject. Supply blood above that trigger, not below it.
+    if (selfBlood) {
+        for (const trigger of [...v.flow.stack].reverse()) {
+            const plan = trigger.responseEffect?.attachmentProtection;
+            if (trigger.controller !== v.seat || !plan)
+                continue;
+            const card = v.flow.stack.find(a => a.id === plan.targetedEntryId);
+            const host = targets.find(c => c.id === plan.subjectId && c.zoneVersion === plan.subjectZoneVersion);
+            if (!card || card.controller === v.seat || card.canBeTerminated === false || !host)
+                continue;
+            if (own(v).some(a => a.attachedTo === host.id && hasCardType(a, 'attachment') && !a.cannotSacrifice && !h.keyword(a, '永恒')))
+                continue;
+            return { targetId: host.id, score: 110 + h.value(host) + attachmentIncome(v, h) * 5 };
+        }
+    }
     const discarders = blueReadyDiscarders(v), enemyCards = handCount(v, 1 - v.seat);
     const afterDraw = v.turn.step === 'draw' || v.turn.phase === 'action' && v.turn.step === 'first-action' && v.turn.firstPlayer === v.seat;
     const emergency = source.tapped && v.turn.step !== 'prepare' || v.turn.step === 'claim-before' && source.district === v.turn.district || v.turn.step === 'contest-before' && v.turn.kind === 'battle' && v.turn.district === source.district && h.lethalBattleRisk(v, source, source.district) || v.flow.stack.some(a => a.controller !== v.seat && a.targetIds?.includes(source.id) && a.responseEffect?.removesTargets);

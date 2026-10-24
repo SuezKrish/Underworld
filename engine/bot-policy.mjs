@@ -1,12 +1,21 @@
-import { pendingGraveyardUse } from './bot-graveyard-uses.mjs';
+import { sequenceThreats, reserveCounterForFollowUp } from './bot-threat-sequencing.mjs';
+import { nonDrawLockValue, nonDrawEffectBlocked, onlyDrawEffect } from './bot-draw-lock-planning.mjs';
+import { refillInvestmentPenalty } from './bot-refill-economy.mjs';
+import { investigationSealValue } from './bot-grave-seal-planning.mjs';
+import { mutantForfeitsWinningClaim } from './bot-entry-tempo.mjs';
+import { tormentVictimCost, woundVictimCost } from './bot-torment-planning.mjs';
+import { negativeChoiceImpact } from './bot-choice-impact.mjs';
+import { projectedClaimOutcome } from './bot-claim-outcome.mjs';
+import { knownMillOutcome } from './bot-library-outlook.mjs';
+import { matchupHandBonus, matchupDistrictBonus } from './bot-matchup-planning.mjs';
 import { upcomingContest } from './contest-timing.mjs';
 import { nightPatrolMoves, greenCarmenTactics, greenEmployeeSetup, greenEmployeeScore, greenEmployeeRevealHold, greenOpeningMulligan } from './green-black-tactics.mjs';
 import { blueBot, blueHandBonus, bluePlayBonus, blueDistrictBonus, blueAttachmentScore, blueBatAttachTargets, blueBatMobility, blueBloodSacrifice, bluePhoenixContest, blueMobilityRevealScore, blueRevealReserve, blueEngineRevealScore, blueBattleDiscards, blueBattleDistrictBonus, blueHeartPathPlayScore, blueMulligan, blueSecretDeployAllowed, blueHiddenDistrictBonus, blueBloodSearch } from './blue-dragon-bot-policy.mjs';
 import { actionEffectForecast } from './bot-effect-forecast.mjs';
 import { fastRemovalDue, paidRevealDue, imminentHandLoss } from './bot-response-timing.mjs';
-import { purpleBot, purpleLibraryUse, purpleLibraryBudget, redPurpleDeployAllowed, redPurpleHandBonus, redPurpleAssetBonus, redPurpleMulligan, redPurpleHiddenScore, redPurplePreferHidden, redPurpleReveal, redPurpleDistrictBonus, redPurpleChoice, redPurpleTrigger, redPurpleTactics } from './red-purple-bot-policy.mjs';
+import { redPurpleFreeProspect, purpleBot, purpleLibraryUse, purpleLibraryBudget, redPurpleDeployAllowed, redPurpleHandBonus, redPurpleAssetBonus, redPurpleMulligan, redPurpleHiddenScore, redPurplePreferHidden, redPurpleReveal, redPurpleDistrictBonus, redPurpleChoice, redPurpleTrigger, redPurpleTactics } from './red-purple-bot-policy.mjs';
 import { libraryClaimPlacement, investigationRelief } from './bot-library-safety.mjs';
-import { criminalBot, criminalHandBonus, criminalAssetBonus, criminalPreferHidden, criminalDistrictBonus, criminalReserve, criminalMulligan, criminalReveal, criminalTrigger, criminalChoice, criminalHiddenScore, criminalTactics, criminalOrder, criminalRuleSacrifice, criminalDeployAllowed, criminalLibraryUse, criminalLibraryBudget } from './criminal-bot-policy.mjs';
+import { criminalBot, criminalHandBonus, criminalAssetBonus, criminalPreferHidden, criminalDistrictBonus, criminalReserve, criminalCommitmentPenalty, criminalMulligan, criminalReveal, criminalTrigger, criminalChoice, criminalHiddenScore, criminalTactics, criminalOrder, criminalRuleSacrifice, criminalDeployAllowed, criminalLibraryUse, criminalLibraryBudget } from './criminal-bot-policy.mjs';
 import { anglicanBot, anglicanHandBonus, anglicanAssetBonus, anglicanMulligan, anglicanTactics, anglicanInfluenceTactics, anglicanMonkChoice, anglicanMeditationHold } from './anglican-bot-policy.mjs';
 import { defaultTriggerEnabled } from './trigger-selection.mjs';
 import { radioBot, radioHandBonus, radioAssetBonus, radioDistrictBonus, radioPreferHidden, radioDeployAllowed, radioReserve, radioReveal, radioMulligan, radioTrigger, radioChoice, radioHiddenScore, radioTactics } from './rumor-radio-bot-policy.mjs';
@@ -20,6 +29,7 @@ import { openingBlackBladeRisk } from './bot-opening-safety.mjs';
 import { recurringEngine, libraryReserve, libraryUse, libraryBudget, optionalRefillUseful, resourcePriorities, regionRewardUtility, regionTriggerUseful, lakeShouldShuffle, secrecyReward, districtConcession, handCommitmentPenalty, assetPreservesHand, districtAttachmentTenure, earlyEngineTenurePenalty, removalEngineTempoBonus } from './bot-resource-planning.mjs';
 import { spellFuel, spellCombatReserve, spellCombatPump, spellProtectionReserve, spellBlinkHold, spellSilverRescue } from './spell-bot-planning.mjs';
 import { spellFuneralScore, spellRelicDomain, spellRelicRebuild, wheelOpponentScore, wheelDisruptionKey, wheelDisruptionPending, wheelRecoveryDraw, wheelRefillKey, wheelPrice, wantsStarRelic } from './spell-graveyard-planning.mjs';
+import { pendingGraveyardUse } from './bot-graveyard-uses.mjs';
 import { matutaBonus, engineCopyBonus, enginePlayBonus, blackHandBonus, greenHandBonus, greenAssetBonus, yallorBonus, rumorHandBonus, engineCanStart, needsCurveAsset } from './bot-dynamic-planning.mjs';
 import { rumorTriggerChoices } from './bot-rumor-planning.mjs';
 import { assetComboReserve, assetLoyaltyBenefit, assetCommitmentPenalty } from './bot-card-purpose.mjs';
@@ -58,7 +68,7 @@ function poetPlayAllowed(v, c, d) {
     const waiting = mine(v).hand.concat(mine(v).play.filter(x => x.faceDown)).some(x => x.id !== c.id && hasCardType(x, 'character') && keyword(x.faceDown ? faceUp(v, x) : x, '威名'));
     return (!waiting && mine(v).hand.length <= 2 && v.round >= 3) || districtScore(v, d, faceUp(v, c)) >= 100;
 }
-const drawEngines = v => own(v).filter(c => c.catalogId === 'XG01').length;
+const drawEngines = v => nonDrawEffectBlocked(v) ? 0 : own(v).filter(c => c.catalogId === 'XG01').length;
 const targetedByUs = (v, id) => v.flow.stack.some(a => a.controller === v.seat && a.targetIds?.includes(id));
 const keyRole = c => hasCardType(c, 'character') && ['XG01', 'JC080', 'XQ31', 'BH11', 'BH10', 'BH36', 'BQ030', 'BQ036'].includes(c.catalogId);
 const threatenedEngine = v => own(v).filter(c => keyRole(c) && lethalBattleRisk(v, c, c.district));
@@ -118,7 +128,7 @@ function claimPenalty(v, d, ours, prospect) {
     if (resourcePriorities(v, policyHelpers).race)
         return 0;
     const points = Math.max(0, (r.points ?? 0) - (r.destroyed ?? 0));
-    if ((mine(v).score ?? 0) + points >= (mine(v).victoryThreshold ?? 8))
+    if (projectedClaimOutcome(v, v.seat, d, policyHelpers).wins)
         return 0;
     const cardTempo = c => value(c) * 0.45 + icons(v, c, 'investigation') * 2 + (c.catalogId === 'XG01' ? 8 : 0);
     const tempo = p => v.players[p].play.filter(c => c.district === d).reduce((n, c) => n + cardTempo(c), 0);
@@ -291,7 +301,7 @@ function handValue(v, c) {
                 n -= 18;
         }
     }
-    return n + spellCombatReserve(v, c) + matutaBonus(v, c) + engineCopyBonus(v, c) + blackHandBonus(v, c) + greenHandBonus(v, c) + yallorBonus(v, c) + rumorHandBonus(v, c) + redPurpleHandBonus(v, c) + lockingHandBonus(v, c) + radioHandBonus(v, c) + criminalHandBonus(v, c) + anglicanHandBonus(v, c);
+    return n - refillInvestmentPenalty(v, c, policyHelpers) + matchupHandBonus(v, c, policyHelpers) + spellCombatReserve(v, c) + matutaBonus(v, c) + engineCopyBonus(v, c) + blackHandBonus(v, c) + greenHandBonus(v, c) + yallorBonus(v, c) + rumorHandBonus(v, c) + redPurpleHandBonus(v, c) + lockingHandBonus(v, c) + radioHandBonus(v, c) + criminalHandBonus(v, c) + anglicanHandBonus(v, c);
 }
 function assetValue(v, c) {
     let score = handValue(v, c) + (mine(v).assets.length < 3 && c.faction?.startsWith('白') ? -8 : 0);
@@ -353,6 +363,7 @@ function districtScore(v, d, c) {
     // battle. Spread eyes to win additional districts rather than overstacking.
     const weights = resourcePriorities(v, policyHelpers), blade = total(v, v.seat, d, 'battle'), theirBlade = total(v, 1 - v.seat, d, 'battle'), gainBlade = icons(v, { ...c, controller: v.seat }, 'battle');
     let score = (region.points ?? 0) + weights.investigation * ((eye <= theirEye && eye + gainEye > theirEye) + Math.min(gainEye, Math.max(0, theirEye - eye)) / 6 + Math.min(gainEye, 2) / 24) + weights.influence * (star <= theirStar && star + gainStar > theirStar) + weights.battle * (blade <= theirBlade && blade + gainBlade > theirBlade) - Math.max(0, eye - theirEye - 1) - Math.max(0, star - theirStar - 1) * 0.5;
+    score += matchupDistrictBonus(v, c, d, policyHelpers);
     score += Math.max(0, region.influence?.[v.seat] ?? 0) * 0.5;
     const concede = districtConcession(v, d, policyHelpers);
     if (concede > 0 && gainStar > 0)
@@ -360,7 +371,7 @@ function districtScore(v, d, c) {
     const points = Math.max(0, (region.points ?? 0) - (region.destroyed ?? 0));
     const enemyWins = (region.influence[1 - v.seat] ?? 0) + Math.max(0, theirStar - star - (region.influence[v.seat] ?? 0)) >= region.threshold;
     const stopsEnemyWin = (region.influence[1 - v.seat] ?? 0) + Math.max(0, theirStar - star - gainStar - (region.influence[v.seat] ?? 0)) < region.threshold;
-    if (enemyWins && stopsEnemyWin && contestPending(v, d, 'influence') && (enemy(v).score ?? 0) + points >= (enemy(v).victoryThreshold ?? 8))
+    if (enemyWins && stopsEnemyWin && contestPending(v, d, 'influence') && projectedClaimOutcome(v, 1 - v.seat, d, policyHelpers).wins)
         score += 120;
     if (c.catalogId === 'LC11' && region.traits?.includes('黄昏'))
         score += 3;
@@ -381,7 +392,7 @@ function districtScore(v, d, c) {
         score -= claimPenalty(v, d, result, c);
         if (weights.race)
             score += Math.min(result, region.threshold) * 2 + (result >= region.threshold ? 16 + points * 3 : 0);
-        if (result >= region.threshold && (mine(v).score ?? 0) + Math.max(0, (region.points ?? 0) - (region.destroyed ?? 0)) >= (mine(v).victoryThreshold ?? 8))
+        if (result >= region.threshold && projectedClaimOutcome(v, v.seat, d, policyHelpers).wins)
             score += 30;
     }
     if (green(v) && contestPending(v, d, 'battle')) {
@@ -595,11 +606,14 @@ function effectChoices(v, a, type = 'effect-choice') {
         const role = lookup(v, a.roleId), moves = nightPatrolMoves(v, role, policyHelpers, cards);
         return moves.length ? moves.map(m => ({ ...base, cardId: `district:${m.district}` })) : sorted(cards, c => districtScore(v, Number(c.id.slice(9)), role ?? { faceDown: true })).map(c => ({ ...base, cardId: c.id }));
     }
+    const impact = negativeChoiceImpact(a);
+    if (impact?.kind === 'wound')
+        return sorted(cards, c => (impact.afterHidden ? tormentVictimCost : woundVictimCost)(v, lookup(v, c.id) ?? c, policyHelpers), false).map(c => ({ ...base, cardId: c.id }));
     if (a.kind === 'green-fire-payment')
         return [{ ...base, cardId: pool(v) >= 2 ? 'pay' : 'skip' }, { ...base, cardId: 'skip' }];
     if (a.kind === 'green-fire-target')
         return [...(pool(v) >= 2 ? orderedTargets(v, cards, true).map(o => ({ ...base, cardId: o.id })) : []), { ...base, skip: true }];
-    const choices = (/discard|sacrifice|seal-hand/.test(a.kind) ? least : best).map(c => ({ ...base, cardId: c.id }));
+    const choices = (impact ? least : best).map(c => ({ ...base, cardId: c.id }));
     if (a.canSkip)
         choices.push({ ...base, skip: true });
     if (a.canFail)
@@ -643,7 +657,7 @@ function damage(v, a) {
     }
     return { type: 'assign-damage', allocations };
 }
-const triggerLibraryUse = (v, a) => Math.max(libraryUse(a, v.seat), criminalLibraryUse(v, a), purpleLibraryUse(v, a));
+const triggerLibraryUse = (v, a) => Math.max(libraryUse(a, v.seat, v), criminalLibraryUse(v, a), purpleLibraryUse(v, a));
 function triggerLibraryBudget(v, abilities = []) {
     const budget = Math.min(libraryBudget(v, policyHelpers), criminalBot(v) ? criminalLibraryBudget(v, policyHelpers) : purpleBot(v) ? purpleLibraryBudget(v, policyHelpers) : Infinity);
     const queued = new Set((v.flow?.stack ?? []).map(a => a.id).filter(Boolean)), reserved = new Map();
@@ -694,6 +708,10 @@ function triggers(v) {
             continue;
         }
         const opts = v.abilityTargets?.[a.id] ?? [];
+        if (plan.operation === 'seal-source-grave' && lookup(v, a.cardId)?.automation?.sealedSkipInvestigation) {
+            candidates.push(...sorted(opts, o => investigationSealValue(v, Number(o.id.slice(9)))).filter(o => investigationSealValue(v, Number(o.id.slice(9))) > 0).map(o => ({ ...base, fire: true, targetIds: [o.id] })), { ...base, fire: false });
+            continue;
+        }
         if (!a.mandatory && plan.effect === 'tap' && !opts.some(o => lookup(v, o.id)?.controller === 1 - v.seat)) {
             candidates.push({ ...base, fire: false });
             continue;
@@ -747,14 +765,21 @@ function tactical(v, mode = 'normal') {
         const next = upcomingContest(v);
         if (next) {
             const projected = { ...v, turn: { ...v.turn, ...next, step: 'contest-before' } }, seen = new Set();
-            return [...tactical(v, 'scores'), ...tactical(projected, 'scores')].sort((a, b) => b.score - a.score).filter(x => { const key = JSON.stringify(x.command); if (seen.has(key))
-                return false; seen.add(key); return true; }).map(x => x.command);
+            return [...tactical(v, 'scores'), ...tactical(projected, 'scores')].sort((a, b) => b.score - a.score).filter(x => {
+                const key = JSON.stringify(x.command);
+                if (seen.has(key))
+                    return false;
+                seen.add(key);
+                return true;
+            }).map(x => x.command);
         }
     }
     const choices = [], p = v.seat, available = pool(v), standard = v.turn?.standardAllowed && v.flow.stepOwner === p && !v.flow.stack.length;
     const responses = responsePlan(v, policyHelpers), revealBudget = Math.max(reservedReveal(v), responses.ambushMana), shieldBudget = Math.max(shieldReserve(v), responses.responseMana), untapped = mine(v).assets.filter(a => !a.tapped).length, reserve = Math.max(wheelRecoveryDraw(v) ? wheelPrice(v) : 0, revealBudget + (revealBudget + shieldBudget <= untapped ? shieldBudget : Math.max(0, shieldBudget - revealBudget))), spare = Math.max(0, available - reserve);
     const add = (command, score, key, defensiveRescue = false) => {
         const source = lookup(v, command.cardId);
+        if (source && ['play', 'reveal'].includes(command.type))
+            score -= refillInvestmentPenalty(v, command.type === 'reveal' ? { ...source, faceDown: false } : source, policyHelpers);
         if (command.type === 'play' && source?.attachment?.target === 'district') {
             const target = command.targetIds?.find(id => id.startsWith('district:'));
             if (target) {
@@ -765,8 +790,14 @@ function tactical(v, mode = 'normal') {
             }
         }
         const plan = command.type === 'play' ? (source?.spell ?? source?.attachment) : command.type === 'activate' ? (source?.availableActions ?? source?.automation?.actions ?? [source?.automation?.action])?.[command.actionIndex ?? 0] : command.type === 'society-action' ? { ops: v.societies?.[p]?.actions?.find(a => a.id === command.abilityId)?.ops ?? [] } : null;
-        if (plan && libraryUse({ plan }, p) > libraryBudget(v, policyHelpers))
+        if (plan && nonDrawEffectBlocked(v) && onlyDrawEffect(plan))
             return;
+        if (plan?.operation === 'mutant-seal' && mutantForfeitsWinningClaim(v, source, lookup(v, command.targetIds?.[0]), policyHelpers))
+            return;
+        if (plan && libraryUse({ plan }, p, v) > libraryBudget(v, policyHelpers))
+            return;
+        if (plan)
+            score += knownMillOutcome(v, plan, policyHelpers, command.targetIds)?.bonus ?? 0;
         if (plan && !fastRemovalDue(v, source, plan, command.targetIds, policyHelpers))
             return;
         if (plan?.timing === 'fast') {
@@ -784,8 +815,11 @@ function tactical(v, mode = 'normal') {
         // Specialized tactics also generate reveals; all routes share this check.
         if (command.type === 'reveal' && v.flow.stack.some(a => a.kind === 'reveal-character' && a.cardId === command.cardId))
             return;
+        score -= criminalCommitmentPenalty(v, command, policyHelpers);
         if (command.type === 'play')
             score -= lockingCommandPenalty(v, source, command, policyHelpers);
+        if (source?.automation?.static === 'block-non-draw' && ['play', 'reveal'].includes(command.type))
+            score += nonDrawLockValue(v, source);
         // A proactive engine removal may use its own response budget, but should
         // not silently spend the mana reserved for a staged contest ambush.
         if (standard && command.type === 'play' && plan?.actionPhaseOnly && ['destroy', 'destroy-if-sealed', 'damage', 'wound', 'shuffle-owner', 'bounce', 'return-hand', 'conceal'].includes(plan.effect) && revealBudget > 0 &&
@@ -1025,7 +1059,7 @@ function tactical(v, mode = 'normal') {
             if (['WM008', 'XQ04'].includes(c.catalogId))
                 for (const o of opts) {
                     const entry = v.flow.stack.find(a => `stack:${a.id}` === o.id);
-                    if (!entry || entry.controller === p || entry.canBeTerminated === false || targetedByUs(v, o.id))
+                    if (!entry || entry.controller === p || entry.canBeTerminated === false || targetedByUs(v, o.id) || reserveCounterForFollowUp(v, entry, c, policyHelpers))
                         continue;
                     const threatened = (entry.targetIds ?? []).map(id => lookup(v, id)).filter(c => c?.controller === p);
                     const utility = threatened.reduce((n, c) => n + value(c), 0) + (entry.damageEffect ? 8 : 0) + (entry.kind === 'play-character' || entry.kind === 'reveal-character' ? 10 : 2);
@@ -1209,7 +1243,8 @@ function tactical(v, mode = 'normal') {
                     add({ type: 'play', cardId: c.id, district: d }, 85 + bonus + districtScore(v, d, faceUp(v, c)));
         }
     anglicanInfluenceTactics(v, policyHelpers, add, { reservedMana: reserve, candidates: choices.map(x => x.command) });
-    return mode === 'scores' ? choices : choices.sort((a, b) => b.score - a.score).map(x => x.command);
+    const sequenced = sequenceThreats(v, choices, { ...policyHelpers, freeProspect: redPurpleFreeProspect });
+    return mode === 'scores' ? sequenced : sequenced.sort((a, b) => b.score - a.score).map(x => x.command);
 }
 function paidTriggerDraft(v, a, c, used = new Set()) {
     if (!c?.fire)
@@ -1339,6 +1374,8 @@ export function botCommands(v) {
         ;
         if (a.kind === 'mage-tap-cost')
             return a.controller === p ? [{ type: 'continuous-choice', choiceId: a.id, cardIds: a.cards.slice(0, a.max).map(c => c.id) }] : [];
+        ;
+        ;
         if (a.kind === 'trigger-cost-batch')
             return triggerCostBatchCommands(v, a);
         if (a.kind === 'trigger-cost') {

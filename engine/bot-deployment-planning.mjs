@@ -1,3 +1,4 @@
+import { projectedClaimOutcome } from './bot-claim-outcome.mjs';
 import { greenEmployeeSetup } from './green-black-tactics.mjs';
 import { hasCardType } from './card-types.mjs';
 const domains = { 心: '心灵', 圣: '神圣', 星: '星辰', 死: '死亡', 血: '鲜血' };
@@ -44,7 +45,7 @@ export function secretDeploymentAssessment(v, c, d, h, { ambush = false } = {}) 
         wait = Math.min(wait, Math.max(mother.used ? 1 : 0, h.cost(c) - (society.counters?.revival ?? 0)));
     const r = v.districts[d], ours = h.total(v, v.seat, d, 'influence'), theirs = h.total(v, 1 - v.seat, d, 'influence');
     const net = (r.influence[v.seat] ?? 0) + ours + 1 - theirs - (r.influence[1 - v.seat] ?? 0);
-    const winningClaim = h.contestPending(v, d, 'influence') && net >= r.threshold && net - 1 < r.threshold && (m.score ?? 0) + Math.max(0, (r.points ?? 0) - (r.destroyed ?? 0)) >= (m.victoryThreshold ?? 8);
+    const winningClaim = h.contestPending(v, d, 'influence') && net >= r.threshold && net - 1 < r.threshold && projectedClaimOutcome(v, v.seat, d, h).wins;
     if (winningClaim)
         return { allowed: true, penalty: 0, wait, revealBenefit: !!a.reveal };
     // A claim before the card can reveal sends the investment to the bottom.

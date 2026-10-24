@@ -1,8 +1,10 @@
+import { nonDrawEffectBlocked } from './bot-draw-lock-planning.mjs';
+import { battleIntervention } from './bot-battle-intervention.mjs';
 import { hasCardType } from './card-types.mjs';
 import { fieldResponseRules, responseFilter, selectedEffectPlans, removalEffects, counterEffects } from './response-effect-semantics.mjs';
 const live = c => c && !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed;
 const cardGain = (v, p) => { const n = v.players[p].handCount ?? v.players[p].hand?.length ?? 0; return n < 3 ? 5 : n < 6 ? 3 : 1; };
-function outputValue(plan, v, p) { return selectedEffectPlans(plan).reduce((n, x) => n + (['draw', 'search-filtered', 'grave-to-hand', 'bottom-to-hand'].includes(x.effect) ? (x.count ?? 1) * cardGain(v, p) : 0), 0); }
+function outputValue(plan, v, p) { return selectedEffectPlans(plan).reduce((n, x) => n + (['draw', 'search-filtered', 'grave-to-hand', 'bottom-to-hand'].includes(x.effect) && !(x.effect === 'draw' && nonDrawEffectBlocked(v)) ? (x.count ?? 1) * cardGain(v, p) : 0), 0); }
 function enginePayoff(v, c) {
     const a = c.automation ?? {}, p = c.controller, pl = v.players[p];
     if (!pl || !live(c))
@@ -50,7 +52,7 @@ function targetTax(v, s, c, plan, t, h, isCard) {
             continue;
         const sign = source.controller === v.seat ? -1 : 1;
         for (const p of selectedEffectPlans(r))
-            if (p.effect === 'draw')
+            if (p.effect === 'draw' && !nonDrawEffectBlocked(v))
                 tax += sign * (p.count ?? 1) * cardGain(v, source.controller);
         // Conditional termination is a public option, not an assertion that the
         // opponent will take it. Retain a strong risk penalty when they can pay.
@@ -230,7 +232,8 @@ function advance(v, s, a, h) {
 // Future choices stay conditional; no opponent private cards or FAQ are read.
 export function actionEffectForecast(v, c, plan, targetIds, h, { isCard = !!c?.spell || !!c?.attachment } = {}) {
     c = { ...c, controller: c?.controller ?? v.seat };
-    const s = scene(v), ids = targetIds ?? [], now = utility(v, s, c, plan, ids, h, isCard), boundaries = [];
+    const s = scene(v), ids = targetIds ?? [], now = utility(v, s, c, plan, ids, h, isCard), boundaries = [], battle = battleIntervention(v, c, plan, ids, h);
+    now.value += battle.adjustment;
     const payment = opportunityCost(v, c, plan, h, isCard), developmentCost = developmentLost(v, c, payment.mana, h), spending = payment.direct + developmentCost;
     for (const a of [...s.stack].reverse()) {
         if (!s.stack.some(x => x.id === a.id))
@@ -253,6 +256,6 @@ export function actionEffectForecast(v, c, plan, targetIds, h, { isCard = !!c?.s
     const future = boundaries.find(x => x.blocked !== now.blocked || Math.abs(x.after - now.value) >= 0.75), after = future?.after ?? now.value, delta = after - now.value;
     const bestLater = Math.max(now.value, ...boundaries.map(x => x.alternative)), preferAlternative = bestLater > now.value + Math.max(2, now.value * 0.35);
     return { now: now.value, after, delta, spending, developmentCost, netNow: now.value - spending, profitable: now.value - spending >= 1, supported: now.supported, blocked: now.blocked,
-        urgent: !!(now.supported && !now.blocked && now.value > 0 && (delta < -0.75 || future?.blocked)),
+        urgent: !!(now.supported && !now.blocked && now.value > 0 && (delta < -0.75 || future?.blocked || battle.urgent)),
         wait: !!(now.supported && (delta > 0.75 && !future?.blocked || preferAlternative)), entryId: future?.entryId, boundaries };
 }

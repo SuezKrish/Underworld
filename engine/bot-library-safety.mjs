@@ -1,3 +1,5 @@
+import { nonDrawLockActive } from './bot-draw-lock-planning.mjs';
+import { claimOutcome } from './bot-claim-outcome.mjs';
 const claimRecyclingProfiles = new Set(['black-purple-criminals', 'purple-matriarch']);
 export const claimRecyclingBot = v => claimRecyclingProfiles.has(v.bot?.id);
 // These engines can consume a library long before their field loses strength.
@@ -5,8 +7,8 @@ export const claimRecyclingBot = v => claimRecyclingProfiles.has(v.bot?.id);
 // enter, so today's single winning investigation is not a safe upper bound.
 // A possible region claim is never credited as cards already in the library.
 export function libraryRunway(v, h = {}) {
-    const regions = (v.districts ?? []).filter(Boolean).length;
-    const pending = (v.districts ?? []).filter((r, d) => r && (h.contestPending ? h.contestPending(v, d, 'investigation') : ['setup', 'start', 'action', 'contest'].includes(v.turn?.phase))).length;
+    const blocked = nonDrawLockActive(v), regions = blocked ? 0 : (v.districts ?? []).filter(Boolean).length;
+    const pending = blocked ? 0 : (v.districts ?? []).filter((r, d) => r && (h.contestPending ? h.contestPending(v, d, 'investigation') : ['setup', 'start', 'action', 'contest'].includes(v.turn?.phase))).length;
     const perRound = 1 + regions, reserve = 2 + 3 * perRound + pending, deck = v.players[v.seat].deckCount ?? 50;
     return { reserve, perRound, pending, pressure: claimRecyclingBot(v) && deck <= reserve + perRound, urgent: claimRecyclingBot(v) && deck <= reserve };
 }
@@ -26,20 +28,23 @@ export function districtLibraryReturn(v, d, prospect, h = {}) {
 // change the outcome. Negative means a presently forced draw would deck us.
 export function mandatoryLibraryMargin(v, h) {
     let deck = v.players[v.seat].deckCount ?? 50, margin = deck;
-    const scores = v.players.map(p => p.score ?? 0);
+    const scores = v.players.map(p => p.score ?? 0), forecast = { ...v, players: v.players.map(p => ({ ...p })) };
     for (const [d, r] of (v.districts ?? []).entries()) {
         if (!r)
             continue;
-        if (h.contestPending(v, d, 'investigation') && h.total(v, v.seat, d, 'investigation') > h.total(v, 1 - v.seat, d, 'investigation'))
+        if (!nonDrawLockActive(forecast) && h.contestPending(v, d, 'investigation') && h.total(v, v.seat, d, 'investigation') > h.total(v, 1 - v.seat, d, 'investigation'))
             margin = Math.min(margin, --deck);
         if (h.contestPending(v, d, 'influence')) {
             const net = r.influence[0] - r.influence[1] + h.total(v, 0, d, 'influence') - h.total(v, 1, d, 'influence');
             if (Math.abs(net) >= r.threshold || r.pendingWinner !== null && r.pendingWinner !== undefined) {
                 deck += districtLibraryReturn(v, d, undefined, h);
-                const winner = r.pendingWinner ?? (net > 0 ? 0 : 1);
-                scores[winner] += Math.max(0, (r.points ?? 0) - (r.destroyed ?? 0));
-                if (scores[winner] >= (v.players[winner].victoryThreshold ?? 8) && scores[winner] > scores[1 - winner])
+                const winner = r.pendingWinner ?? (net > 0 ? 0 : 1), outcome = claimOutcome(forecast, winner, r, scores);
+                scores[winner] = outcome.score;
+                forecast.players[winner].victoryThreshold = outcome.threshold;
+                if (outcome.wins)
                     return margin;
+                // A known region return can remove the draw lock before later regions.
+                forecast.players = forecast.players.map(p => ({ ...p, play: p.play.filter(c => c.district !== d || keyword(c, '永恒', h)) }));
             }
         }
     }

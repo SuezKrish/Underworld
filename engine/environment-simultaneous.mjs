@@ -1,3 +1,4 @@
+import { attachmentHostReference, liveAttachmentHost } from './attachment-host-reference.mjs';
 import { simultaneousChoice, seatChoice, choicePending, commitChoice, withSimultaneousDepartures } from './simultaneous-choice.mjs';
 import { rememberHardDeckCards } from './hard-bot-library.mjs';
 import { beginEventGroup, endEventGroup } from './event-group.mjs';
@@ -10,7 +11,7 @@ import { hasCardType } from './card-types.mjs';
 import { printedRulesCard } from './printed-rules.mjs';
 import { cardHasKeyword, graveyardLocked } from './derived.mjs';
 import { effectiveDefense, effectiveIcons } from './rounds.mjs';
-import { sealHost, liveSealHost } from './sealing.mjs';
+import { sealHost } from './sealing.mjs';
 import { discardMany } from './discard-events.mjs';
 import { shuffleCards } from './environment-definitions.mjs';
 const need = (v, m) => {
@@ -149,7 +150,7 @@ export function createParallelEnvironment(ctx) {
                         if (id && s.players[p].hand.includes(id)) {
                             if (c.host) {
                                 const h = c.host;
-                                if (liveSealHost(s, h) && targetOptions(s, p, { ...s.cards[id].attachment, cardId: id }).some(t => t.id === c.hostOption) && move(s, id, 'play', { controller: p, tapped: false, attachedTo: h.hostId, hostVersion: h.version, ...(h.kind === 'card' ? { district: s.locations[h.hostId].district } : h.kind === 'district' ? { district: c.district } : {}) })) {
+                                if (liveAttachmentHost(s, h) && targetOptions(s, p, { ...s.cards[id].attachment, cardId: id }).some(t => t.id === c.hostOption) && move(s, id, 'play', { controller: p, tapped: false, attachedTo: h.hostId, hostVersion: h.version, ...(h.kind === 'card' ? { district: s.locations[h.hostId].district } : h.kind === 'district' ? { district: c.district } : {}) })) {
                                     event(s, id, 'entry', s.locations[id], a.id, { method: 'effect-placement' });
                                     event(s, id, 'attached', s.locations[id], a.id, { host: h });
                                 }
@@ -220,8 +221,8 @@ export function createParallelEnvironment(ctx) {
             else if (x.mode === 'enter-district')
                 selection = { cardIds: [x.enterId], district: Number(ids[0].slice(9)) };
             else if (x.mode === 'attachment-host') {
-                const refs = targetRefs(s, p, { targetIds: [ids[0]] }, { ...s.cards[x.enterId].attachment, cardId: x.enterId }), t = refs[0], host = t.kind === 'host' ? t.ref : sealHost(s, t.kind === 'district' ? `district-host:${t.cardId}` : t.cardId);
-                need(liveSealHost(s, host), '结附目标失效');
+                const refs = targetRefs(s, p, { targetIds: [ids[0]] }, { ...s.cards[x.enterId].attachment, cardId: x.enterId }), t = refs[0], host = attachmentHostReference(s, t);
+                need(liveAttachmentHost(s, host), '结附目标失效');
                 selection = { cardIds: [x.enterId], host, hostOption: ids[0], ...(t.kind === 'district' ? { district: t.district } : {}) };
             }
         }

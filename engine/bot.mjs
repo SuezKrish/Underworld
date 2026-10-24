@@ -1,14 +1,15 @@
+import { informedBot } from './bot-difficulty.mjs';
 import { recordReplayStep, transferReplayUndo } from './replay.mjs';
 import { command } from './match.mjs';
 import { cachedViewFor as viewFor } from './cached-view.mjs';
 import { hardBotView, hardBotCommands, hardLibraryWeights } from './hard-bot-policy.mjs';
-import { hardBot, installHardLibraryScorer } from './hard-bot-library.mjs';
+import { installHardLibraryScorer } from './hard-bot-library.mjs';
 import { botCommands } from './bot-policy.mjs';
 import { uuid } from './random.mjs';
 import { RuleError } from './core.mjs';
 installHardLibraryScorer((s, context) => hardLibraryWeights(s, context, viewFor));
-const decisionView = s => hardBot(s) ? hardBotView(s, viewFor) : viewFor(s, s.bot.seat, 0, 'BOT');
-const decisions = s => { const v = decisionView(s); return hardBot(s) ? hardBotCommands(s, v) : botCommands(v); };
+const decisionView = s => informedBot(s) ? hardBotView(s, viewFor) : viewFor(s, s.bot.seat, 0, 'BOT');
+const decisions = s => { const v = decisionView(s); return informedBot(s) ? hardBotCommands(s, v) : botCommands(v); };
 export function runBot(s, { maxActions = 6, maxAttempts = 24 } = {}) {
     if (!s.bot)
         return { actions: 0, pending: false };

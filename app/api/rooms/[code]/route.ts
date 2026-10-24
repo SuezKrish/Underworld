@@ -94,7 +94,7 @@ export async function POST(request: Request, context: Context) {
                 if (!row)
                     return json({ error: '房间不存在' }, 404);
                 const state = row.roomState ?? deserializeRoomState(row.state), policy = await currentPoolSettings();
-                requireCurrentPool(state, policy.revision, policy.settings);
+                requireCurrentPool(state, policy.revision);
                 if (selection && selection.poolRevision !== policy.revision)
                     return json({ error: '卡牌池启用设置已更新，请重新选择卡组' }, 409);
                 if (state.deckRequired && !selection)
@@ -137,7 +137,7 @@ export async function POST(request: Request, context: Context) {
             return json({ error: '触发界面已更新，请刷新页面后批量确认本轮触发' }, 400);
         if (body.type === 'ready' && state.status === 'waiting' && !state.seats[p]?.ready) {
             const policy = await currentPoolSettings();
-            requireCurrentPool(state, policy.revision, policy.settings);
+            requireCurrentPool(state, policy.revision);
         }
         let noChange = false;
         const { frames } = captureReplay(state, () => {

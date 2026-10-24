@@ -1,5 +1,6 @@
-import {pendingGraveyardUse} from './bot-graveyard-uses.mjs';
+import { graveInterruptionThreat } from './bot-matchup-planning.mjs';
 import { hasCardType } from './card-types.mjs';
+import { pendingGraveyardUse } from './bot-graveyard-uses.mjs';
 const ours = v => v.players[v.seat];
 const field = v => ours(v).play.filter(c => !c.faceDown && !c.printedTextBlank && !c.abilitiesSuppressed);
 const mana = v => (ours(v).costPool ?? 0) + ours(v).assets.filter(c => !c.tapped).length;
@@ -67,7 +68,7 @@ export function wheelOpponentScore(v, card) {
     const fuel = ours(v).hand.filter(c => c.id !== card.id && c.subtypes?.includes('法术') && (v.castingCosts?.[c.id] ?? c.printedCost ?? 0) === 0).length;
     // Another held copy is a direct fallback; otherwise require a small library
     // and multiple cantrips, not the hope of finding the wheel in forty cards.
-    const reach = v.hardInfo ? 12 : Math.max(6, fuel * field(v).filter(c => c.catalogId === 'XG01').length + 2);
+    const reach = v.bot?.difficulty === 'hard' ? 12 : Math.max(6, fuel * field(v).filter(c => c.catalogId === 'XG01').length + 2);
     if (mana(v) < price + wheelPrice(v) || held < 2 && (ours(v).deckCount > reach || fuel < 2))
         return null;
     if (ours(v).deckCount <= 2 && held < 2)
@@ -82,8 +83,6 @@ export function spellRelicRebuild(v, c, target) {
         return null;
     return 116;
 }
-// Funeral is an unaligned ritual: it does not trigger Silver Key or receive
-// mind-spell discounts. It returns one actual grave card before its own draw.
 // Funeral is an unaligned ritual: it does not trigger Silver Key or receive
 // mind-spell discounts. It returns one actual grave card before its own draw.
 export function spellFuneralScore(v, source, target, h) {
@@ -148,6 +147,8 @@ export function spellFuneralScore(v, source, target, h) {
     }
     if (incoming)
         utility += 65 + Math.min(40, h.value(target) * 2);
+    if (ourCard && !incoming && utility < 50 && held.filter(c => c.spell?.effect === 'grave-bottom-draw').length === 0 && graveInterruptionThreat(v, h).score >= 18)
+        return null;
     if (utility <= 0)
         return null;
     if (!incoming && utility < 50 && handRoom === 0 && !near)

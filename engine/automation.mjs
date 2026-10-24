@@ -1,4 +1,3 @@
-import {earlyTriggerTiming,lateTriggerTiming,refreshTriggerPrice} from './trigger-timing.mjs';
 import { effectObjectsLog, paidCostsClause } from './action-log.mjs';
 import { abilityDescription } from './ability-description.mjs';
 import { rememberHardDeckCards, hardDeckCards } from './hard-bot-library.mjs';
@@ -10,6 +9,7 @@ import { currentAssetTapped } from "./standard-shared.mjs";
 import { assetDomains } from "./standard-shared.mjs";
 import { actionPaymentSources, payActionFee, ownActionPayment } from './action-payment.mjs';
 import { changeHonor } from './player-resources.mjs';
+import { earlyTriggerTiming, lateTriggerTiming, refreshTriggerPrice } from './trigger-timing.mjs';
 import { triggerCostDecision, triggerCostBatchDecision } from './death-costs.mjs';
 import { deferTriggerCost, flushTriggerCosts as flushCostQueue } from './trigger-cost-queue.mjs';
 import { createLateNonQsEffects } from './late-non-qs-effects.mjs';
@@ -208,7 +208,7 @@ export function createAutomationEngine(ctx) {
             return false;
         if (plan.otherHost && id === s.locations[plan.sourceId]?.attachedTo)
             return false;
-        if (plan.otherTarget && sameSourceObject(s,id,plan))
+        if (plan.otherTarget && sameSourceObject(s, id, plan))
             return false;
         if (plan.requiredSubtitle && printed?.subtitle !== plan.requiredSubtitle)
             return false;
@@ -301,7 +301,7 @@ export function createAutomationEngine(ctx) {
             target = 'character-or-hidden';
         }
         if (target === 'district-character-or-hidden' || target === 'district-any-character-or-hidden') {
-            if (l.zone !== 'play' || l.district !== plan.sourceDistrict || target === 'district-character-or-hidden' && sameSourceObject(s,id,plan))
+            if (l.zone !== 'play' || l.district !== plan.sourceDistrict || target === 'district-character-or-hidden' && sameSourceObject(s, id, plan))
                 return false;
             if (l.faceDown)
                 return !s.flow.stack.some(a => a.kind === 'reveal-character' && a.cardId === id);
@@ -330,7 +330,7 @@ export function createAutomationEngine(ctx) {
         if (target === 'own-sergei-hunter')
             return !barrierBlocked && void 0;
         if (target === 'district-own-other-character')
-            return (true || !c.noAttachments && !c.noEquipment && (s.cards[plan.sourceId]?.owner === controllerOf(s, id) || !hasBarrier(s, id)) && (!c.automation?.allowedAttachmentSubtypes || effectiveSubtypes(s, plan.sourceId).some(t => c.automation.allowedAttachmentSubtypes.includes(t)))) && l.zone === 'play' && !l.faceDown && l.district === plan.sourceDistrict && controllerOf(s, id) === p && !sameSourceObject(s,id,plan) && hasCardType(c, 'character') && !barrierBlocked;
+            return (true || !c.noAttachments && !c.noEquipment && (s.cards[plan.sourceId]?.owner === controllerOf(s, id) || !hasBarrier(s, id)) && (!c.automation?.allowedAttachmentSubtypes || effectiveSubtypes(s, plan.sourceId).some(t => c.automation.allowedAttachmentSubtypes.includes(t)))) && l.zone === 'play' && !l.faceDown && l.district === plan.sourceDistrict && controllerOf(s, id) === p && !sameSourceObject(s, id, plan) && hasCardType(c, 'character') && !barrierBlocked;
         if (target === 'filtered-attachment')
             return l.zone === 'play' && !l.faceDown && hasCardType(c, 'attachment') && filterCard(c, plan.filter) && !barrierBlocked;
         if (target === 'own-attachment')
@@ -377,7 +377,7 @@ export function createAutomationEngine(ctx) {
                 return false;
         }
         if (target === 'other-subtitle-character')
-            return !sameSourceObject(s,id,plan) && c.subtitle === plan.subtitle;
+            return !sameSourceObject(s, id, plan) && c.subtitle === plan.subtitle;
         if (target === 'unique-character')
             return !!c.unique;
         if (target === 'ordered-assault')
@@ -393,7 +393,7 @@ export function createAutomationEngine(ctx) {
         if (target === 'nonhuman-character')
             return !effectiveSubtypes(s, id).includes('人类') && (!plan.excludeAngel || !effectiveSubtypes(s, id).includes('天使'));
         if (target === 'district-other-character')
-            return l.district === plan.sourceDistrict && !sameSourceObject(s,id,plan);
+            return l.district === plan.sourceDistrict && !sameSourceObject(s, id, plan);
         if (target === 'district-filtered-character')
             return l.district === plan.sourceDistrict && filterCard({ ...c, subtypes: effectiveSubtypes(s, id) }, plan.filter);
         if (target === 'own-district-character')
@@ -429,7 +429,7 @@ export function createAutomationEngine(ctx) {
         if (target === 'district-human')
             return l.district === plan.sourceDistrict && effectiveSubtypes(s, id).includes('人类');
         if (target === 'district-other-magic-character')
-            return !sameSourceObject(s,id,plan) && l.district === plan.sourceDistrict && !!c.magicDomains?.length;
+            return !sameSourceObject(s, id, plan) && l.district === plan.sourceDistrict && !!c.magicDomains?.length;
         if (target === 'magic-character')
             return !!c.magicDomains?.length;
         if (target === 'printed-human-character')
@@ -445,9 +445,9 @@ export function createAutomationEngine(ctx) {
         if (target === 'district-character')
             return l.district === plan.sourceDistrict;
         if (target === 'own-other-character')
-            return controllerOf(s, id) === p && !sameSourceObject(s,id,plan);
+            return controllerOf(s, id) === p && !sameSourceObject(s, id, plan);
         if (target === 'own-other-district-character')
-            return controllerOf(s, id) === p && !sameSourceObject(s,id,plan) && l.district === plan.sourceDistrict;
+            return controllerOf(s, id) === p && !sameSourceObject(s, id, plan) && l.district === plan.sourceDistrict;
         return ['character', 'character-or-hidden', 'non-core-character'].includes(target);
     }
     function stackTargetLegal(s, a, target) {
@@ -519,6 +519,10 @@ export function createAutomationEngine(ctx) {
         return [...hosts, ...Object.keys(s.cards).filter(id => qualifies(s, p, plan.target, id, plan)).map(id => { const c = printedRulesCard(s, id), l = s.locations[id]; return { controller: controllerOf(s, id), ...(plan.distinctTargetDistricts ? { district: l.district } : {}), id: l.faceDown ? `hidden:${l.hiddenHandle}` : id, name: l.faceDown ? `${s.seats[controllerOf(s, id)].name}的暗藏者 · 地区${l.district + 1}` : `${s.seats[controllerOf(s, id)].name} · ${l.zone === 'asset' ? `资产 · ${c.name}` : l.secretPlan ? '秘密计划' : c.name}` }; })];
     }
     function prepare(s, p, c, plan) {
+        if (plan.multiMode?.sharedTargets) {
+            selectedModeIds(plan, c);
+            return prepare(s, p, c, { ...plan, multiMode: null, modeTargets: null });
+        }
         if (plan.demosX) {
             need(Number.isSafeInteger(c.extraCost) && c.extraCost >= 1 && c.extraCost <= 1000, 'X须为至少1的整数');
             plan.chosenX = c.extraCost;
@@ -529,7 +533,18 @@ export function createAutomationEngine(ctx) {
             plan.paidDomains = [...effectiveMagicDomains(s, c.costCardId)];
         }
         ;
-        if(plan.target==='gunfire-district'){if(c.mode==='both'){const order=c.modeOrder??['destroy','police'];need(Array.isArray(order)&&order.length===2&&new Set(order).size===2&&order.every(m=>['destroy','police'].includes(m)),'请选择两项的结算顺序');}const ids=c.targetIds??[],mode=plan.selectedMode??c.mode;need(plan.modes?.some(m=>m.id===mode),'请选择当前可用的枪火谈判模式');need(Array.isArray(ids)&&ids.length>=1&&ids.length<=3&&typeof ids[0]==='string'&&ids[0].startsWith('district:')&&(mode!=='police'||ids.length===1),'请选择一个目标地区及至多两个暗藏者');const district=prepare(s,p,{targetIds:[ids[0]]},{...plan,target:'district'})[0],hidden=prepare(s,p,{targetIds:ids.slice(1)},{...plan,target:'hidden-up-to-two'});need(hidden.every(t=>s.locations[t.cardId].district===district.district),'暗藏者须位于所选目标地区');return [district,...hidden.map(t=>({...t,requiredDistrict:district.district,requiredDistrictId:district.cardId}))];}
+        if (plan.target === 'gunfire-district') {
+            if (c.mode === 'both') {
+                const order = c.modeOrder ?? ['destroy', 'police'];
+                need(Array.isArray(order) && order.length === 2 && new Set(order).size === 2 && order.every(m => ['destroy', 'police'].includes(m)), '请选择两项的结算顺序');
+            }
+            const ids = c.targetIds ?? [], mode = plan.selectedMode ?? c.mode;
+            need(plan.modes?.some(m => m.id === mode), '请选择当前可用的枪火谈判模式');
+            need(Array.isArray(ids) && ids.length >= 1 && ids.length <= 3 && typeof ids[0] === 'string' && ids[0].startsWith('district:') && (mode !== 'police' || ids.length === 1), '请选择一个目标地区及至多两个暗藏者');
+            const district = prepare(s, p, { targetIds: [ids[0]] }, { ...plan, target: 'district' })[0], hidden = prepare(s, p, { targetIds: ids.slice(1) }, { ...plan, target: 'hidden-up-to-two' });
+            need(hidden.every(t => s.locations[t.cardId].district === district.district), '暗藏者须位于所选目标地区');
+            return [district, ...hidden.map(t => ({ ...t, requiredDistrict: district.district, requiredDistrictId: district.cardId }))];
+        }
         if (plan.cqRepeatModes) {
             need(Array.isArray(c.modes) && c.modes.length === 2 && c.modes.every(m => plan.modes.some(x => x.id === m)), '请选择两项模式，可以重复');
             return c.modes.flatMap((mode, i) => prepare(s, p, { targetIds: c.modeTargetIds?.[i] ?? [] }, { ...plan, ...plan.modeTargets[mode], cqRepeatModes: null, modeTargets: null }).map(t => ({ ...t, modeIndex: i })));
@@ -934,7 +949,7 @@ export function createAutomationEngine(ctx) {
             return true;
         }
         if (plan.multiMode) {
-            const base = { ...plan, multiMode: null, modeTargets: null }, sequence = (plan.selectedModes ?? []).map(modeId => ({ ...plan.modeTargets[modeId], targets: a.targets.filter(t => t.modeId === modeId) }));
+            const base = { ...plan, multiMode: null, modeTargets: null }, sequence = (plan.selectedModes ?? []).map(modeId => ({ ...plan.modeTargets[modeId], targets: plan.multiMode.sharedTargets ? a.targets : a.targets.filter(t => t.modeId === modeId) }));
             finishSpell(s, { ...a, plan: base, sequenceBase: base, sequence });
             return true;
         }
@@ -1164,7 +1179,7 @@ export function createAutomationEngine(ctx) {
         }
         else if (effect === 'damage-source-district' || effect === 'damage-source-district-other') {
             for (const id of s.players.flatMap(pl => pl.play))
-                if (!s.locations[id].faceDown && inEffectDistrict(s, id, plan.sourceDistrict) && hasCardType(s.cards[id], 'character') && (effect !== 'damage-source-district-other' || !sameSourceObject(s,id,plan)))
+                if (!s.locations[id].faceDown && inEffectDistrict(s, id, plan.sourceDistrict) && hasCardType(s.cards[id], 'character') && (effect !== 'damage-source-district-other' || !sameSourceObject(s, id, plan)))
                     hurt(s, id, 1);
         }
         else if (effect === 'destroy-vampire-influence') {
@@ -1181,7 +1196,7 @@ export function createAutomationEngine(ctx) {
                     tapCard(s, id);
         }
         else if (effect === 'destroy-source-district-other') {
-            const ids = s.players.flatMap(pl => pl.play).filter(id => !sameSourceObject(s,id,plan) && inEffectDistrict(s, id, plan.sourceDistrict) && (s.locations[id].faceDown || hasCardType(s.cards[id], 'character')));
+            const ids = s.players.flatMap(pl => pl.play).filter(id => !sameSourceObject(s, id, plan) && inEffectDistrict(s, id, plan.sourceDistrict) && (s.locations[id].faceDown || hasCardType(s.cards[id], 'character')));
             beginEventGroup(s, a.id);
             for (const id of ids)
                 destroy(s, id);
@@ -1213,7 +1228,7 @@ export function createAutomationEngine(ctx) {
         else if (effect === 'grant-own-other-barrier') {
             if (effectiveSocietyMarkers(s, p).exposed === 0)
                 for (const target of s.players[p].play)
-                    if (!sameSourceObject(s,target,plan) && hasCardType(s.cards[target], 'character') && !s.locations[target].faceDown && plan.subtypesAny.some(t => effectiveSubtypes(s, target).includes(t)))
+                    if (!sameSourceObject(s, target, plan) && hasCardType(s.cards[target], 'character') && !s.locations[target].faceDown && plan.subtypesAny.some(t => effectiveSubtypes(s, target).includes(t)))
                         s.effects.push({ kind: 'barrier', targetId: target, targetZoneVersion: s.locations[target].zoneVersion, duration: 'until-end-of-round' });
         }
         else if (effect === 'move-source') {
@@ -2207,7 +2222,10 @@ export function createAutomationEngine(ctx) {
         if (hades && !free)
             need(Array.isArray(hadesIds) && hadesIds.length === 2 && new Set(hadesIds).size === 2 && hadesIds.every(x => hadesCosts(s, p, card.id).includes(x)), '哈迪斯需要两张其他同主类别墓地牌作为回底费用');
         ;
-        if(base.gunfireNegotiation){base.selectedMode=c.mode;base.gunfireModeOrder=c.mode==='both'?[...(c.modeOrder??['destroy','police'])]:[c.mode];}
+        if (base.gunfireNegotiation) {
+            base.selectedMode = c.mode;
+            base.gunfireModeOrder = c.mode === 'both' ? [...(c.modeOrder ?? ['destroy', 'police'])] : [c.mode];
+        }
         if (base.cqRepeatModes)
             base.selectedCQModes = [...c.modes];
         if (base.multiMode)
@@ -2282,7 +2300,8 @@ export function createAutomationEngine(ctx) {
         announce(s, p, card.id, c.id, base.sacrificeCharacter || base.sacrificeCharacters || base.sacrificeAsset || base.tapCharacters || base.discardCost || base.timeCostX || base.alternativeCost || hades ? costGroup : null);
         return true;
     }
-    function validateTrigger(s, p, c, a) {refreshTriggerPrice(s,a);
+    function validateTrigger(s, p, c, a) {
+        refreshTriggerPrice(s, a);
         const plan = a.plan;
         ;
         need(!['graveyard', 'headquarters'].includes(plan.sourceSnapshot?.zone) || !graveyardLocked(s, a.cardId, p, plan.sourceSnapshot.zone), '镇魂曲禁止在墓地中发动能力');
@@ -2300,7 +2319,10 @@ export function createAutomationEngine(ctx) {
             const ids = c.sacrificeIds ?? [], allowed = sacrificeOptions(s, p, plan);
             need(Array.isArray(ids) && new Set(ids).size === ids.length && (plan.sacrificeCharacters.variable || ids.length === plan.sacrificeCharacters.count) && ids.every(id => allowed.includes(id)), '请选择规定数量的合法本方角色作为牺牲费用');
         }
-        if(plan.multiMode)selectedModeIds(plan,c);else if(plan.modes)need(plan.modes.some(m=>m.id===c.mode),'请选择能力模式');
+        if (plan.multiMode)
+            selectedModeIds(plan, c);
+        else if (plan.modes)
+            need(plan.modes.some(m => m.id === c.mode), '请选择能力模式');
         if (plan.oncePerRound) {
             const used = s.abilityUses?.[plan.usageKey];
             need(!used || used.round !== s.round || used.count < plan.oncePerRound, '本回合该能力已经发动过');
@@ -2310,7 +2332,10 @@ export function createAutomationEngine(ctx) {
     }
     function activateTrigger(s, p, c, a) {
         const plan = a.plan, targets = validateTrigger(s, p, c, a);
-        if(plan.multiMode)plan.selectedModes=selectedModeIds(plan,c);else if(plan.modes)a.mode=c.mode;
+        if (plan.multiMode)
+            plan.selectedModes = selectedModeIds(plan, c);
+        else if (plan.modes)
+            a.mode = c.mode;
         if (plan.oncePerRound) {
             s.abilityUses ??= {};
             const used = s.abilityUses[plan.usageKey];
@@ -2428,24 +2453,76 @@ export function createAutomationEngine(ctx) {
         activateTrigger(s, a.controller, { ...c, id: `${a.id}:payment` }, a);
         log(s, `${a.displayName}已支付触发费用，等待触发轮入栈。`);
     }
-    function payTriggerBatch(s,abilities){
-  const available=abilities.filter(a=>!triggerUnavailable(s,a));if(!available.length)return;
-  if(available.length===1){payOfferedTrigger(s,available[0]);return;}
-  const c=triggerCostBatchDecision(s,available.map(a=>({...a,targetOptions:options(s,a.controller,a.plan)}))),ds=c.decisions;
-  need(ds.length===available.length&&new Set(ds.map(d=>d.triggerId)).size===available.length&&ds.every(d=>available.some(a=>a.id===d.triggerId)&&typeof d.fire==='boolean'),'请为每条触发选择是否支付费用');
-  const accepted=ds.filter(d=>d.fire),order=c.abilityIds??accepted.map(d=>d.triggerId);need(order.length===accepted.length&&new Set(order).size===order.length&&order.every(id=>accepted.some(d=>d.triggerId===id)),'请选择本批触发费用的支付顺序');
-  for(const a of available){const d=ds.find(d=>d.triggerId===a.id);need(!a.mandatory||d.fire,'强制触发必须发动');if(d.fire)validateTrigger(s,a.controller,d,a);}
-  for(const id of order){const a=available.find(a=>a.id===id),d=ds.find(d=>d.triggerId===id);if(triggerUnavailable(s,a)){log(s,`${a.displayName}已无法支付费用或已达次数上限，不发动。`);continue;}let valid=true;try{validateTrigger(s,a.controller,d,a);}catch(e){if(!(e instanceof RuleError))throw e;valid=false;}if(!valid){log(s,`${a.displayName}本批费用已被其他能力消耗，不发动。`);continue;}a.committed=true;a.prepaid=!!costedTrigger(s,a);activateTrigger(s,a.controller,{...d,id:`${a.id}:payment`},a);}
- }
-    function flushTriggerCosts(s,opts={}){flushCostQueue(s,(_,a)=>a.kind==='auto-ability'?payOfferedTrigger(s,a):a.kind==='environment-ability'?ctx.payEnvironmentTrigger(s,a):ctx.commitTrigger(s,a),{...opts,activateBatch:payTriggerBatch});}
-    function offerTrigger(s,a){
-  a.abilityDescription??=abilityDescription(s,a);
-  if(a.plan.predictionTapCost)a.plan.cost=s.hiddenWins?.[a.controller]===s.round?0:2;
-  if(lateTriggerTiming(s)){s.triggerChoices.push(a);return;}
-  if(earlyTriggerTiming(s)){if(a.mandatory&&a.plan.target==='none'&&!a.plan.modes&&!a.plan.oncePerRound&&!costedTrigger(s,a)){a.committed=true;trigger(s,a);return;}if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);return;}
-  if(!costedTrigger(s,a)){if(a.mandatory&&a.plan.target==='none'&&!a.plan.modes)trigger(s,a);else s.triggerChoices.push(a);return;}
-  if(!deferTriggerCost(s,a))payOfferedTrigger(s,a);
- }
+    function payTriggerBatch(s, abilities) {
+        const available = abilities.filter(a => !triggerUnavailable(s, a));
+        if (!available.length)
+            return;
+        if (available.length === 1) {
+            payOfferedTrigger(s, available[0]);
+            return;
+        }
+        const c = triggerCostBatchDecision(s, available.map(a => ({ ...a, targetOptions: options(s, a.controller, a.plan) }))), ds = c.decisions;
+        need(ds.length === available.length && new Set(ds.map(d => d.triggerId)).size === available.length && ds.every(d => available.some(a => a.id === d.triggerId) && typeof d.fire === 'boolean'), '请为每条触发选择是否支付费用');
+        const accepted = ds.filter(d => d.fire), order = c.abilityIds ?? accepted.map(d => d.triggerId);
+        need(order.length === accepted.length && new Set(order).size === order.length && order.every(id => accepted.some(d => d.triggerId === id)), '请选择本批触发费用的支付顺序');
+        for (const a of available) {
+            const d = ds.find(d => d.triggerId === a.id);
+            need(!a.mandatory || d.fire, '强制触发必须发动');
+            if (d.fire)
+                validateTrigger(s, a.controller, d, a);
+        }
+        for (const id of order) {
+            const a = available.find(a => a.id === id), d = ds.find(d => d.triggerId === id);
+            if (triggerUnavailable(s, a)) {
+                log(s, `${a.displayName}已无法支付费用或已达次数上限，不发动。`);
+                continue;
+            }
+            let valid = true;
+            try {
+                validateTrigger(s, a.controller, d, a);
+            }
+            catch (e) {
+                if (!(e instanceof RuleError))
+                    throw e;
+                valid = false;
+            }
+            if (!valid) {
+                log(s, `${a.displayName}本批费用已被其他能力消耗，不发动。`);
+                continue;
+            }
+            a.committed = true;
+            a.prepaid = !!costedTrigger(s, a);
+            activateTrigger(s, a.controller, { ...d, id: `${a.id}:payment` }, a);
+        }
+    }
+    function flushTriggerCosts(s, opts = {}) { flushCostQueue(s, (_, a) => a.kind === 'auto-ability' ? payOfferedTrigger(s, a) : a.kind === 'environment-ability' ? ctx.payEnvironmentTrigger(s, a) : ctx.commitTrigger(s, a), { ...opts, activateBatch: payTriggerBatch }); }
+    function offerTrigger(s, a) {
+        a.abilityDescription ??= abilityDescription(s, a);
+        ;
+        if (lateTriggerTiming(s)) {
+            s.triggerChoices.push(a);
+            return;
+        }
+        if (earlyTriggerTiming(s)) {
+            if (a.mandatory && a.plan.target === 'none' && !a.plan.modes && !a.plan.oncePerRound && !costedTrigger(s, a)) {
+                a.committed = true;
+                trigger(s, a);
+                return;
+            }
+            if (!deferTriggerCost(s, a))
+                payOfferedTrigger(s, a);
+            return;
+        }
+        if (!costedTrigger(s, a)) {
+            if (a.mandatory && a.plan.target === 'none' && !a.plan.modes)
+                trigger(s, a);
+            else
+                s.triggerChoices.push(a);
+            return;
+        }
+        if (!deferTriggerCost(s, a))
+            payOfferedTrigger(s, a);
+    }
     function emit(s, id, def, event, loc, group, extra = {}) {
         const cqState = cqTriggerState(s, id, def, loc);
         if (cqState === false)
@@ -2857,7 +2934,7 @@ export function createAutomationEngine(ctx) {
         let effectChoice = null;
         if (s.effectChoice && !['environment', 'abyss'].includes(s.effectChoice.kind)) {
             const a = seatChoice(s.effectChoice, p);
-            effectChoice = { ...(a.kind === 'discard-deck-rigoletto' && a.controller === p ? { rigolettoHostId: a.spell.targets[0]?.cardId } : {}), ...({}), predictionObserver: predictionView(s, a, p), id: a.id, kind: a.kind, choiceLabel: a.choiceLabel, ...(['late-non-qs-mother-cast'].includes(a.kind) ? { ignoreCosts: true } : {}), ...(a.kind === 'late-non-qs-search' ? { searchOperation: a.searchOperation, targetAvailable: !!a.spell.targets[0] && live(s, a.controller, a.spell.plan, a.spell.targets[0]), districtAvailable: s.districts[a.spell.plan.sourceDistrict]?.id === a.spell.plan.sourceDistrictCardId } : {}), ...(a.kind === 'spell-copy-targets' && a.controller === p ? spellCopy.view(s, a) : {}), corePlan: a.controller === p ? a.corePlan : undefined, remainingCore: a.remainingCore, roleId: a.controller === p ? a.roleId : undefined, sourceDistrict: a.sourceDistrict, controller: a.controller, simultaneous: !!a.simultaneous, allowed: a.allowed, done: a.done, count: a.count ?? 1, min: a.min, max: a.max, eligibleIds: a.controller === p ? a.eligibleIds : undefined, canRepeat: !!a.canRepeat, canFail: !!a.canFail, drawAfter: a.drawAfter ?? 0, public: !!a.public, revealedNames: a.public ? a.revealedNames : undefined, hostName: a.hostRef?.name ?? null, canSkip: !!a.canSkip, distinctNames: !!a.distinctNames, discardAlternative: !!a.discardAlternative, faceDownSeal: !!a.faceDownSeal, amount: a.amount, cannotTerminate: !!a.cannotTerminate, destination: a.destination, maxPrintedCost: a.maxPrintedCost, targetPair: !!a.targetPair, maxNumber: a.maxNumber, canChooseGreater: a.canChooseGreater };
+            effectChoice = { ...(a.kind === 'reverberation-gift' && a.controller === p ? { giftHostId: a.spell.targets?.[0]?.cardId ?? a.spell.targets?.[0]?.ref?.hostId } : {}), ...(a.kind === 'discard-deck-rigoletto' && a.controller === p ? { rigolettoHostId: a.spell.targets[0]?.cardId } : {}), ...({}), predictionObserver: predictionView(s, a, p), id: a.id, kind: a.kind, choiceLabel: a.choiceLabel, ...(['late-non-qs-mother-cast'].includes(a.kind) ? { ignoreCosts: true } : {}), ...(a.kind === 'late-non-qs-search' ? { searchOperation: a.searchOperation, targetAvailable: !!a.spell.targets[0] && live(s, a.controller, a.spell.plan, a.spell.targets[0]), districtAvailable: s.districts[a.spell.plan.sourceDistrict]?.id === a.spell.plan.sourceDistrictCardId } : {}), ...(a.kind === 'spell-copy-targets' && a.controller === p ? spellCopy.view(s, a) : {}), corePlan: a.controller === p ? a.corePlan : undefined, remainingCore: a.remainingCore, roleId: a.controller === p ? a.roleId : undefined, sourceDistrict: a.sourceDistrict, controller: a.controller, simultaneous: !!a.simultaneous, allowed: a.allowed, done: a.done, count: a.count ?? 1, min: a.min, max: a.max, eligibleIds: a.controller === p ? a.eligibleIds : undefined, canRepeat: !!a.canRepeat, canFail: !!a.canFail, drawAfter: a.drawAfter ?? 0, public: !!a.public, revealedNames: a.public ? a.revealedNames : undefined, hostName: a.hostRef?.name ?? null, canSkip: !!a.canSkip, distinctNames: !!a.distinctNames, discardAlternative: !!a.discardAlternative, faceDownSeal: !!a.faceDownSeal, amount: a.amount, cannotTerminate: !!a.cannotTerminate, destination: a.destination, maxPrintedCost: a.maxPrintedCost, targetPair: !!a.targetPair, maxNumber: a.maxNumber, canChooseGreater: a.canChooseGreater };
             if (a.controller === p || a.public)
                 effectChoice.cards = a.options ?? a.cardIds.map(id => a.zone === 'asset' ? { id, name: '资产', faction: s.cards[id].faction } : { ...(s.locations[id]?.secretPlan && controllerOf(s, id) !== p && !['inspect', 'batch-inspect', 'batch-inspect-lock'].includes(a.kind) ? { id, name: '秘密计划', printedCost: 1, type: 'attachment' } : identity(s, id)), ...(a.kind === 'batch-inspect' && s.locations[id]?.secretPlan ? { name: s.cards[id].name, displayName: s.cards[id].displayName } : {}), ...(a.kind === 'shoggoth-remove-time' ? { markers: s.locations[id].markers } : {}), ...(['discard-deck-cast', 'batch-spells-cast'].includes(a.kind) ? ctx.castOptions(s, p, id) : {}), ...({}) });
         }

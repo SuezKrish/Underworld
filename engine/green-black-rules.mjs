@@ -1,3 +1,4 @@
+import { withProjectionDefenseLayer } from './projection-read-cache.mjs';
 import { hasCardType } from './card-types.mjs';
 import { controllerOf } from './ownership.mjs';
 import { effectiveDefense } from './rounds.mjs';
@@ -21,9 +22,11 @@ export function nisosSources(s, id) {
         return [];
     defenseLayer.add(s);
     try {
-        if (effectiveSubtypes(s, id).includes('人类') || effectiveDefense(s, id) !== 1)
-            return [];
-        return candidates.filter(source => false);
+        return withProjectionDefenseLayer(s, () => {
+            if (effectiveSubtypes(s, id).includes('人类') || effectiveDefense(s, id) !== 1)
+                return [];
+            return candidates.filter(source => false);
+        });
     }
     finally {
         defenseLayer.delete(s);

@@ -1,10 +1,10 @@
+import { sequencingDecision } from './bot-threat-sequencing.mjs';
 import { readFileSync } from 'node:fs';
 import { parseCatalog, applyRulings } from './catalog.mjs';
 import { applyMetadata } from './metadata.mjs';
-import { compileSupported } from './automation.mjs';
-import { compileEnvironment } from './environment-definitions.mjs';
 import { prepareCodeDeck } from './match-deck.mjs';
-import { createRoomState, joinSeat, command, viewFor } from './match.mjs';
+import { createRoomState, joinSeat, command } from './match.mjs';
+import { cachedViewFor as viewFor } from './cached-view.mjs';
 import { RuleError } from './core.mjs';
 import { getBotProfile } from './bot-deck.mjs';
 import { botCommands, botCardValue } from './bot-policy.mjs';
@@ -14,13 +14,14 @@ import { scoreValue } from './scoring.mjs';
 import { createEngineAudit, observeEngineStep } from './bot-engine-audit.mjs';
 import { auditSilverTransitions } from './bot-silver-audit.mjs';
 import { BOT_EVALUATION_SOCIETY_POLICY, evaluationSocietyActions, evaluationBotPolicy } from './bot-evaluation-rules.mjs';
-let context;
-function catalog() {
-    if (!context) {
-        const cards = parseCatalog(applyMetadata(applyRulings(readFileSync(new URL('../data/Card.xml', import.meta.url), 'utf8')))).cards, compiled = compileSupported(cards);
-        context = { cards, compiled, environment: compileEnvironment(cards), implemented: new Set(compiled.map(c => c.catalogId)), revision: 0, poolRevision: 0 };
+import { playCardContext } from './play-card-profile.mjs';
+const contexts = new Map();
+export function evaluationCatalog(testMode = false) {
+    if (!contexts.has(testMode)) {
+        const allCards = parseCatalog(applyMetadata(applyRulings(readFileSync(new URL('../data/Card.xml', import.meta.url), 'utf8')))).cards, ctx = playCardContext(allCards, { testMode });
+        contexts.set(testMode, { ...ctx, implemented: new Set(ctx.compiled.map(c => c.catalogId)), revision: 0, poolRevision: 0 });
     }
-    return context;
+    return contexts.get(testMode);
 }
 // Isolated, synchronous evaluation only. Production games always use native
 // crypto randomness. Restore it even if an engine assertion fails.
@@ -51,8 +52,8 @@ function seeded(seed, fn) {
             delete globalThis.crypto;
     }
 }
-export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', 'white-anglican'], maxCommands = 2200, policy = botCommands, cardValue = botCardValue, difficulty = 'normal', triggerTiming = 'event', openingFirstPlayer = null, includeTrace = false, includeDecisions = false, onProgress } = {}) {
-    if (!['normal', 'hard'].includes(difficulty))
+export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', 'white-anglican'], maxCommands = 2200, policy = botCommands, cardValue = botCardValue, difficulty = 'normal', testMode = false, triggerTiming = 'event', openingFirstPlayer = null, includeTrace = false, includeDecisions = false, onProgress } = {}) {
+    if (!['normal', 'medium', 'hard'].includes(difficulty))
         throw Error('Invalid BOT difficulty');
     if (openingFirstPlayer !== null && openingFirstPlayer !== 0 && openingFirstPlayer !== 1)
         throw Error('Invalid opening first player');
@@ -60,12 +61,13 @@ export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', '
     const previousScorer = difficulty === 'hard' ? installHardLibraryScorer((s, context) => hardLibraryWeights(s, context, viewFor, cardValue)) : null;
     try {
         return seeded(seed, () => {
-            const ctx = catalog(), bots = profiles.map(id => getBotProfile(id));
+            const ctx = evaluationCatalog(testMode), bots = profiles.map(id => getBotProfile(id));
             if (bots.some(b => !b))
                 throw Error('Unknown BOT profile');
             const ids = new Set(bots.flatMap(b => b.deck.cards.map(c => c.cardId))), defs = ctx.compiled.filter(c => ids.has(c.catalogId) || c.token);
             const environment = ctx.environment.map(c => ({ ...c, plan: { ...c.plan, actions: evaluationSocietyActions(c.plan?.actions) } }));
             let s = createRoomState(bots[0].name, 'simulation-0', 'automation-play', defs, defs.filter(c => c.token), environment, triggerTiming);
+            s.cardPoolTestMode = testMode;
             s.openingFirstPlayer = openingFirstPlayer;
             joinSeat(s, bots[1].name, 'simulation-1');
             s.deckRequired = true;
@@ -79,12 +81,12 @@ export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', '
                 let done = false, lastError = '';
                 const priority = s.flow.priority ?? s.turn?.firstPlayer ?? 0;
                 for (const p of [priority, 1 - priority]) {
-                    s.bot = difficulty === 'hard' ? s.simulationBots[p] : { id: bots[p].id, seat: p, difficulty: 'normal', pending: false };
+                    s.bot = difficulty === 'hard' ? s.simulationBots[p] : { id: bots[p].id, seat: p, difficulty, pending: false };
                     s.bot.actionKeys = memory[p];
                     onProgress?.({ step: steps, seat: p, round: s.round, phase: s.turn?.phase, window: s.turn?.step, stage: 'view' });
-                    const v = difficulty === 'hard' ? hardBotView(s, viewFor) : viewFor(s, p, 0, 'SIMULATION');
+                    const v = difficulty !== 'normal' ? hardBotView(s, viewFor) : viewFor(s, p, 0, 'SIMULATION');
                     onProgress?.({ step: steps, seat: p, round: s.round, stage: 'policy' });
-                    const candidates = difficulty === 'hard' ? hardBotCommands(s, v, evaluationPolicy) : evaluationPolicy(v);
+                    const candidates = difficulty !== 'normal' ? hardBotCommands(s, v, evaluationPolicy) : evaluationPolicy(v);
                     for (const c of candidates) {
                         const next = structuredClone(s), code = s.cards[c.cardId]?.catalogId;
                         onProgress?.({ step: steps, seat: p, round: s.round, stage: 'command', command: c.type, card: code, choice: s.effectChoice?.kind });
@@ -132,6 +134,7 @@ export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', '
                         if (includeDecisions && (c.type !== 'pass' || v.turn?.phase === 'action' && v.flow.stepOwner === p && !v.flow.stack.length))
                             Object.assign(trace.at(-1), {
                                 candidateChoices: structuredClone(candidates.slice(0, 5)),
+                                threatSequencing: sequencingDecision(c),
                                 decision: structuredClone(c), kind: v.turn?.kind, contestDistrict: v.turn?.district,
                                 board: v.players.map(x => ({ score: x.score, pool: x.costPool, markers: x.markers, assets: x.assets.map(a => ({ id: a.id, code: a.catalogId, tapped: a.tapped, faction: a.faction })), grave: x.graveyard.map(a => a.catalogId), play: x.play.map(a => ({ id: a.id, code: a.catalogId, name: a.name, type: a.type, d: a.district, hidden: a.faceDown, tapped: a.tapped, icons: a.effectiveIcons, defense: a.effectiveDefense, damage: a.damage, counters: a.counters, barrier: a.barrierNow, preview: a.revealPreview, attachedTo: a.attachedTo })) })),
                                 regions: (v.districts ?? []).map(x => x ? { name: x.name, points: x.points, threshold: x.threshold, influence: x.influence } : null),
@@ -155,7 +158,7 @@ export function simulateBotMatch({ seed = 1, profiles = ['green-black-renown', '
                     break;
                 }
             }
-            return { seed, profiles, difficulty, societyAbilityPolicy: BOT_EVALUATION_SOCIETY_POLICY, initialFirstPlayer, status: s.status, winner: s.result?.winner ?? null, reason: s.result?.reason ?? null, rounds: s.round, commands: steps,
+            return { seed, profiles, difficulty, cardProfile: testMode ? 'test' : 'standard', societyAbilityPolicy: BOT_EVALUATION_SOCIETY_POLICY, initialFirstPlayer, status: s.status, winner: s.result?.winner ?? null, reason: s.result?.reason ?? null, rounds: s.round, commands: steps,
                 scores: s.players.map(p => p.scoreCards.reduce((n, c) => n + scoreValue(c), 0)), cardsRemaining: s.players.map(p => p.deck.length), actions, cardsUsed, metrics, invalid, stalled,
                 ...(includeTrace ? { trace, finalLogs: s.logs.slice(-30).map(l => l.text) } : {}), ...(includeDecisions ? { logs: s.logs, engineAudit } : {}) };
         });

@@ -1,6 +1,8 @@
-import {responseFilter} from './response-effect-semantics.mjs';
-import {rumorHosts} from './bot-rumor-planning.mjs';
-import {graveyardPlanning,hiddenContestReady} from './bot-graveyard-uses.mjs';
+import { withProjectionReads } from './projection-read-cache.mjs';
+import { sealPayloadAssessment } from './bot-seal-gift-planning.mjs';
+import { cardCapabilities } from './bot-card-analysis.mjs';
+import { knownOpponentOptions, opponentCapabilityForecast } from './bot-matchup-planning.mjs';
+import { informedBot } from './bot-difficulty.mjs';
 import { announcedHiddenBonus } from './bot-hidden-information.mjs';
 import { identity } from './ownership.mjs';
 import { botCommands, botCardValue, botAssetValue } from './bot-policy.mjs';
@@ -11,20 +13,28 @@ import { redPurpleLibraryBonus } from './red-purple-bot-policy.mjs';
 import { lockingLibraryBonus } from './shoggoth-bot-policy.mjs';
 import { criminalGravePriority, criminalLibraryBonus, greenLibraryBonus } from './bot-dynamic-planning.mjs';
 import { needsAssetMaterial, assetAcquisitionValue, graveyardPurposeValue } from './bot-card-purpose.mjs';
+import { graveyardPlanning, hiddenContestReady } from './bot-graveyard-uses.mjs';
+import { rumorHosts } from './bot-rumor-planning.mjs';
+import { responseFilter } from './response-effect-semantics.mjs';
 const mana = p => (p.costPool ?? 0) + (p.assets ?? []).filter(a => !a.tapped).length;
 const strength = (c, v, p) => (c.printedCost ?? 0) + (c.hiddenAbilities ?? []).filter(a => a.kind === 'point-modifier' && !a.condition).reduce((n, a) => n + (a.amount ?? a.modifier ?? 0), 0) + announcedHiddenBonus(v, c, p);
 export function hardBotView(s, view, { observe = true } = {}) {
-    const p = s.bot.seat, v = view(s, p, 0, 'BOT');
-    if (!hardBot(s))
+    return withProjectionReads(() => {
+        const p = s.bot.seat, v = view(s, p, 0, 'BOT');
+        if (!informedBot(s))
+            return v;
+        if (observe)
+            rememberHardObservations(s);
+        const q = 1 - p, foe = view(s, q, 0, 'BOT');
+        v.players[q].hand = foe.players[q].hand;
+        const rival = s.simulationBots?.find(b => b?.seat === q), hiddenOrder = hardBot(s) && rival?.difficulty === 'hard';
+        const opponentDeck = s.players[q].deck.map(id => identity(s, id));
+        const fixed = hiddenOrder ? s.players[q].deck.flatMap((id, index) => Object.hasOwn(rival.libraryKnown ?? {}, id) && rival.libraryKnown[id] === s.locations[id]?.zoneVersion ? [{ index, card: identity(s, id) }] : []) : [];
+        const real = new Map(s.players[q].play.map(id => [s.locations[id].faceDown ? `hidden:${s.locations[id].hiddenHandle}` : id, id]));
+        v.players[q].play = v.players[q].play.map(c => { const id = real.get(c.id), full = foe.players[q].play.find(x => x.id === id); return full ? { ...full, ...(c.secretPlan ? { hardPrintedCard: structuredClone(s.cards[id]), name: s.cards[id].name, displayName: s.cards[id].displayName, catalogId: s.cards[id].catalogId } : {}), id: c.id, faceDown: c.faceDown, secretPlan: c.secretPlan, hardKnown: true, hardObjectId: id } : c; });
+        v.hardInfo = { ownDeck: s.players[p].deck.map(id => identity(s, id)), canControlLibrary: hardBot(s), opponentSealed: Object.keys(s.locations).filter(id => s.locations[id].zone === 'sealed' && s.cards[id]?.owner === q).map(id => ({ ...identity(s, id), hardPrintedCard: structuredClone(s.cards[id]) })), opponentDeck: hiddenOrder ? [] : opponentDeck, opponentDeckOrderKnown: !hiddenOrder, opponentCanControlLibrary: hiddenOrder, opponentDeckPool: hiddenOrder ? [...opponentDeck].sort((a, b) => a.id.localeCompare(b.id)) : [], opponentKnownPositions: fixed, opponentSelection: s.hidden?.selections?.[q] ?? null, opponentRevealCosts: Object.fromEntries([...real].map(([visible, id]) => [visible, foe.revealCosts?.[id] ?? Math.max(0, (s.cards[id]?.printedCost ?? 0) - 1)])), opponentCastingCosts: foe.castingCosts ?? {}, libraryKnown: { ...s.bot.libraryKnown } };
         return v;
-    if (observe)
-        rememberHardObservations(s);
-    const q = 1 - p, foe = view(s, q, 0, 'BOT');
-    v.players[q].hand = foe.players[q].hand;
-    const real = new Map(s.players[q].play.map(id => [s.locations[id].faceDown ? `hidden:${s.locations[id].hiddenHandle}` : id, id]));
-    v.players[q].play = v.players[q].play.map(c => { const id = real.get(c.id), full = foe.players[q].play.find(x => x.id === id); return full ? { ...full, ...(c.secretPlan ? { hardPrintedCard: structuredClone(s.cards[id]), name: s.cards[id].name, displayName: s.cards[id].displayName, catalogId: s.cards[id].catalogId } : {}), id: c.id, faceDown: c.faceDown, secretPlan: c.secretPlan, hardKnown: true } : c; });
-    v.hardInfo = { ownDeck: s.players[p].deck.map(id => identity(s, id)), opponentSealed: Object.keys(s.locations).filter(id => s.locations[id].zone === 'sealed' && s.cards[id]?.owner === q).map(id => ({ ...identity(s, id), hardPrintedCard: structuredClone(s.cards[id]) })), opponentDeck: s.players[q].deck.map(id => identity(s, id)), opponentSelection: s.hidden?.selections?.[q] ?? null, opponentRevealCosts: foe.revealCosts ?? {}, libraryKnown: { ...s.bot.libraryKnown } };
-    return v;
+    });
 }
 export function hardLibraryWeights(s, context, view, cardValue = botCardValue, compact = true) {
     const scoreView = compact ? (s, p, r, c) => view(s, p, r, c, { libraryScoreOnly: true }) : view;
@@ -51,6 +61,10 @@ export function hardLibraryWeights(s, context, view, cardValue = botCardValue, c
         }
     }
     return Object.fromEntries(cards.map(c => {
+        if (context.kind === 'seal' && context.sealHostId) {
+            const host = v.players.flatMap(p => p.play).find(c => c.id === context.sealHostId) ?? { id: context.sealHostId, controller: p };
+            return [c.id, sealPayloadAssessment(v, c, host, { value: c => cardValue(v, c), sealCommitted: true }).utility];
+        }
         let n = cardValue(v, c) + (context.matchingCost === c.printedCost ? 100 : 0);
         const same = own.hand.filter(x => x.catalogId === c.catalogId).length;
         n -= same * 4;
@@ -73,8 +87,7 @@ export function hardLibraryWeights(s, context, view, cardValue = botCardValue, c
                 n += 2;
             if ((c.printedCost ?? 0) > mana(own) + 2)
                 n -= 5;
-            const next = v.hardInfo?.opponentDeck[0];
-            if (next && (next.printedCost ?? 0) >= 4 && ['destroy', 'terminate'].includes(c.spell?.effect))
+            if (cardCapabilities(c).removal && knownOpponentOptions(v).some(x => x.available && ['top', 'bottom'].includes(x.origin) && hasCardType(x.card, 'character') && (x.card.printedCost ?? 0) >= 4))
                 n += 3;
             if (assetNeeded) {
                 const material = assetAcquisitionValue(v, c, botAssetValue, true);
@@ -87,11 +100,11 @@ export function hardLibraryWeights(s, context, view, cardValue = botCardValue, c
 }
 export function hardBotCommands(s, v, policy = botCommands) {
     const commands = policy(v);
-    if (!hardBot(s) || !commands.length)
+    if (!informedBot(s) || !commands.length)
         return commands;
     const p = v.seat, enemy = v.players[1 - p], mine = v.players[p];
     if (v.effectChoice?.controller === p && v.effectChoice.kind === 'guess-cost') {
-        const top = v.hardInfo.ownDeck[0], known = top && Object.hasOwn(v.hardInfo.libraryKnown, top.id), choice = known ? top : [...v.hardInfo.ownDeck].filter(c => !Object.hasOwn(v.hardInfo.libraryKnown, c.id)).sort((a, b) => botCardValue(v, b) - botCardValue(v, a))[0];
+        const top = v.hardInfo.ownDeck[0], known = top && Object.hasOwn(v.hardInfo.libraryKnown, top.id), choice = !hardBot(s) || known ? top : [...v.hardInfo.ownDeck].filter(c => !Object.hasOwn(v.hardInfo.libraryKnown, c.id)).sort((a, b) => botCardValue(v, b) - botCardValue(v, a))[0];
         if (choice)
             return [{ type: 'effect-choice', choiceId: v.effectChoice.id, number: choice.printedCost }];
     }
@@ -107,7 +120,7 @@ export function hardBotCommands(s, v, policy = botCommands) {
         return ordered.map(c => ({ type: 'select-hidden', cardId: c.id }));
     }
     const lookup = id => v.players.flatMap(p => [...p.play, ...p.hand, ...p.graveyard, ...p.headquarters ?? []]).find(c => c.id === id);
-    const danger = enemy.hand.filter(c => c.spell && ['destroy', 'damage', 'wound', 'return-hand', 'conceal'].includes(c.spell.effect) && (c.printedCost ?? 0) <= mana(enemy)).length;
+    const danger = opponentCapabilityForecast(v).removal;
     return commands.map((c, i) => {
         let score = -i;
         for (const id of c.targetIds ?? []) {
@@ -117,8 +130,11 @@ export function hardBotCommands(s, v, policy = botCommands) {
         }
         if (c.type === 'reveal' && danger > 0) {
             const role = lookup(c.cardId);
-            if (role && ['XG01', 'JC080', 'XQ31', 'BH11', 'BQ030'].includes(role.catalogId))
-                score -= danger * 3;
+            if (role && !role.barrierNow && !role.eternalNow) {
+                const cap = cardCapabilities(role);
+                if (cap.draw || cap.discount || cap.grave || cap.protection)
+                    score -= Math.min(9, danger * 3);
+            }
         }
         if (c.type === 'play') {
             const card = lookup(c.cardId);

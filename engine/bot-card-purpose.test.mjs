@@ -196,3 +196,28 @@ test('已有足量领域资产后不再把同领域的多余牌永久保留',()=
  s.cards[s.players[0].hand[0]].loyalty={血:2,心:1,星:1};
  const v=view(s);assert.equal(graveyardPlanning(v,v.hardInfo.ownDeck,botCardValue,{},botAssetValue).loyaltyReserve.size,0);
 });
+
+test('海拉的困难堆墓评分随水域调查收益改变，不把高费本身当作墓地收益',()=>{
+ const s=room('purple-matriarch',{round:5,hand:['XQ41'],deck:['JZ66','JC125'],assets:['WM066','XQ44','XQ45']});
+ const enemy=put(s,'JC125',1,'play',{controller:1,district:0,tapped:false});s.cards[enemy].icons={investigation:3,battle:0,influence:0};s.cards[enemy].temporaryIcons={};
+ s.districts.forEach(d=>d.traits=['城市']);s.players[1].hand=[];for(let i=0;i<20;i++)put(s,'JC125',1,'deck');
+ const hela=s.players[0].deck.find(id=>s.cards[id].catalogId==='JZ66');
+ const dry=hardLibraryWeights(s,{kind:'graveyard',count:1},viewFor)[hela];
+ s.districts[0].traits=['水域'];const wet=hardLibraryWeights(s,{kind:'graveyard',count:1},viewFor)[hela];assert.ok(wet>dry+30,`${wet} vs ${dry}`);
+});
+
+
+test('未来构筑中的墓地回场牌也不会被取牌器误认成低成本资产材料',()=>{
+ const s=room('future-deck',{round:3,hand:['CQ31','CQ31','BQ082'],grave:['WM060'],assets:['XQ36','XQ36'],deck:['CQ31','WM060','JC084']});
+ for(const c of Object.values(s.cards))if(c.catalogId==='CQ31'){c.catalogId='future-grave-role';c.name='未列入预设构筑的墓地角色';}
+ const v=view(s),native=v.hardInfo.ownDeck.find(c=>c.catalogId==='future-grave-role');
+ assert.equal(assetComboReserve(v,native),140);
+ const [id]=take(s,1,'hand');assert.notEqual(s.cards[id].catalogId,'future-grave-role');
+});
+
+test('同一张牌取入手与堆墓分别评分，准备好隐秘对抗时怪客应进入墓地',()=>{
+ const s=room('black-purple-criminals',{round:5,hand:['BQ082','WM089'],grave:['WM060'],assets:['XQ36','XQ36','XQ36','JZ63','JZ63'],deck:['CQ31','JC084']});
+ s.players[0].actionCounts.asset=1;
+ const [monster]=s.players[0].deck,hand=hardLibraryWeights(s,{kind:'hand'},viewFor),grave=hardLibraryWeights(s,{kind:'graveyard'},viewFor);
+ assert.ok(grave[monster]>hand[monster]+100,JSON.stringify({hand:hand[monster],grave:grave[monster]}));
+});

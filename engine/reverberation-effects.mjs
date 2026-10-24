@@ -1,4 +1,4 @@
-import { rememberHardDeckCards, forgetHardDeckCards } from './hard-bot-library.mjs';
+import { rememberHardDeckCards, forgetHardDeckCards, hardDeckCards } from './hard-bot-library.mjs';
 import { setCardMarker } from './counter-placement.mjs';
 import { RuleError } from './core.mjs';
 import { hasCardType } from './card-types.mjs';
@@ -22,7 +22,7 @@ export function createReverberationEffects(ctx) {
     }
     function finishGift(s, a, top, selected) { bottomRandom(s, a.controller, top.filter(id => !selected.includes(id))); finishSpell(s, a); }
     function afterHidden(s, a, winner) {
-        const p = a.controller, top = s.players[p].deck.slice(0, 7), max = Math.min(top.length, winner === p ? 2 : 1);
+        const p = a.controller, t = a.targets?.[0], top = hardDeckCards(s, p, 7, { kind: 'seal', side: 'top', sealHostId: t?.cardId ?? t?.ref?.hostId }), max = Math.min(top.length, winner === p ? 2 : 1);
         if (!top.length || librarySearchBlocked(s)) {
             finishGift(s, a, top, []);
             return;

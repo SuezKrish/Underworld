@@ -39,9 +39,9 @@ export async function POST(request: Request) {
         if (!againstBot && body.botOpeningOrder !== undefined)
             throw Error('先后手设置仅适用于BOT对局');
         const openingFirstPlayer = againstBot ? botOpeningFirstPlayer(body.botOpeningOrder, 1) : null;
-        if (body.botDifficulty !== undefined && !['normal', 'hard'].includes(body.botDifficulty))
+        if (body.botDifficulty !== undefined && !['normal', 'medium', 'hard'].includes(body.botDifficulty))
             throw Error('BOT难度无效');
-        const difficulty = body.botDifficulty === 'hard' ? 'hard' : 'normal';
+        const difficulty = body.botDifficulty ?? 'normal';
         const mode = againstBot || ['automation-play', 'constructed-play'].includes(body.mode) ? 'automation-play' : 'round-play';
         if (mode === 'round-play' && (body.deckId || body.deckCode))
             return json({ error: '文字流程测试不使用构筑卡组' }, 400);
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         if (mode === 'automation-play' && !cards.length)
             return json({ error: '当前卡牌池没有通过审核的可自动结算卡牌' }, 400);
         const reserveSources = [...allCards.filter((c: any) => /^TK/.test(c.id) && true)];
-        const systemCompiled = profileCompiledCards(reserveSources, policy.settings);
+        const systemCompiled = profileCompiledCards(reserveSources);
         const reserve = reserveSources.map((c: any) => ({ catalogId: c.id, name: c.name, displayName: c.displayName, text: c.text, type: c.typeLine, printedCost: c.token ? 0 : Number(c.printedCost), faction: c.faction, magicDomains: c.magic === '无' ? [] : [c.magic], subtitle: c.subtitle, flavorText: c.flavorText, automated: !!cards.find((x: any) => x.catalogId === c.id), ...(compiled.find((x: any) => x.catalogId === c.id) ?? systemCompiled.find((x: any) => x.catalogId === c.id)) }));
         const state: any = createRoomState(name, await hashToken(token), mode, cards, reserve, environment, DEFAULT_TRIGGER_TIMING);
         state.openingFirstPlayer = openingFirstPlayer;
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         if (botSelection) {
             state.deckRequired = true;
             state.deckSelections[1] = botSelection;
-            joinSeat(state, botProfile!.name + (difficulty === 'hard' ? '（困难）' : ''), await hashToken(randomToken()));
+            joinSeat(state, botProfile!.name + (difficulty === 'hard' ? '（困难）' : difficulty === 'medium' ? '（中等）' : '（简单）'), await hashToken(randomToken()));
             state.bot = { id: botProfile!.id, seat: 1, difficulty, pending: false, actionKeys: [] };
             runBot(state);
         }

@@ -9,10 +9,10 @@ export async function GET() {
     try {
         const [doc, policy, admin] = await Promise.all([currentCatalog(), currentPoolSettings(), poolAdmin()]);
         const cards = playerCatalog(parseCatalog(doc.xml), policy.settings).cards;
-        const history = profileRevisionHistory(cards, policy.settings);
+        const history = profileRevisionHistory(cards);
         if (!admin)
             for (const card of history.cards)
-                card.revisions = card.revisions.map(({ note, ...revision }) => revision as typeof card.revisions[number]);
+                card.revisions = card.revisions.map(({ note, ...revision }: Record<string, unknown>) => revision as typeof card.revisions[number]);
         return json({ ...history, canReviewNotes: !!admin, catalogRevision: doc.revision, poolRevision: policy.revision });
     }
     catch {

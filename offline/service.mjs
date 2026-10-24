@@ -140,9 +140,9 @@ export class OfflineService {
             const name = (typeof body.name === 'string' ? body.name.trim() : '') || '玩家';
             if (name.length > 24)
                 return reply({ error: '昵称需要1至24个字符' }, 400);
-            if (body.botDifficulty !== undefined && !['normal', 'hard'].includes(body.botDifficulty))
+            if (body.botDifficulty !== undefined && !['normal', 'medium', 'hard'].includes(body.botDifficulty))
                 return reply({ error: 'BOT难度无效' }, 400);
-            const difficulty = body.botDifficulty === 'hard' ? 'hard' : 'normal';
+            const difficulty = body.botDifficulty ?? 'normal';
             let selection;
             if (body.deckCode)
                 selection = prepareCodeDeck(body.deckCode, this.ctx);
@@ -165,7 +165,7 @@ export class OfflineService {
             s.deckRequired = true;
             s.deckSelections = [selection, botSelection];
             s.labSocietyIds = [selection.society.id, botSelection.society.id];
-            joinSeat(s, profile.name + (difficulty === 'hard' ? '（困难）' : ''), crypto.randomUUID());
+            joinSeat(s, profile.name + (difficulty === 'hard' ? '（困难）' : difficulty === 'medium' ? '（中等）' : '（简单）'), crypto.randomUUID());
             s.bot = { id: profile.id, seat: 1, difficulty, pending: false, actionKeys: [] };
             runBot(s);
             const row = { id: code, revision: 0, token, state: serializeRoomState(s), createdAt: Date.now() };
@@ -204,8 +204,11 @@ export class OfflineService {
                 return this.roomReply(row, s);
             if (body.revision !== row.revision)
                 return reply({ error: '对局已更新，请重试' }, 409);
-            const { frames } = captureReplay(s, () => { if (body.type !== 'bot-tick')
-                command(s, 0, body); runBot(s, { maxActions: body.type === 'bot-tick' ? 3 : 0 }); });
+            const { frames } = captureReplay(s, () => {
+                if (body.type !== 'bot-tick')
+                    command(s, 0, body);
+                runBot(s, { maxActions: body.type === 'bot-tick' ? 3 : 0 });
+            });
             s.recentCommands = [...s.recentCommands, body.id].slice(-128);
             row.revision++;
             row.state = serializeRoomState(s);

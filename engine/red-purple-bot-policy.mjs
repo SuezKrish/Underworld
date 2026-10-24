@@ -1,3 +1,8 @@
+import { refillInvestmentPenalty } from './bot-refill-economy.mjs';
+import { nonDrawLockValue, nonDrawLockActive, nonDrawEffectBlocked } from './bot-draw-lock-planning.mjs';
+import { entryTapTempo, bestEntryTapTempo, mutantSealTempo } from './bot-entry-tempo.mjs';
+import { giftAssessment, rankSealPayloads } from './bot-seal-gift-planning.mjs';
+import { tormentUtility } from './bot-torment-planning.mjs';
 import { announcedHiddenBonus } from './bot-hidden-information.mjs';
 import { rumorTriggerChoices } from './bot-rumor-planning.mjs';
 import { pendingTargetThreat } from './bot-response-timing.mjs';
@@ -51,7 +56,7 @@ function lethalRisk(v, c, d, h) {
 export function purpleLibraryUse(v, a) {
     if (!purpleBot(v))
         return 0;
-    const count = plan => !plan ? 0 : plan.effect === 'sequence' ? (plan.steps ?? []).reduce((n, p) => n + count(p), 0) : ['draw', 'bottom-to-hand', 'seal-top', 'seal-search'].includes(plan.effect) ? plan.count ?? 1 : 0;
+    const count = plan => !plan || nonDrawEffectBlocked(v) && plan.effect === 'draw' ? 0 : plan.effect === 'sequence' ? (plan.steps ?? []).reduce((n, p) => n + count(p), 0) : ['draw', 'bottom-to-hand', 'seal-top', 'seal-search'].includes(plan.effect) ? plan.count ?? 1 : 0;
     return a.plan ? count(a.plan) : a.responseEffect?.libraryUse ?? 0;
 }
 export function purpleLibraryBudget(v, h) {
@@ -59,7 +64,7 @@ export function purpleLibraryBudget(v, h) {
     // draws as well as this round. Nested whale rounds share queued consumption.
     const stocked = me(v).hand.length >= Math.max(4, (me(v).handLimit ?? 7) - 1);
     // Later deployments can win investigations that today's board would lose.
-    const nextInvestigations = (v.districts ?? []).filter(Boolean).length;
+    const nextInvestigations = nonDrawLockActive(v) ? 0 : (v.districts ?? []).filter(Boolean).length;
     const reserve = h.drawReserve(v) + (stocked ? 1 + nextInvestigations : 0);
     const queued = (v.flow?.stack ?? []).filter(a => a.controller === v.seat).reduce((n, a) => n + purpleLibraryUse(v, a), 0);
     return Math.max(0, me(v).deckCount - reserve - queued);
@@ -112,10 +117,21 @@ export function redPurpleLibraryBonus(v, c, context) {
         return 0;
     }
     const curve = motherAcquisitionCurve(v);
+    // A future free deployment is not an immediate engine. Do not use an early
+    // controlled draw on a body several turns above both the revival curve and
+    // the available mana, merely because its eventual field value is high.
+    const budget = Math.max(curve, (me(v).costPool ?? 0) + me(v).assets.filter(a => !a.tapped).length, me(v).assets.length + Number(!me(v).actionsUsed?.asset));
+    const wait = (v.castingCosts?.[c.id] ?? c.printedCost ?? 0) - budget;
+    if (role(c) && wait > 1)
+        return -Math.min(90, wait * 15);
+    if (role(c) && c.unique && sameHeld(v, c))
+        return -45;
     if (curve <= 1 && missing('BH46') && missing('XQ42') && ['BH46', 'XQ42'].includes(c.catalogId))
         return c.catalogId === 'BH46' ? 120 : 110;
     if (curve === 2 && ['XQ44', 'WM067'].includes(c.catalogId) && missing(c.catalogId))
-        return c.catalogId === 'XQ44' ? 90 : 70;
+        return c.catalogId === 'XQ44' ? 90 : (me(v).effectiveMarkers ?? me(v).markers).hidden ? 85 : 25;
+    if (curve >= 3 && curve <= 4 && c.automation?.entry?.effect === 'tap' && missing(c.catalogId) && bestEntryTapTempo(v, c) >= 25)
+        return 160;
     if (curve >= 3 && curve <= 4 && c.catalogId === 'JZ62' && missing('JZ62'))
         return 135;
     if (curve === 3 && c.catalogId === 'JZ63' && missing('JZ63') && !has(v, 'JZ62'))
@@ -196,10 +212,21 @@ function engineBonus(v, c) {
         return 0;
     const copies = front(v).filter(x => x.catalogId === c.catalogId).length;
     const weight = { XG14: 14, WM033: 10, BH23: 12, JC045: 8, JZ64: 24, WM066: 22, WM071: 34, JZ62: 14, WM068: 12 };
+    // Belandanna is a field engine only when deployable. The society can tutor
+    // her later, so early acquisition/asset retention should chiefly value her
+    // hidden-contest strength rather than reserve an eight-cost engine forever.
+    if (purpleBot(v) && c.catalogId === 'WM071' && !front(v).some(x => x.id === c.id)) {
+        const curve = motherAcquisitionCurve(v);
+        return (curve >= 8 ? 34 : curve === 7 ? 8 : 0) * (copies ? 0.2 : 1);
+    }
     return (weight[c.catalogId] ?? 0) * (copies ? 0.2 : 1);
 }
-function motherValue(v, c, h) {
-    let n = engineBonus(v, c) + h.cost(c) * 2;
+export function motherValue(v, c, h) {
+    if (c.spell?.operation === 'torment')
+        return tormentUtility(v, c, h) * 2;
+    if (c.spell?.operation === 'hidden-gift')
+        return (giftAssessment(v, c, { ...h, giftCost: 0 })?.utility ?? -100) * 2;
+    let n = engineBonus(v, c) + h.cost(c) * 2 + bestEntryTapTempo(v, c);
     const curve = revival(v);
     if (curve === 1) {
         if (c.catalogId === 'XQ42')
@@ -208,7 +235,7 @@ function motherValue(v, c, h) {
             n += 55;
     }
     if (curve === 2)
-        n += c.catalogId === 'XQ44' ? 70 : c.catalogId === 'WM067' ? 40 : 0;
+        n += c.catalogId === 'XQ44' ? 70 : c.catalogId === 'WM067' ? ((me(v).effectiveMarkers ?? me(v).markers).hidden ? 55 : 8) : 0;
     if (curve === 3)
         n += c.catalogId === 'JZ62' ? 40 : ['WM068', 'JZ63', 'BH51'].includes(c.catalogId) ? 35 : 0;
     if (c.catalogId === 'JZ64')
@@ -217,11 +244,30 @@ function motherValue(v, c, h) {
         n += (has(v, 'WM066') ? 0 : 8) + (has(v, 'JZ64') ? 20 : !has(v, 'WM066') && curve >= 3 && (has(v, 'BH46') || has(v, 'JZ62')) ? 28 : 0);
     if (c.catalogId === 'BH46' && me(v).play.some(x => x.id === c.id && x.faceDown))
         n += 20 + (has(v, 'JZ64') ? 16 : 0) + (has(v, 'WM066') ? 16 : 0);
+    if (c.catalogId === 'WM067' && curve !== 2 && (me(v).effectiveMarkers ?? me(v).markers).hidden)
+        n += 24;
+    if (c.automation?.static === 'block-non-draw')
+        n += nonDrawLockValue(v, c);
+    if (c.spell?.effect === 'damage')
+        n += Math.max(0, ...(v.spellTargets?.[c.id] ?? []).map(o => h.lookup(v, o.id)).filter(x => x?.controller !== v.seat && !x?.faceDown).map(x => (x.effectiveDefense ?? x.defense ?? 1) - (x.damage ?? 0) <= (c.spell.amount ?? 1) ? h.value(x) * 3 : 0));
     if (c.catalogId === 'WM069' && !has(v, 'WM069'))
         n += 12;
     if (c.catalogId === 'BH51' && !(me(v).effectiveMarkers ?? me(v).markers).hidden && has(v, 'WM066'))
         n += 70;
-    return n + (c.catalogId === 'XQ42' ? 24 : 0);
+    return n - refillInvestmentPenalty(v, c, h) + (c.catalogId === 'XQ42' ? 24 : 0);
+}
+// Expose the actual free-play prospect to the common two-action planner.
+export function redPurpleFreeProspect(v, command, h) {
+    if (!purpleBot(v) || command.abilityId !== 'revival-play')
+        return null;
+    const candidates = h.sorted([...me(v).hand, ...me(v).play.filter(c => c.faceDown)].filter(c => h.cost(c) <= revival(v) && h.loyalty(v, c) && !h.duplicate(v, c)), c => motherValue(v, c, h));
+    for (const card of candidates) {
+        const hidden = me(v).play.find(c => c.id === card.id && c.faceDown), play = hidden ? { type: 'reveal', cardId: card.id, district: hidden.district } : playOptions(v, card, h, true)[0];
+        if (!play || hidden && lethalRisk(v, h.faceUp(v, hidden), hidden.district, h))
+            continue;
+        return { card: h.faceUp(v, card), command: play, plan: card.spell ?? card.attachment, cost: 0, isCard: true, freeKey: 'revival-play', resourceKey: 'revival-play' };
+    }
+    return null;
 }
 function waterFirst(v, h) {
     if (me(v).actionsUsed.secret || me(v).secretDeploymentBlocked || h.pool(v) < 1 || revival(v) < 1)
@@ -388,7 +434,9 @@ export function redPurpleDistrictBonus(v, d, c) {
         const terrain = v.districts[d]?.destroyed || v.districts[d]?.traits?.some(t => ['荒野', '山脉'].includes(t));
         return (c.faceDown ? (c.catalogId === 'BH23' ? 12 : c.catalogId === 'WM033' ? 8 : 0) : 0) + (c.catalogId === 'XG36' && terrain ? 22 : v.districts[d]?.destroyed ? (['JZ32', 'WM082'].includes(c.catalogId) ? 10 : 3) : 0);
     }
-    return ['JZ64', 'WM066', 'WM071'].includes(c.catalogId) && !c.faceDown ? Math.max(0, 4 - (v.districts[d]?.influence?.[v.seat] ?? 0)) : c.catalogId === 'CQ33' ? Math.max(0, 6 - (v.districts[d]?.influence?.[v.seat] ?? 0)) : 0;
+    const mutant = c.catalogId === 'WM067' && !c.faceDown && (me(v).effectiveMarkers ?? me(v).markers).hidden ? Math.max(0, 2 - d) * 3 : 0;
+    const tapTempo = mutant + (!c.faceDown ? entryTapTempo(v, c, d) : 0);
+    return tapTempo + (['JZ64', 'WM066', 'WM071'].includes(c.catalogId) && !c.faceDown ? Math.max(0, 4 - (v.districts[d]?.influence?.[v.seat] ?? 0)) : c.catalogId === 'CQ33' ? Math.max(0, 6 - (v.districts[d]?.influence?.[v.seat] ?? 0)) : 0);
 }
 function payloadScore(v, c, h, host) {
     let n = c.catalogId === 'XQ41' ? 45 : c.catalogId === 'JZ63' ? 24 : c.catalogId === 'WM066' && !has(v, 'WM066') ? 20 : 0;
@@ -413,7 +461,11 @@ function playOptions(v, c, h, free = false) {
         return [];
     const plan = c.spell ?? c.attachment, opts = v.spellTargets?.[c.id] ?? [], base = { type: 'play', cardId: c.id };
     if (!plan)
-        return h.districts(v, h.faceUp(v, c)).filter(d => !lethalRisk(v, h.faceUp(v, c), d, h)).map(d => ({ ...base, district: d }));
+        return h.districts(v, h.faceUp(v, c)).filter(d => !lethalRisk(v, h.faceUp(v, c), d, h)).sort((a, b) => purpleBot(v) && c.automation?.entry?.effect === 'tap' ? h.districtScore(v, b, c) - h.districtScore(v, a, c) : 0).map(d => ({ ...base, district: d }));
+    if (plan.effect === 'damage')
+        return h.orderedTargets(v, opts).filter(o => { const x = h.lookup(v, o.id); return x?.controller === 1 - v.seat && !x.faceDown && !h.targetedByUs(v, o.id) && (x.effectiveDefense ?? x.defense ?? 1) - (x.damage ?? 0) <= (plan.amount ?? 1); }).map(o => ({ ...base, targetIds: [o.id] }));
+    if (plan.operation === 'torment')
+        return tormentUtility(v, c, h) > 4 ? opts.map(o => ({ ...base, targetIds: [o.id] })) : [];
     if (plan.target === 'none')
         return [{ ...base, targetIds: [] }];
     if (c.catalogId === 'XQ42')
@@ -422,7 +474,11 @@ function playOptions(v, c, h, free = false) {
         return h.orderedTargets(v, opts).filter(o => h.lookup(v, o.id)?.controller === 1 - v.seat && !h.targetedByUs(v, o.id)).map(o => ({ ...base, targetIds: [o.id] }));
     if (c.catalogId === 'BH25')
         return h.sorted(opts, o => { const x = h.lookup(v, o.id); return x?.controller === 1 - v.seat ? h.value(x) + (v.districts[x.district]?.destroyed ? 10 : 0) : -100; }).filter(o => h.lookup(v, o.id)?.controller === 1 - v.seat).map(o => ({ ...base, targetIds: [o.id] }));
-    if (['XQ44', 'BH51'].includes(c.catalogId)) {
+    if (c.spell?.operation === 'hidden-gift') {
+        const host = giftAssessment(v, c, free ? { ...h, giftCost: 0 } : h)?.host;
+        return host ? [{ ...base, targetIds: [host.id] }] : [];
+    }
+    if (c.catalogId === 'XQ44') {
         const host = safeHost(v, opts, h);
         return host ? [{ ...base, targetIds: [host.id] }] : [];
     }
@@ -460,8 +516,8 @@ export function redPurpleChoice(v, a, h, type = 'effect-choice') {
         return best.map(c => ({ ...b, cardId: c.id, destination: a.searchOperation === 'bell-search' && a.districtAvailable ? 'hidden' : 'hand' })).concat({ ...b, fail: true });
     }
     if (a.kind === 'reverberation-gift') {
-        const target = a.spell?.targets?.[0], host = h.lookup(v, target?.cardId ?? target?.ref?.hostId);
-        return [{ ...b, cardIds: h.sorted(cards, c => payloadScore(v, c, h, host)).slice(0, a.max).map(c => c.id) }];
+        const target = a.spell?.targets?.[0], host = h.lookup(v, a.giftHostId ?? target?.cardId ?? target?.ref?.hostId) ?? (a.giftHostId === `society:${v.seat}` ? { id: a.giftHostId, controller: v.seat } : null);
+        return [{ ...b, cardIds: rankSealPayloads(v, cards, host, { ...h, sealCommitted: true }, a.max).map(x => x.card.id) }];
     }
     if (a.kind === 'cq-house-seal')
         return h.sorted(cards, c => h.value(c) + engineBonus(v, c) * 2 - (c.token ? 15 : 0) - (c.catalogId === 'XQ41' ? 25 : 0) - (c.tapped ? 3 : 0), false).map(c => ({ ...b, cardId: c.id }));
@@ -601,6 +657,8 @@ function doomSocietyActions(v, h, add) {
     if (!redBot(v) || !soc?.plan?.disasterOnly || soc.tapped)
         return;
     const cards = v.players.flatMap(p => p.play), ownPriests = front(v).filter(c => ['JC045', 'TK009'].includes(c.catalogId));
+    const investigations = v.districts.filter((r, d) => r && h.total(v, p, d, 'investigation') > h.total(v, 1 - p, d, 'investigation')).length;
+    const libraryUrgency = Math.max(0, Math.min(1, (4 * (1 + investigations) - me(v).deckCount) / (3 * (1 + investigations))));
     const token = { id: 'doom-priest-preview', type: 'character', catalogId: 'TK009', controller: p, printedCost: 4, defense: 2, effectiveDefense: 2, icons: { battle: 2, investigation: 1, influence: 0 }, effectiveIcons: { battle: 2, investigation: 1, influence: 0 }, keywords: [] };
     for (const a of soc.actions ?? []) {
         if (a.used || a.botDisabled || (a.cost ?? 0) > h.pool(v))
@@ -613,7 +671,7 @@ function doomSocietyActions(v, h, add) {
                 const d = Number(o.id.slice(9));
                 if (!v.districts[d] || lethalRisk(v, token, d, h))
                     continue;
-                add({ type: 'society-action', abilityId: a.id, discardIds: [fuel.id], targetIds: [o.id] }, 62 + h.districtScore(v, d, token) - Math.max(0, h.handValue(v, fuel)) * 0.6 + (front(v).length < 2 ? 18 : 0));
+                add({ type: 'society-action', abilityId: a.id, discardIds: [fuel.id], targetIds: [o.id] }, 62 + h.districtScore(v, d, token) - Math.max(0, h.handValue(v, fuel)) * 0.6 + (front(v).length < 2 ? 18 : 0) - libraryUrgency * (ownPriests.some(c => c.district === d && !c.tapped) && h.total(v, p, d, 'battle') >= h.total(v, 1 - p, d, 'battle') ? 75 : 20));
             }
         }
         if (a.id === 'time')
@@ -629,6 +687,11 @@ function doomSocietyActions(v, h, add) {
                 }
                 if (object && ownPriests.some(c => c.id === object.id)) {
                     const before = h.total(v, p, d, 'influence') - h.total(v, 1 - p, d, 'influence'), wins = (r.influence[p] ?? 0) + Math.max(0, before + 1 - (r.influence[1 - p] ?? 0)) >= r.threshold;
+                    const winningMargin = Math.max(0, before), nextMargin = Math.max(0, before + 1), remaining = (r.threshold ?? 99) + (r.influence[1 - p] ?? 0) - (r.influence[p] ?? 0);
+                    // Before exhausting the library, convert existing priests into claim pressure.
+                    // Further investigation bodies do not solve the mandatory draw problem.
+                    const progress = remaining > winningMargin ? Math.max(0, nextMargin - winningMargin) : 0;
+                    score += libraryUrgency * 85 * progress * (!object.tapped ? 1 : 0.45);
                     score += 22 + (!object.tapped ? 10 : 0) + (wins && !object.tapped ? 35 : 0) + (wins && r.destroyed && capturedDestruction(v) >= 2 ? 100 : 0);
                 }
                 if (object?.catalogId === 'BH23' && (object.markers ?? 0) === 3)
@@ -731,8 +794,11 @@ export function redPurpleTactics(v, h, add) {
             if (c.catalogId === 'WM067')
                 for (const o of h.orderedTargets(v, opts)) {
                     const target = h.lookup(v, o.id);
-                    if (target?.controller === 1 - p && !h.targetedByUs(v, o.id) && !seals(v, target.id).length)
-                        add({ ...b, targetIds: [o.id] }, 24 + h.value(target) + (me(v).markers.hidden ? 8 : 0));
+                    if (target?.controller === 1 - p && !h.targetedByUs(v, o.id) && !seals(v, target.id).length) {
+                        const gain = mutantSealTempo(v, c, target);
+                        if (gain > 0)
+                            add({ ...b, targetIds: [o.id] }, 24 + gain);
+                    }
                 }
         }
     if (redBot(v) && standard)
@@ -803,6 +869,17 @@ export function redPurpleTactics(v, h, add) {
         if (need > available)
             continue;
         const ops = playOptions(v, c, h);
+        if (plan.effect === 'damage' && (!plan.actionPhaseOnly || v.turn.phase === 'action'))
+            for (const op of ops) {
+                const target = h.lookup(v, op.targetIds[0]);
+                add(op, 24 + h.value(target) - need * 2);
+            }
+        if (plan.operation === 'torment') {
+            const gain = tormentUtility(v, c, h);
+            if (gain > need * 2 + 4)
+                for (const op of ops)
+                    add(op, 24 + gain - need * 2);
+        }
         if (c.catalogId === 'WM037' && me(v).hand.length >= 2 && me(v).deckCount > h.drawReserve(v) + 2)
             add({ type: 'play', cardId: c.id, targetIds: [] }, 40);
         if (c.catalogId === 'BH25')
@@ -819,9 +896,12 @@ export function redPurpleTactics(v, h, add) {
         if (c.catalogId === 'XQ44' && me(v).deckCount > h.drawReserve(v))
             for (const op of ops)
                 add(op, 27 + (has(v, 'WM066') ? 14 : 0) + (has(v, 'JZ64') ? 10 : 0));
-        if (c.catalogId === 'BH51' && me(v).deckCount > h.drawReserve(v) + 2 && me(v).hand.some(x => x.id !== c.id))
-            for (const op of ops)
-                add(op, 20 + (has(v, 'WM066') ? 15 : 0) + (has(v, 'JZ64') ? 10 : 0));
+        if (c.spell?.operation === 'hidden-gift' && me(v).deckCount > h.drawReserve(v) + 2) {
+            const gain = giftAssessment(v, c, h)?.utility ?? 0;
+            if (gain > need * 3 + 4)
+                for (const op of ops)
+                    add(op, 12 + gain - need * 2);
+        }
         if (c.catalogId === 'XQ45')
             for (const op of ops)
                 add(op, 45 + h.value(h.lookup(v, op.targetIds[0])));

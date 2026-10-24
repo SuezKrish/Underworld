@@ -1,3 +1,4 @@
+import { nonDrawEffectBlocked } from './bot-draw-lock-planning.mjs';
 import { copyIndex, engineCanStart } from './bot-dynamic-planning.mjs';
 import { hasCardType } from './card-types.mjs';
 import { wheelDisruptionPending, wantsStarRelic, readyRelics } from './spell-graveyard-planning.mjs';
@@ -100,9 +101,9 @@ export function spellLibraryBonus(v, c) {
     if (v.bot?.id !== 'yellow-white-spells')
         return 0;
     const own = v.players[v.seat], field = own.play.filter(c => !c.faceDown), held = own.hand;
-    const engines = field.filter(c => c.catalogId === 'XG01').length, hidden = own.play.filter(c => c.faceDown && c.catalogId === 'XG01').length;
+    const engines = nonDrawEffectBlocked(v) ? 0 : field.filter(c => c.catalogId === 'XG01').length, hidden = own.play.filter(c => c.faceDown && c.catalogId === 'XG01').length;
     const relics = field.filter(c => c.catalogId === 'XG06' && !c.tapped).length;
-    const count = id => held.filter(c => c.catalogId === id).length, ready = engines > 0 || hidden > 0 && v.round >= 3;
+    const count = id => held.filter(c => c.catalogId === id).length, ready = !nonDrawEffectBlocked(v) && (engines > 0 || hidden > 0 && v.round >= 3);
     const fuel = held.filter(spellFuel).length;
     if (c.catalogId === 'XQ02' && wheelDisruptionPending(v) && !count('XQ02'))
         return 250;
